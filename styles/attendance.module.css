@@ -1,0 +1,239 @@
+/* ===== Page Layout ===== */
+.container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background-color: #f5f5f7;
+}
+
+/* ===== Main Content ===== */
+.main {
+  flex: 1;
+  padding: 2.5rem;
+  overflow-x: auto;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+/* ===== Headers ===== */
+.main h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #111827;
+}
+
+.main h2, .main h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+/* ===== Stats Cards ===== */
+.stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  flex: 1;
+  text-align: center;
+}
+
+.stat-card p {
+  margin-top: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ===== Table Styling ===== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 300px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  table-layout: fixed;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.table th, .table td {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.table thead {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.table tbody tr:hover {
+  background-color: #e5e7eb;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.9rem;
+  background-color: #f0f0f0;
+}
+
+.table td {
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+/* ===== Loading & Empty State ===== */
+.loading, .empty {
+  text-align: center;
+  padding: 2rem 0;
+  color: #6b7280;
+  font-size: 1rem;
+}
+/* Scanner Section */
+.scannerSection {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scannerTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+}
+
+.scannerInstructions {
+  font-size: 0.95rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.scannerWrapper {
+  width: 100%;
+  max-width: 400px;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+.multiTableWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.multiTableWrapper table {
+  flex: 1 1 30%; /* 3 columns */
+  min-width: 200px;
+  border-collapse: collapse;
+}
+
+.multiTableWrapper th,
+.multiTableWrapper td {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.multiTableWrapper th {
+  background-color: #1e293b; /* dark header */
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .multiTableWrapper table {
+    flex: 1 1 100%; /* stack vertically on small screens */
+  }
+}
+
+
+
+
+/* Specific column widths */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 50px; /* Sr. No. column narrow */
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: auto; /* Name column flexible */
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 120px; /* Date column moderate */
+}
+
+
+
+/* === Modal Global Styles === */
+.modalOverlay {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999 !important;
+}
+
+.modalContent {
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+  animation: fadeIn 0.25s ease;
+}
+
+.closeBtn {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

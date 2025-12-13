@@ -1,0 +1,4 @@
+pg
+exceljs
+lucide-react
+recharts

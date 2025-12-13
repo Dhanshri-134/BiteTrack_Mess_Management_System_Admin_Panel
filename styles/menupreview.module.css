@@ -1,0 +1,118 @@
+.container {
+  padding: 1.5rem 2rem;
+  background-color: #f9fafb;
+  min-height: calc(100vh - 70px);
+  position: relative;
+  left:-0px;
+  top: 1px;
+}
+
+.header {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.header p {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.loading {
+  text-align: center;
+  color: #64748b;
+  font-size: 1rem;
+  margin-top: 2rem;
+}
+
+/* Grid layout for day cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Each day's card */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Day header */
+.dayHeader {
+  background: #f3f4f6;
+  padding: 0.75rem 1rem;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dayHeader h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Meal block section */
+.mealBlock {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.mealBlock:last-child {
+  border-bottom: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.mealBlock h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.4rem;
+}
+
+/* Meal items list */
+.mealBlock ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.mealBlock li {
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+/* No items text */
+.noData {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Subtle background colors per meal */
+.breakfast {
+  background-color: #f0f9ff;
+}
+
+.lunch {
+  background-color: #f0fdf4;
+}
+
+.dinner {
+  background-color: #fff7ed;
+}

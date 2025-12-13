@@ -1,0 +1,210 @@
+/* Container wraps sidebar + main content */
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* Main content area */
+.main {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Tabs container */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb; /* light gray */
+}
+
+/* Each tab button */
+.tabButton {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: #6b7280; /* gray-500 */
+  transition: all 0.2s;
+}
+
+.tabButton:hover {
+  color: #1d4ed8; /* blue-700 */
+}
+
+/* Active tab */
+.activeTab {
+  border-bottom: 2px solid #1d4ed8; /* blue */
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+/* Tab content area */
+.tabContent {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  margin: 0;
+}
+
+.dayCard {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Day header */
+.dayCard h3 {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+}
+
+/* Meal section inside a day */
+.mealSection {
+  margin-bottom: 1rem;
+}
+
+/* Meal label */
+.mealSection label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+/* Dish inputs */
+.mealSection input {
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  width: 160px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.mealSection input:focus {
+  border-color: #1d4ed8;
+}
+
+/* Add button next to each meal */
+.addDishBtn {
+  background-color: #1d4ed8;
+  color: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.addDishBtn:hover {
+  background-color: #2563eb;
+}
+
+/* Save button per day */
+.saveDayBtn {
+  margin-top: 0.75rem;
+  background-color: #10b981; /* green-500 */
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.saveDayBtn:hover {
+  background-color: #059669; /* green-600 */
+}
+
+.saveDayBtn:disabled {
+  background-color: #6ee7b7; /* lighter green */
+  cursor: not-allowed;
+}
+
+/* Responsive layout for inputs */
+@media (max-width: 768px) {
+  .mealSection input {
+    width: 100%;
+  }
+
+  .dayCard {
+    padding: 0.75rem;
+  }
+}
+
+
+/* wrapper around each input to allow absolute positioning inside the input area */
+.inputWrapper {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* main input styling; extra right padding to make space for the × inside */
+.inputField {
+  width: 200px;           /* adjust as needed */
+  padding: 8px 30px 8px 10px; /* top/right/bottom/left -> right space for the × */
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* clear/remove button positioned *inside* the input on the right */
+.clearBtn {
+  position: absolute;
+  top: 50%;
+  right: 8px;             /* distance from right edge of input */
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  font-size: 16px;
+  color: #6b7280;         /* gray */
+  cursor: pointer;
+}
+
+/* hover/focus states to make it visible */
+.clearBtn:hover,
+.clearBtn:focus {
+  color: #ef4444;         /* red on hover */
+  outline: none;
+}
+
+/* add button and save button basic styles (you may already have these) */
+.addDishBtn {
+  background: #10b981;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.saveDayBtn {
+  background: #2563eb;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-top: 12px;
+}

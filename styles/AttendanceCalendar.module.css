@@ -1,0 +1,162 @@
+/* ==== Calendar Container ==== */
+.calendar {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  width: 100%;
+}
+.day.present { background-color: green; }
+.day.absent { background-color: red; }
+.day.noData { background-color: lightgray; }
+.day.today { border: 2px solid blue; }
+
+.header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ==== Month Navigation Buttons ==== */
+.navButton {
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.25s ease;
+}
+
+.navButton:hover {
+  background: #334155;
+  transform: scale(1.05);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  justify-items: center;
+  margin-top: 8px;
+}
+
+.weekday {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.day {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+
+.empty {
+  width: 38px;
+  height: 38px;
+}
+
+/* ==== Status Colors ==== */
+.present {
+  background-color: #22c55e; /* green */
+  color: white;
+}
+
+.absent {
+  background-color: #ef4444; /* red */
+  color: white;
+}
+
+.noData {
+  background-color: #e2e8f0; /* light gray */
+  color: #475569;
+}
+
+.today {
+  border: 2px solid #0ea5e9; /* blue border */
+}
+
+/* ==== Legend ==== */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+  font-size: 0.85rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.colorBox {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+/* Match the status colors */
+.colorBox.present { background-color: #22c55e; }
+.colorBox.absent { background-color: #ef4444; }
+.colorBox.noData { background-color: #e2e8f0; }
+.modalOverlay {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999 !important; /* ensures it's above tables and layout */
+}
+
+.modalContent {
+  background: #ffffff;
+  padding: 20px 25px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.2s ease-in-out;
+  text-align: center;
+}
+
+.closeBtn {
+  margin-top: 16px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

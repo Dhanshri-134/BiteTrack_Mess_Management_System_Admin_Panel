@@ -1,0 +1,783 @@
+/* billing.module.css
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.stat-card {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 10px;
+  min-width: 150px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-card label {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.button {
+  background-color: #4f46e5;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #4338ca;
+}
+
+.loading,
+.empty {
+  padding: 20px;
+  text-align: center;
+  font-style: italic;
+  color: #555;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  max-height: 600px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 10px;
+  text-align: center;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  background-color: #f5f5f5;
+  z-index: 1;
+}
+
+.table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.rowEven {
+  background-color: #fafafa;
+}
+
+.rowOdd {
+  background-color: #fff;
+}
+
+.table tr:hover {
+  background-color: #e6f7ff;
+}
+
+@media screen and (max-width: 768px) {
+  .stats {
+    flex-direction: column;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+}
+
+
+
+
+.btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 2px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+.freeze { background-color: red; }
+.unfreeze { background-color: green; }
+.paidBtn { background-color: gray; }
+.unpaidBtn { background-color: blue; }
+
+.paidBadge {
+  background-color: green;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.unpaidBadge {
+  background-color: red;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filterCard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 120px;
+}
+
+.filterCard label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.filterCard select,
+.filterCard input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filterCard select:focus,
+.filterCard input:focus {
+  border-color: #4f46e5;
+}
+
+.generateButton {
+  background-color: #4f46e5;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.generateButton:hover {
+  background-color: #4338ca;
+}
+
+.searchSort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.searchSort input[type="text"] {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  flex: 1;
+  min-width: 150px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchSort input[type="text"]:focus {
+  border-color: #4f46e5;
+}
+
+.searchSort select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.searchSort select:focus {
+  border-color: #4f46e5;
+}
+
+.tableContainer {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+} */
+/* styles/billing.module.css */
+/* 
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.title {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+  color: #0f172a;
+}
+
+/* Controls 
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.controlItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.controlItem label {
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.controlItem input,
+.controlItem select {
+  padding: 8px 10px;
+  border: 1px solid #e6eef8;
+  border-radius: 6px;
+  background: #f8fafc;
+  outline: none;
+}
+
+.controlItem input:focus,
+.controlItem select:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+  border-color: #6366f1;
+}
+
+/* Rate row 
+.rateRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Action area 
+.controlItemActions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btnPrimary {
+  background: #0ea5a4;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btnSecondary {
+  background: #64748b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Table 
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e6eef8;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.table thead {
+  background: #0f172a;
+  color: #fff;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+  font-size: 0.93rem;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+/* Buttons inside actions column 
+.actionsCell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btnAction {
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* Loading / Empty 
+.loading {
+  padding: 36px;
+  text-align: center;
+  color: #64748b;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Modal 
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2,6,23,0.55);
+  z-index: 2000;
+  padding: 16px;
+}
+
+.modalContent {
+  background: #fff;
+  width: min(1000px, 96%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 20px 60px rgba(2,6,23,0.4);
+}
+
+/* close button 
+.closeX {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #475569;
+}
+
+/* small responsive tweaks 
+@media (max-width: 900px) {
+  .controls {
+    gap: 10px;
+  }
+  .controlItem {
+    min-width: 140px;
+  }
+  .actionsCell {
+    gap: 6px;
+  }
+  .table {
+    font-size: 0.88rem;
+  }
+} */
+/* ===========================
+   Layout
+=========================== */
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 22px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.main h1 {
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+/* ===========================
+   Controls / Filters
+=========================== */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.controlItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.controlItem label {
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.controlItem input,
+.controlItem select {
+  padding: 8px 10px;
+  border: 1px solid #e6eef8;
+  border-radius: 6px;
+  background: #f8fafc;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.controlItem input:focus,
+.controlItem select:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+  border-color: #6366f1;
+}
+
+/* Per-day rate radio */
+.rateRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Action buttons (refresh / pdf) */
+.controlItemActions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btnPrimary {
+  background: #0ea5a4;
+  color: white;
+  border: none;
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btnSecondary {
+  background: #64748b;
+  color: white;
+  border: none;
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ===========================
+   Table
+=========================== */
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e6eef8;
+}
+
+.table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+  font-size: 0.93rem;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+/* Action buttons column */
+.actionsCell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Empty & Loading */
+.loading {
+  padding: 40px;
+  text-align: center;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.empty {
+  padding: 30px;
+  text-align: center;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+/* ===========================
+   Modal (Common)
+=========================== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.modalContent {
+  background: #ffffff;
+  width: min(600px, 95%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.35);
+}
+
+/* Modal header */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.closeX {
+  border: none;
+  background: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #475569;
+}
+
+/* ===========================
+   Payment Modal Form
+=========================== */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.formGroup label {
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.formGroup input,
+.formGroup select {
+  padding: 8px 10px;
+  border: 1px solid #e6eef8;
+  border-radius: 6px;
+  background: #f8fafc;
+  font-size: 0.9rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* ===========================
+   Attendance Modal
+=========================== */
+.attendanceModal {
+  max-width: 800px !important;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+@media (max-width: 900px) {
+  .controls {
+    gap: 10px;
+  }
+  .controlItem {
+    min-width: 140px;
+  }
+  .table {
+    font-size: 0.85rem;
+  }
+  .modalContent {
+    width: 95%;
+  }
+}
+/* ===========================
+   Bill Action Buttons
+=========================== */
+
+.btnAction {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+/* Mark Paid / Unmark Paid */
+.btnPaid {
+  background: #16a34a;
+  color: #fff;
+}
+.btnUnpaid {
+  background: #ff8c00;
+  color: #fff;
+}
+.btnPaid:hover {
+  background: #12833c;
+}
+.btnUnpaid:hover {
+  background: #e67b00;
+}
+
+/* Freeze / Unfreeze */
+.btnFreeze {
+  background: #dc2626; /* red */
+  color: #fff;
+}
+.btnUnfreeze {
+  background: #2563eb; /* blue */
+  color: #fff;
+}
+.btnFreeze:hover {
+  background: #b91c1c;
+}
+.btnUnfreeze:hover {
+  background: #1d4ed8;
+}
+
+/* Disabled Freeze button */
+.btnDisabled {
+  background: #9ca3af !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+/* View Calendar */
+.btnCalendar {
+  background: #6b7280;
+  color: #fff;
+}
+.btnCalendar:hover {
+  background: #4b5563;
+}
+
+/* Wrapper */
+.actionsCell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btnPaid {
+  background-color: #4caf50;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease;
+}
+
+.btnPaid:hover {
+  background-color: #45a049;
+}
+
+/* Disabled version (when already paid) */
+.btnPaidDisabled {
+  background-color: #9e9e9e !important;
+  color: white;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}

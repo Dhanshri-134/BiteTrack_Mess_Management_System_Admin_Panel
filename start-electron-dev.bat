@@ -1,0 +1,13 @@
+@echo off
+echo Starting BiteTrack Electron Development...
+echo.
+echo 1. Starting Next.js development server...
+start /B npm run dev
+
+echo 2. Waiting for Next.js to start...
+timeout /t 5 /nobreak > nul
+
+echo 3. Starting Electron...
+npm run electron
+
+pause

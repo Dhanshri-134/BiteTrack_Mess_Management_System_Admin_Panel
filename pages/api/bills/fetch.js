@@ -1,0 +1,397 @@
+
+// // import { getPgPool } from "../../../lib/db";
+// // import { verifyToken } from "../../../lib/auth";
+
+// // export default async function handler(req, res) {
+// //   if (req.method !== "GET") {
+// //     return res.status(405).json({ error: "Method not allowed" });
+// //   }
+
+// //   const pgPool = await getPgPool();
+// //   const { month, year } = req.query;
+
+// //   // ----------------------------------------------------
+// //   // 1️⃣ Extract mess_id from token (if exists)
+// //   // ----------------------------------------------------
+// //   let tokenMessId = null;
+// //   const authHeader = req.headers.authorization;
+
+// //   if (authHeader && authHeader.startsWith("Bearer ")) {
+// //     try {
+// //       const token = authHeader.split(" ")[1];
+// //       const decoded = verifyToken(token);
+// //       tokenMessId = decoded.messId || null;
+// //     } catch (err) {
+// //       console.error("Token verification failed:", err);
+// //       return res.status(401).json({ error: "Invalid or expired token" });
+// //     }
+// //   }
+
+// //   try {
+// //     // ----------------------------------------------------
+// //     // 2️⃣ Base SQL query (old behavior)
+// //     // ----------------------------------------------------
+// //     let query = `
+// //       WITH params AS (
+// //         SELECT 
+// //           COALESCE($1::int, EXTRACT(YEAR FROM CURRENT_DATE)::int) AS target_year,
+// //           COALESCE($2::int, EXTRACT(MONTH FROM CURRENT_DATE)::int) AS target_month
+// //       )
+// //       SELECT
+// //         u.id AS user_id,
+// //         u.name,
+// //         u.email,
+// //         u.status,
+// //         COALESCE(b.id, 0) AS bill_id,
+// //         p.target_year AS year,
+// //         p.target_month AS month,
+// //         COALESCE(b.days_billed, 0) AS days_billed,
+// //         COALESCE(b.per_day_rate, 0) AS per_day_rate,
+// //         COALESCE(b.total_amount, 0) AS total_amount,
+// //         COALESCE(b.paid, false) AS paid,
+// //         b.generated_at,
+// //         COALESCE(ma.days_present, 0) AS days_present,
+// //         ma.attendance_map 
+// //       FROM users u
+// //       CROSS JOIN params p
+// //       LEFT JOIN bills b
+// //         ON u.id = b.user_id
+// //         AND b.year = p.target_year
+// //         AND b.month = p.target_month
+// //       LEFT JOIN monthly_attendance ma
+// //         ON u.id = ma.user_id
+// //         AND ma.year = p.target_year
+// //         AND ma.month = p.target_month
+// //       WHERE u.verified = TRUE
+// //     `;
+
+// //     // ----------------------------------------------------
+// //     // 3️⃣ If token exists → restrict to that mess
+// //     // ----------------------------------------------------
+// //     const params = [year || null, month || null];
+
+// //     if (tokenMessId) {
+// //       query += ` AND u.mess_id = $3`;   // secure mess filter
+// //       params.push(tokenMessId);
+// //     }
+
+// //     query += ` ORDER BY u.name ASC;`;
+
+// //     const { rows } = await pgPool.query(query, params);
+
+// //     res.status(200).json(rows);
+
+// //   } catch (err) {
+// //     console.error("❌ Error fetching bills:", err);
+// //     res.status(500).json({ error: "Internal server error", details: err.message });
+// //   }
+// // }
+
+
+// import { getPgPool } from "../../../lib/db";
+// import jwt from "jsonwebtoken";
+
+// export default async function handler(req, res) {
+//   if (req.method !== "GET") {
+//     return res.status(405).json({ error: "Method not allowed" });
+//   }
+
+//   const pgPool = await getPgPool();
+//   const { month, year } = req.query;
+
+//   // ----------------------------------------------------
+//   // 🔐 1️⃣ Token REQUIRED (no fallback AT ALL)
+//   // ----------------------------------------------------
+//   const authHeader = req.headers.authorization;
+
+//   if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//     return res.status(401).json({ error: "Unauthorized. Please log in again." });
+//   }
+
+//   let tokenMessId = null;
+
+//   try {
+//     const token = authHeader.split(" ")[1];
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+//     // EXACTLY WHAT YOU SAID
+//     tokenMessId = decoded.messId;
+
+//     if (!tokenMessId) {
+//       return res.status(401).json({ error: "Invalid token. messId missing." });
+//     }
+//   } catch (err) {
+//     console.error("Token verification failed:", err);
+//     return res.status(401).json({ error: "Invalid or expired token" });
+//   }
+
+//   // ----------------------------------------------------
+//   // 2️⃣ Fetch bills & attendance STRICTLY for this mess
+//   // ----------------------------------------------------
+//   try {
+//     let query = `
+//       WITH params AS (
+//         SELECT 
+//           COALESCE($1::int, EXTRACT(YEAR FROM CURRENT_DATE)::int) AS target_year,
+//           COALESCE($2::int, EXTRACT(MONTH FROM CURRENT_DATE)::int) AS target_month
+//       )
+//       SELECT
+//         u.id AS user_id,
+//         u.name,
+//         u.email,
+//         u.status,
+
+//         COALESCE(b.id, 0) AS bill_id,
+//         p.target_year AS year,
+//         p.target_month AS month,
+//         COALESCE(b.days_billed, 0) AS days_billed,
+//         COALESCE(b.per_day_rate, 0) AS per_day_rate,
+//         COALESCE(b.total_amount, 0) AS total_amount,
+//         COALESCE(b.paid, false) AS paid,
+//         b.generated_at,
+
+//         COALESCE(ma.days_present, 0) AS days_present,
+//         ma.attendance_map
+
+//       FROM users u
+//       CROSS JOIN params p
+//       LEFT JOIN bills b
+//         ON u.id = b.user_id
+//         AND b.year = p.target_year
+//         AND b.month = p.target_month
+//       LEFT JOIN monthly_attendance ma
+//         ON u.id = ma.user_id
+//         AND ma.year = p.target_year
+//         AND ma.month = p.target_month
+//       WHERE u.verified = TRUE
+//       AND u.mess_id = $3
+//       ORDER BY u.name ASC;
+//     `;
+
+//     const params = [
+//       year || null,
+//       month || null,
+//       tokenMessId // STRICT MESS FILTER
+//     ];
+
+//     const { rows } = await pgPool.query(query, params);
+//     res.status(200).json(rows);
+
+//   } catch (err) {
+//     console.error("❌ Error fetching bills:", err);
+//     res.status(500).json({ error: "Internal server error", details: err.message });
+//   }
+// }
+
+
+
+
+
+
+
+
+
+// pages/api/bills/fetch.js
+import jwt from "jsonwebtoken";
+import { pgPool } from "../../../lib/db";
+
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  function countAllowedLeaveDays(attendanceMapObj) {
+  if (!attendanceMapObj) return 0;
+
+  const entries = Object.entries(attendanceMapObj)
+    .map(([date, val]) => ({ date, val }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date)); // sort by date
+
+  let allowed = 0;
+  let streak = 0;
+
+  for (const e of entries) {
+    if (e.val === false) {
+      streak++;
+    } else {
+      if (streak >= 2) allowed += streak;  // only count streak >= 2
+      streak = 0;
+    }
+  }
+
+  if (streak >= 2) allowed += streak;
+
+  return allowed;
+}
+
+  try {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized. Please login again." });
+    }
+
+    function toISTDate(dateStr) {
+  const date = new Date(dateStr);
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const ist = new Date(date.getTime() + istOffset);
+  
+  return ist.toISOString().slice(0, 10);
+}
+
+    const token = auth.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const messId = decoded.messId;
+    if (!messId) return res.status(401).json({ error: "Invalid token. messId missing." });
+
+    // Require filters
+    const { month, year } = req.query;
+    if (!month || !year) {
+      return res.status(400).json({ error: "month and year are required filters" });
+    }
+
+    // Fetch users in this mess
+    const usersQuery = `
+      SELECT 
+    u.id, 
+    u.name, 
+    u.email, 
+    u.status,
+    m.per_day_rate
+FROM users u
+JOIN messes m ON u.mess_id = m.id
+WHERE u.mess_id = $1
+ORDER BY u.name;
+
+    `;
+    const { rows: users } = await pgPool.query(usersQuery, [messId]);
+
+    // Fetch monthly_attendance for the selected month/year
+    const attendanceQuery = `
+      SELECT user_id, days_present, attendance_map, first_attendance_date
+      FROM monthly_attendance
+      WHERE mess_id = $1 AND month = $2 AND year = $3
+    `;
+    const { rows: attendanceRows } = await pgPool.query(attendanceQuery, [messId, Number(month), Number(year)]);
+    const attendanceMap = {};
+    attendanceRows.forEach(a => {
+      attendanceMap[a.user_id] = a;
+    });
+
+    // Fetch payment_history for the selected month/year
+    const paymentsQuery = `
+  SELECT user_id, payment_date, amount, status
+  FROM payment_history
+  WHERE mess_id = $1
+    AND (
+      CASE
+        -- If the text is numeric (e.g., "2", "02")
+        WHEN month ~ '^[0-9]+$' THEN CAST(month AS INTEGER)
+
+        -- If the text is a month name (e.g., "February", "Feb")
+        ELSE EXTRACT(MONTH FROM TO_DATE(month, 'Month'))
+      END
+    ) = $2
+    AND year = $3
+`;
+
+    const { rows: paymentRows } = await pgPool.query(paymentsQuery, [messId, month, Number(year)]);
+    const paymentMap = {};
+    paymentRows.forEach(p => {
+      paymentMap[p.user_id] = p;
+    });
+
+    // Map all users to bills
+  //   const bills = users.map(u => {
+  //     const attendance = attendanceMap[u.id];
+  //     const payment = paymentMap[u.id];
+
+  //     const start_date = attendance?.first_attendance_date
+  // ? toISTDate(attendance.first_attendance_date)
+  // : toISTDate(new Date());
+
+  //     const endDate = payment?.payment_date
+  //   ? new Date(payment.payment_date)
+  //   : new Date();
+
+  // // total days between start and end
+  // const totalDays =
+  //   Math.floor((endDate - start_date) / (1000 * 60 * 60 * 24)) + 1;
+
+  // // allowed leave = consecutive FALSE streaks only
+  // const allowedLeave = countAllowedLeaveDays(attendance?.attendance_map);
+
+  // // final billed days
+  // const days = Math.max(totalDays - allowedLeave, 0);
+  //     const perDay = Number(u.per_day_rate ?? 0);
+  //     const total = Number((days * perDay).toFixed(2));
+
+  //     return {
+  //       user_id: u.id,
+  //       name: u.name,
+  //       email: u.email,
+  //       status: u.status ?? "Active",
+  //       start_date,
+  //       // end_date: payment?.payment_date ? new Date(payment.payment_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+  //       end_date: payment?.payment_date 
+  // ? toISTDate(payment.payment_date)
+  // : toISTDate(new Date()),
+
+  //       days_billed: days,
+  //       chosen_per_day_rate: perDay,
+  //       total_amount: total,
+  //       paid: payment?.status === "paid",
+  //       attendance_map: attendance?.attendance_map ?? null,
+  //     };
+  //   });
+const bills = users.map(u => {
+  const attendance = attendanceMap[u.id];
+  const payment = paymentMap[u.id];
+
+  // ----------- FIX: Always use Date objects for math -----------
+  const startDate = attendance?.first_attendance_date
+    ? new Date(attendance.first_attendance_date)
+    : new Date();
+
+  const endDate = payment?.payment_date
+    ? new Date(payment.payment_date)
+    : new Date();
+
+  // ----------- FIX: This will never be NaN now -----------
+  const totalDays =
+    Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  // Allowed leave
+  const allowedLeave = countAllowedLeaveDays(attendance?.attendance_map);
+
+  // Final days billed
+  const days = Math.max(totalDays - allowedLeave, 0);
+
+  const perDay = Number(u.per_day_rate ?? 0);
+  const total = Number((days * perDay).toFixed(2));
+
+  return {
+    user_id: u.id,
+    name: u.name,
+    email: u.email,
+    status: u.status ?? "Active",
+
+    // Convert to IST only for display
+    start_date: toISTDate(startDate),
+    end_date: toISTDate(endDate),
+
+    days_billed: days,
+    chosen_per_day_rate: perDay,
+    total_amount: total,
+    paid: payment?.status === "paid",
+    attendance_map: attendance?.attendance_map ?? null,
+  };
+});
+
+    console.log(bills[70]);
+    return res.status(200).json(bills);
+
+  } catch (err) {
+    console.error("🔥 Error in /api/bills/fetch:", err);
+    return res.status(500).json({ error: err.message || "Internal server error" });
+  }
+}

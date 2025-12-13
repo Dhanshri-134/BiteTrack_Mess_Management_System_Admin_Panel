@@ -1,0 +1,39 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  margin-top: 60px; /* account for fixed navbar */
+  min-width: 0;
+}
+
+.main {
+  flex: 1;
+  padding: 1rem;
+  margin-left: 220px; /* sidebar width */
+  transition: margin-left 0.3s ease;
+
+  overflow: auto;              /* ✅ allow scrolling */
+  -webkit-overflow-scrolling: touch;
+}
+
+.mainCollapsed {
+  flex: 1;
+  padding: 1rem;
+  margin-left: 60px; /* collapsed sidebar */
+  transition: margin-left 0.3s ease;
+
+  overflow: auto;              /* ✅ same here */
+  -webkit-overflow-scrolling: touch;
+}
+.main, .mainCollapsed {
+  flex: 1;
+  padding: 1rem;
+  overflow: auto;    /* allows scrolling */
+  min-width: 0;      /* ✅ crucial for horizontal scroll of children */
+  min-height: 0;     /* for flex shrink */
+}
