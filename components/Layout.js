@@ -1,6 +1,6 @@
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import styles from "../styles/Layout.module.css";
+import styles from "../styles/layout.module.css";
 import { useState } from "react";
 
 export default function Layout({ children }) {

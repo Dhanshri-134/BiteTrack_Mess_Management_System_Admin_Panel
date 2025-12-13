@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import styles from "../styles/sidebar.module.css";
+import styles from "../styles/Sidebar.module.css";
 import HardwareScanner from "./HardwareScanner";
 
 export default function Sidebar({ collapsed, setCollapsed }) {

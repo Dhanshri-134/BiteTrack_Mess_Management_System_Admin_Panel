@@ -1,6 +1,6 @@
 import Layout from "../components/Layout";
 import Sidebar from "../components/Sidebar";
-import styles from "../styles/quicksettings.module.css";
+import styles from "../styles/quickSettings.module.css";
 import { useRouter } from "next/router";
 
 export default function QuickSettings() {
