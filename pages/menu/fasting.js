@@ -1,27 +1,47 @@
+
 // import { useEffect, useState } from "react";
 // import Layout from "../../components/Layout";
 // import styles from "../../styles/fasting.module.css";
 // import useAuth from "../../hooks/useAuth";
 
 // export default function FastingRequests() {
-//   const { user } = useAuth(); // logged-in admin
-//   const messId = user?.mess_id;
-
-//   const [users, setUsers] = useState([]);
+//   useAuth(); 
+//   const [fastingRequests, setFastingRequests] = useState([]);
 //   const [totalRequests, setTotalRequests] = useState(0);
 
-//   const fetchData = async () => {
-//     if (!messId) return;
+//   const [token, setToken] = useState(null);
 
-//     const res = await fetch(`/api/menu/fasting/fetch?mess_id=${messId}`);
-//     const data = await res.json();
-//     setUsers(data.users || []);
-//     setTotalRequests(data.totalRequests || 0);
+//   useEffect(() => {
+//     const t = localStorage.getItem("token");
+//     setToken(t);
+//   }, []);
+//   const fetchData = async () => {
+//     if (!token) return;
+
+//     try {
+//       const res = await fetch(`/api/menu/fasting/fetch`, {
+//         method: "GET",
+//         headers: {
+//           "Authorization": `Bearer ${token}`,
+//         },
+//       });
+
+//       if (!res.ok) throw new Error("Failed to fetch fasting requests");
+
+//       const data = await res.json();
+
+//       // fastingRequests contains [{ name, phone, fasting_date }, ...]
+//       setFastingRequests(data.fastingRequests || []);
+//       setTotalRequests(data.totalRequests || 0);
+
+//     } catch (err) {
+//       console.error("Error fetching fasting requests:", err);
+//     }
 //   };
 
 //   useEffect(() => {
-//     if (messId) fetchData();
-//   }, [messId]);
+//     fetchData();
+//   }, [token]);
 
 //   return (
 //     <Layout>
@@ -37,18 +57,18 @@
 //         <table className={styles.table}>
 //           <thead>
 //             <tr>
-//               <th>Username</th>
-//               <th>Email</th>
-//               <th>Requested Days</th>
+//               <th>Name</th>
+//               <th>Contact No</th>
+//               <th>Fasting Date</th>
 //             </tr>
 //           </thead>
 //           <tbody>
-//             {users.length > 0 ? (
-//               users.map((user) => (
-//                 <tr key={user.user_id}>
-//                   <td>{user.username || "Unknown"}</td>
-//                   <td>{user.email || "N/A"}</td>
-//                   <td>{user.total_requests}</td>
+//             {fastingRequests.length > 0 ? (
+//               fastingRequests.map((req, idx) => (
+//                 <tr key={idx}>
+//                   <td>{req.name || "Unknown"}</td>
+//                   <td>{req.phone || "N/A"}</td>
+//                   <td>{req.fasting_date}</td>
 //                 </tr>
 //               ))
 //             ) : (
@@ -63,16 +83,22 @@
 //   );
 // }
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Layout from "../../components/Layout";
 import styles from "../../styles/fasting.module.css";
 import useAuth from "../../hooks/useAuth";
 
-export default function FastingRequests() {
+function FastingRequests() {
   useAuth(); 
   const [fastingRequests, setFastingRequests] = useState([]);
   const [totalRequests, setTotalRequests] = useState(0);
 
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setToken(t);
+  }, []);
 
   const fetchData = async () => {
     if (!token) return;
@@ -89,10 +115,8 @@ export default function FastingRequests() {
 
       const data = await res.json();
 
-      // fastingRequests contains [{ name, phone, fasting_date }, ...]
       setFastingRequests(data.fastingRequests || []);
       setTotalRequests(data.totalRequests || 0);
-
     } catch (err) {
       console.error("Error fetching fasting requests:", err);
     }
@@ -141,3 +165,7 @@ export default function FastingRequests() {
     </Layout>
   );
 }
+
+export default dynamic(() => Promise.resolve(FastingRequests), {
+  ssr: false,
+});
