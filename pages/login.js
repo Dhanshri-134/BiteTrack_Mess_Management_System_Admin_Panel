@@ -16,7 +16,7 @@ export default function Login() {
   setError("");
 
   try {
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch("https://bitetrack-shrisflagships-projects.vercel.app/api/auth/login", {
     // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
