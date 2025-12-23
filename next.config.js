@@ -40,7 +40,7 @@
 const isMobile = process.env.BUILD_FOR_MOBILE === "true";
 
 module.exports = {
-  output: "export",
+  // output: "export",
   trailingSlash: true,
   reactStrictMode: true,
   images: { unoptimized: true },
