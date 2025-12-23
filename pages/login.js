@@ -101,7 +101,7 @@ export default function Login() {
 
     try {
       const res = await fetch(
-        "https://bitetrack-shrisflagships-projects.vercel.app/api/auth/login",
+        "https://bitetrack-shrisflagships-projects.vercel.app/api/auth/login/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -117,7 +117,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(data.mess));
 
       // ✅ SPA-safe redirect (NO reload, CSS stays)
-      router.replace("/dashboard");
+      router.replace("/dashboard/");
 
     } catch (err) {
       setError(err.message);

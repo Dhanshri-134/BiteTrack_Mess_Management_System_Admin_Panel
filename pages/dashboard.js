@@ -552,7 +552,7 @@ export default function Dashboard() {
     }
 
     try {
-      const res = await fetch("https://bitetrack-shrisflagships-projects.vercel.app/api/users/foodPreference", {
+      const res = await fetch("/api/users/foodPreference", {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -569,7 +569,7 @@ export default function Dashboard() {
       const token = getToken();
       if (!token) return console.warn("Session expired! Please login again.");
 
-      const res = await fetch("https://bitetrack-shrisflagships-projects.vercel.app/api/mess/info", {
+      const res = await fetch("/api/mess/info", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -597,9 +597,9 @@ export default function Dashboard() {
     try {
       // send token for all requests
       const [usersRes, attendanceRes, billsRes] = await Promise.all([
-        fetch("https://bitetrack-shrisflagships-projects.vercel.app/api/users/count", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("https://bitetrack-shrisflagships-projects.vercel.app/api/attendance/fetch", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("https://bitetrack-shrisflagships-projects.vercel.app/api/bills/all", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/users/count", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/attendance/fetch", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/bills/all", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       if (!usersRes.ok) {
