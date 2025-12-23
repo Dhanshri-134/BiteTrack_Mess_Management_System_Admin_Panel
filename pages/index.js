@@ -23,8 +23,11 @@ export default function Splash() {
         <p className={styles.subtitle}>
           Manage attendance, billing, and members with ease.
         </p>
-        <Link href="/login" className={styles.ctaBtn}>
+        {/* <Link href="/login" className={styles.ctaBtn}>
           Get Started
+        </Link> */}
+        <Link href="/login/" legacyBehavior>
+          <a className={styles.ctaBtn}>Get Started</a>
         </Link>
       </main>
 

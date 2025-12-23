@@ -30,7 +30,7 @@
 
 // localStorage.setItem("token", data.token);
 // localStorage.setItem("user", JSON.stringify(data.mess));
-// router.push("/dashboard");
+// router.push("/dashboard/");
 
 //   } catch (err) {
 //     setError(err.message);
@@ -79,6 +79,9 @@
 //     </div>
 //   );
 // }
+
+
+
 import { useState } from "react";
 import { useRouter } from "next/router";
 import styles from "../styles/login.module.css";
@@ -87,7 +90,6 @@ export default function Login() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -96,54 +98,29 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
-
-    console.log("=== LOGIN START ===");
-    console.log("Email:", form.email);
 
     try {
-      const url = 'https://bitetrack-shrisflagships-projects.vercel.app/api/auth/login';
-      console.log("Calling:", url);
-      
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(form),
-      });
-
-      console.log("Response received - Status:", res.status);
+      const res = await fetch(
+        "https://bitetrack-shrisflagships-projects.vercel.app/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
 
       const data = await res.json();
-      console.log("Data:", data);
-
-      if (!res.ok) {
-        throw new Error(data.error || `Server error: ${res.status}`);
-      }
-
-      if (!data.token) {
-        throw new Error("No token received from server");
-      }
+      if (!res.ok) throw new Error(data.error || "Login failed");
+      if (!data.token) throw new Error("No token received");
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.mess));
-      
-      console.log("✅ Login successful");
-      router.push("/dashboard");
+
+      // ✅ SPA-safe redirect (NO reload, CSS stays)
+      router.replace("/dashboard");
 
     } catch (err) {
-      console.error("❌ Error:", err.name, err.message);
-      
-      // Better error messages
-      if (err.message === "Failed to fetch") {
-        setError("Cannot connect to server. Check your internet connection.");
-      } else {
-        setError(err.message);
-      }
-    } finally {
-      setLoading(false);
+      setError(err.message);
     }
   };
 
@@ -161,9 +138,7 @@ export default function Login() {
               name="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="Enter your email"
               required
-              disabled={loading}
             />
           </div>
 
@@ -174,16 +149,14 @@ export default function Login() {
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Enter your password"
               required
-              disabled={loading}
             />
           </div>
 
           {error && <p style={{ color: "red" }}>{error}</p>}
 
-          <button type="submit" className={styles.loginBtn} disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+          <button type="submit" className={styles.loginBtn}>
+            Login
           </button>
         </form>
       </div>
