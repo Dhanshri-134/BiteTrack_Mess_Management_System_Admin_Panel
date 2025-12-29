@@ -98,7 +98,6 @@ export default async function handler(req, res) {
     const token = jwt.sign(
       { messId: mess.id, email: mess.email },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
     );
 
     return res.status(200).json({
