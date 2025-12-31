@@ -1,68 +1,3 @@
-// import { pgPool } from "../../lib/db";
-
-// export default async function handler(req, res) {
-//   if (req.method !== "POST")
-//     return res.status(405).json({ error: "Method not allowed" });
-
-//   const { qr } = req.body;
-//   if (!qr) return res.status(400).json({ error: "QR code required" });
-
-//   const [messIdStr, userIdStr] = qr.split("-");
-//   const messId = parseInt(messIdStr);
-//   const userId = parseInt(userIdStr);
-
-//   if (!messId || !userId) {
-//     return res.status(400).json({ error: "Invalid QR code" });
-//   }
-
-//   const today = new Date().toISOString().slice(0, 10);
-//   const client = await pgPool.connect();
-
-//   try {
-//     await client.query("BEGIN");
-
-//     const userRes = await client.query(
-//       `SELECT id, name FROM users WHERE id=$1 AND mess_id=$2 AND verified=true`,
-//       [userId, messId]
-//     );
-
-//     if (userRes.rows.length === 0) {
-//       await client.query("ROLLBACK");
-//       return res.status(404).json({ error: "User not found or not verified" });
-//     }
-
-//     // Try insert attendance
-//     const insertRes = await client.query(
-//       `INSERT INTO attendance (user_id, att_date)
-//        VALUES ($1, $2)
-//        ON CONFLICT (user_id, att_date) DO NOTHING
-//        RETURNING *`,
-//       [userId, today]
-//     );
-
-//     await client.query("COMMIT");
-
-//     const message =
-//       insertRes.rows.length > 0
-//         ? "Today's attendance marked successfully"
-//         : "Today's attendance is already marked";
-
-//     res.json({
-//       ok: true,
-//       date: today,
-//       name: userRes.rows[0].name,
-//       message,
-//     });
-//   } catch (err) {
-//     await client.query("ROLLBACK");
-//     console.error(err);
-//     res.status(500).json({ error: "Internal server error" });
-//   } finally {
-//     client.release();
-//   }
-// }
-
-
 
 import { pgPool } from "../../lib/db";
 import { verifyToken } from "../../lib/auth"; // adjust path if needed
@@ -77,6 +12,24 @@ export default async function handler(req, res) {
   }
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized: token required" });
+  }
+
+  let decoded;
+  try {
+    const token = authHeader.split(" ")[1];
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  const messId = decoded.messId;
+  if (!messId) {
+    return res.status(400).json({ error: "messId missing in token" });
+  }
 
   const { qr } = req.body;
   if (!qr) return res.status(400).json({ error: "QR code required" });
@@ -93,7 +46,7 @@ export default async function handler(req, res) {
   // --------------------------------------------
   // 🔐 USE TOKEN MESS ID IF AVAILABLE
   // --------------------------------------------
-  let messId = qrMessId; // fallback (old behavior)
+  // let messId = qrMessId; // fallback (old behavior)
 
   try {
     const authHeader = req.headers.authorization;
@@ -131,11 +84,13 @@ export default async function handler(req, res) {
     }
 
     const insertRes = await client.query(
-      `INSERT INTO attendance (user_id, att_date)
-       VALUES ($1, $2)
-       ON CONFLICT (user_id, att_date) DO NOTHING
-       RETURNING *`,
-      [userId, today]
+      `
+  INSERT INTO attendance (user_id, att_date, mess_id)
+  VALUES ($1, $2, $3)
+  ON CONFLICT (user_id, att_date) DO NOTHING
+  RETURNING id
+  `,
+  [userId, today, messId]
     );
 
     await client.query("COMMIT");
