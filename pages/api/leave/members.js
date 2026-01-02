@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       FROM leave_requests lr
       LEFT JOIN users u ON u.id = lr.user_id
       WHERE lr.mess_id = $1
-        AND lr.status = 'accept'
+        AND lr.status = 'Approved'
         AND CURRENT_DATE BETWEEN lr.from_date AND lr.to_date
       ORDER BY lr.from_date;
     `;
