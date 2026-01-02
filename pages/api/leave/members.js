@@ -26,6 +26,8 @@ export default async function handler(req, res) {
     if (!mess_id) {
       return res.status(400).json({ error: "mess_id missing in token" });
     }
+    console.log("Decoded token:", decoded);
+
 
     // ───────────────────────────────────────────────
     // 1️⃣ APPROVED LEAVE MEMBERS (leave_requests)
@@ -43,24 +45,32 @@ export default async function handler(req, res) {
       ORDER BY lr.from_date;
     `;
 
-    const approvedMembers = (await pgPool.query(approvedQuery, [mess_id])).rows;
+    // const approvedMembers = (await pgPool.query(approvedQuery, [mess_id])).rows;
+let approvedMembers;
+try {
+  approvedMembers = (await pgPool.query(approvedQuery, [mess_id])).rows;
+  console.log("Approved members fetched:", approvedMembers.length);
+} catch (err) {
+  console.error("Approved members query failed:", err.message);
+  throw err; // rethrow to trigger catch
+}
 
     // ───────────────────────────────────────────────
     // 2️⃣ EXCESS ABSENT MEMBERS (monthly_attendance)
     // ───────────────────────────────────────────────
 
     // 2.1 allowed_leave_days
-    const messSettings = await pgPool.query(
-      `SELECT allowed_leave_days FROM messes WHERE id=$1`,
-      [mess_id]
-    );
+    // const messSettings = await pgPool.query(
+    //   `SELECT allowed_leave_days FROM messes WHERE id=$1`,
+    //   [mess_id]
+    // );
 
-    const allowed_leave_days = messSettings.rows[0]?.allowed_leave_days ?? 0;
+    // const allowed_leave_days = messSettings.rows[0]?.allowed_leave_days ?? 0;
 
-    // 2.2 year + month
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
+    // // 2.2 year + month
+    // const date = new Date();
+    // const year = date.getFullYear();
+    // const month = date.getMonth() + 1;
 
     // 2.3 attendance_map-based query (gives absent date list)
 //     const absentQuery = `
@@ -120,44 +130,44 @@ export default async function handler(req, res) {
 // });
 
 // 2.3 attendance_map-based query (dynamic absent dates)
-const absentQuery = `
-WITH month_days AS (
-    SELECT generate_series(
-        date_trunc('month', make_date($2, $3, 1))::date,
-        (date_trunc('month', make_date($2, $3, 1)) + interval '1 month - 1 day')::date,
-        interval '1 day'
-    )::text AS day
-),
-present_days AS (
-    SELECT
-        ma.user_id,
-        jsonb_object_keys(ma.attendance_map) AS day
-    FROM monthly_attendance ma
-    WHERE ma.mess_id = $1
-      AND ma.year = $2
-      AND ma.month = $3
-),
-users AS (
-    SELECT DISTINCT ma.user_id, u.name AS user_name, u.email AS user_email, u.phone
-    FROM monthly_attendance ma
-    JOIN users u ON u.id = ma.user_id
-    WHERE ma.mess_id = $1 AND ma.year = $2 AND ma.month = $3
-)
-SELECT
-    u.user_id,
-    u.user_name,
-    u.user_email,
-    u.phone,
-    jsonb_agg(md.day) AS absent_dates,
-    COUNT(*) AS absent_count
-FROM users u
-CROSS JOIN month_days md
-WHERE md.day NOT IN (
-    SELECT day FROM present_days pd WHERE pd.user_id = u.user_id
-)
-GROUP BY u.user_id, u.user_name, u.user_email, u.phone
-HAVING COUNT(*) > $4;
-`;
+// const absentQuery = `
+// WITH month_days AS (
+//     SELECT generate_series(
+//         date_trunc('month', make_date($2, $3, 1))::date,
+//         (date_trunc('month', make_date($2, $3, 1)) + interval '1 month - 1 day')::date,
+//         interval '1 day'
+//     )::text AS day
+// ),
+// present_days AS (
+//     SELECT
+//         ma.user_id,
+//         jsonb_object_keys(ma.attendance_map) AS day
+//     FROM monthly_attendance ma
+//     WHERE ma.mess_id = $1
+//       AND ma.year = $2
+//       AND ma.month = $3
+// ),
+// users AS (
+//     SELECT DISTINCT ma.user_id, u.name AS user_name, u.email AS user_email, u.phone
+//     FROM monthly_attendance ma
+//     JOIN users u ON u.id = ma.user_id
+//     WHERE ma.mess_id = $1 AND ma.year = $2 AND ma.month = $3
+// )
+// SELECT
+//     u.user_id,
+//     u.user_name,
+//     u.user_email,
+//     u.phone,
+//     jsonb_agg(md.day) AS absent_dates,
+//     COUNT(*) AS absent_count
+// FROM users u
+// CROSS JOIN month_days md
+// WHERE md.day NOT IN (
+//     SELECT day FROM present_days pd WHERE pd.user_id = u.user_id
+// )
+// GROUP BY u.user_id, u.user_name, u.user_email, u.phone
+// HAVING COUNT(*) > $4;
+// `;
 
 // const absentRows = (
 //   await pgPool.query(absentQuery, [mess_id, year, month, allowed_leave_days])
@@ -187,7 +197,11 @@ HAVING COUNT(*) > $4;
     });
 
   } catch (err) {
-    console.error("❌ Error fetching leave members:", err);
-    res.status(500).json({ error: "Failed to fetch leave members" });
-  }
+  console.error("❌ Error fetching leave members:", err);
+  res.status(500).json({ 
+    error: "Failed to fetch leave members", 
+    details: err.message 
+  });
+}
+
 }
