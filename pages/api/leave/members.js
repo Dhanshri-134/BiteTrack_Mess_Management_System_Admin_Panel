@@ -159,23 +159,23 @@ GROUP BY u.user_id, u.user_name, u.user_email, u.phone
 HAVING COUNT(*) > $4;
 `;
 
-const absentRows = (
-  await pgPool.query(absentQuery, [mess_id, year, month, allowed_leave_days])
-).rows;
+// const absentRows = (
+//   await pgPool.query(absentQuery, [mess_id, year, month, allowed_leave_days])
+// ).rows;
 
 // convert absent_dates array → start_date + end_date
-const excessAbsent = absentRows.map((u) => {
-  const sorted = u.absent_dates
-    ?.map((d) => new Date(d))
-    .sort((a, b) => a - b);
+// const excessAbsent = absentRows.map((u) => {
+//   const sorted = u.absent_dates
+//     ?.map((d) => new Date(d))
+//     .sort((a, b) => a - b);
 
-  return {
-    ...u,
-    contact_no: u.phone,
-    start_date: sorted?.[0] ?? null,
-    end_date: sorted?.[sorted.length - 1] ?? null,
-  };
-});
+//   return {
+//     ...u,
+//     contact_no: u.phone,
+//     start_date: sorted?.[0] ?? null,
+//     end_date: sorted?.[sorted.length - 1] ?? null,
+//   };
+// });
 
 
     // ───────────────────────────────────────────────
@@ -183,7 +183,7 @@ const excessAbsent = absentRows.map((u) => {
     // ───────────────────────────────────────────────
     res.status(200).json({
       approved_members: approvedMembers,
-      excess_absent_members: excessAbsent
+      // excess_absent_members: excessAbsent
     });
 
   } catch (err) {
