@@ -317,28 +317,28 @@ export default async function handler(req, res) {
       // ---------------------------------------------------------------
       // 🟣 UPLOAD FILES TO SUPABASE STORAGE IF PRESENT
       // ---------------------------------------------------------------
-      async function uploadFileIfNeeded(file, folder) {
-        if (!file || !file.base64) return null;
+      // async function uploadFileIfNeeded(file, folder) {
+      //   if (!file || !file.base64) return null;
 
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${folder}/${Date.now()}.${fileExt}`;
-        const buffer = Buffer.from(file.base64, "base64");
+      //   const fileExt = file.name.split(".").pop();
+      //   const fileName = `${folder}/${Date.now()}.${fileExt}`;
+      //   const buffer = Buffer.from(file.base64, "base64");
 
-        const { error: uploadError } = await supabaseAdmin.storage
-          .from("mess-assets")
-          .upload(fileName, buffer, { contentType: file.type });
+      //   const { error: uploadError } = await supabaseAdmin.storage
+      //     .from("mess-assets")
+      //     .upload(fileName, buffer, { contentType: file.type });
 
-        if (uploadError) {
-          console.error("File upload error:", uploadError);
-          return null;
-        }
+      //   if (uploadError) {
+      //     console.error("File upload error:", uploadError);
+      //     return null;
+      //   }
 
-        const { data } = supabaseAdmin.storage
-          .from("mess-assets")
-          .getPublicUrl(fileName);
+      //   const { data } = supabaseAdmin.storage
+      //     .from("mess-assets")
+      //     .getPublicUrl(fileName);
 
-        return data.publicUrl;
-      }
+      //   return data.publicUrl;
+      // }
 
       // Upload individual files
       updates.logo = await uploadFileIfNeeded(updates.logo, `logo-${messId}`);
@@ -367,6 +367,11 @@ export default async function handler(req, res) {
 ["privacy_policy", "terms_conditions", "contact_info"].forEach((key) => {
   if (updates[key] && typeof updates[key] !== "string") {
     updates[key] = JSON.stringify(updates[key]);
+  }
+});
+Object.keys(updates).forEach((key) => {
+  if (updates[key] === null || updates[key] === undefined) {
+    delete updates[key];
   }
 });
 

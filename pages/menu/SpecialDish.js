@@ -8,7 +8,6 @@ export default function SpecialDish() {
   const [loading, setLoading] = useState(true);
   const [cravings, setCravings] = useState([]);
 
-
   useEffect(() => {
     fetchSpecials();
     fetchCravings();
