@@ -241,7 +241,7 @@ export default async function handler(req, res) {
 
     const mess_id = decoded.messId;
     if (!mess_id) return res.status(400).json({ error: "mess_id missing in token" });
-
+    console.log("mess_id:", mess_id);
     // ───────────────────────────────
     // ✅ APPROVED LEAVE MEMBERS ONLY
     // ───────────────────────────────
@@ -259,7 +259,7 @@ export default async function handler(req, res) {
     `;
 
     const approvedMembers = (await pgPool.query(approvedQuery, [mess_id])).rows;
-
+    console.log("Approved Members:", approvedMembers)
     // ───────────────────────────────
     // RESPONSE
     // ───────────────────────────────
