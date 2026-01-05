@@ -58,7 +58,7 @@ export default async function handler(req, res) {
         MIN(ma.first_attendance_date) AS first_attendance_date,
         COALESCE(
           json_agg(
-            json_build_object(
+            DISTINCT json_build_object(
               'name', p.name,
               'contact', p.contact,
               'address', p.address
