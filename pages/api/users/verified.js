@@ -43,35 +43,54 @@ export default async function handler(req, res) {
   try {
     const query = `
       SELECT 
-        u.id,
-        u.first_name,
-        u.last_name,
-        u.name,
-        u.email,
-        u.phone,
-        u.room_no,
-        u.hostel_name,
-        u.course,
-        u.date_of_joining,
-        u.verified,
-        u.created_at,
-        MIN(ma.first_attendance_date) AS first_attendance_date,
-        COALESCE(
-          json_agg(
-            DISTINCT json_build_object(
-              'name', p.name,
-              'contact', p.contact,
-              'address', p.address
-            )
-          ) FILTER (WHERE p.id IS NOT NULL),
-          '[]'
-        ) AS parents
-      FROM users u
-      LEFT JOIN parents p ON p.user_id = u.id
-      LEFT JOIN monthly_attendance ma ON ma.user_id = u.id
-      WHERE u.verified = true AND u.mess_id = $1
-      GROUP BY u.id
-      ORDER BY u.created_at DESC;
+  u.id,
+  u.first_name,
+  u.last_name,
+  u.name,
+  u.email,
+  u.phone,
+  u.room_no,
+  u.hostel_name,
+  u.course,
+  u.date_of_joining,
+  u.verified,
+  u.created_at,
+
+  ma.first_attendance_date,
+
+  COALESCE(
+    json_agg(
+      DISTINCT jsonb_build_object(
+        'name', p.name,
+        'contact', p.contact,
+        'address', p.address
+      )
+    ) FILTER (WHERE p.id IS NOT NULL),
+    '[]'
+  ) AS parents
+
+FROM users u
+
+/* ✅ attendance reduced to ONE row per user */
+LEFT JOIN (
+  SELECT 
+    user_id,
+    MIN(first_attendance_date) AS first_attendance_date
+  FROM monthly_attendance
+  GROUP BY user_id
+) ma ON ma.user_id = u.id
+
+LEFT JOIN parents p ON p.user_id = u.id
+
+WHERE u.verified = true
+  AND u.mess_id = $1
+
+GROUP BY 
+  u.id,
+  ma.first_attendance_date
+
+ORDER BY u.created_at DESC;
+
     `;
 
     const { rows } = await pgPool.query(query, [messId]);
