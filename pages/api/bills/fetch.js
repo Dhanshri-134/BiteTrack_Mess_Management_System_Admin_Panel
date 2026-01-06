@@ -239,13 +239,17 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Unauthorized. Please login again." });
     }
 
-    function toISTDate(dateStr) {
-  const date = new Date(dateStr);
-  const istOffset = 5.5 * 60 * 60 * 1000;
-  const ist = new Date(date.getTime() + istOffset);
-  
-  return ist.toISOString().slice(0, 10);
+    function toISTDate(dateVal) {
+  if (!dateVal) return null;
+
+  // dateVal can be Date or string
+  const d = new Date(dateVal);
+
+  return d.toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata",
+  });
 }
+
 
     const token = auth.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
