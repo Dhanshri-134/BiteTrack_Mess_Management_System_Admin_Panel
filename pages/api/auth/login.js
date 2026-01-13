@@ -17,34 +17,38 @@ export default async function handler(req, res) {
   
 
   try {
+    console.log("Hit Api");
     if (!process.env.JWT_SECRET) {
-  return res.status(500).json({
-    error: "JWT_SECRET is missing on server",
-  });
-}
-
+      return res.status(500).json({
+        error: "JWT_SECRET is missing on server",
+      });
+    }
+    console.log("JWT SECRET KEY IS PASSED");
+    
     const { email, password } = req.body;
-
+    
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
     }
-
+    console.log("Values are fetched");
+    
     // 1️⃣ Fetch mess (tenant)
     const result = await pgPool.query(
       `
       SELECT
-        id,
-        name,
-        email,
-        password,
-        subscription_status,
-        trial_end_date
+      id,
+      name,
+      email,
+      password,
+      subscription_status,
+      trial_end_date
       FROM messes
       WHERE email = $1
       `,
       [email]
     );
-
+    
+    console.log("PGPOOL HAS NO ISSUE");
     if (result.rowCount === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
     }

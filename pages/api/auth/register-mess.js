@@ -85,8 +85,7 @@ export default async function handler(req, res) {
         messId: mess.id,
         role: "MESS_ADMIN",
       },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      process.env.JWT_SECRET
     );
 
     return res.status(201).json({
