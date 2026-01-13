@@ -63,13 +63,16 @@ export default async function handler(req, res) {
     }
 
     // 🔴 IMPORTANT: Plan not ready yet
-    if (!process.env.RAZORPAY_PLAN_ID) {
-      return res.status(200).json({
-        message: "Customer created. Subscription will be created once plan is configured.",
-        razorpay_customer_id: customerId,
-        subscription_created: false,
-      });
-    }
+    if (
+  !process.env.RAZORPAY_PLAN_ID ||
+  process.env.RAZORPAY_PLAN_ID.trim() === ""
+) {
+  return res.status(200).json({
+    message: "Payment setup incomplete. Plan not configured yet.",
+    razorpay_customer_id: customerId,
+    subscription_created: false,
+  });
+}
 
     // 3️⃣ Create subscription AFTER trial
     const startAt = Math.floor(
