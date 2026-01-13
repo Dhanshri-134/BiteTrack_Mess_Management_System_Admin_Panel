@@ -14,6 +14,10 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+  if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET is missing");
+}
+
 
   try {
     const { email, password } = req.body;
@@ -92,9 +96,13 @@ export default async function handler(req, res) {
       },
     });
   } catch (err) {
-    console.error("LOGIN API ERROR:", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
+  console.error("LOGIN API ERROR:", err);
+  return res.status(500).json({
+    error: err.message,
+    stack: err.stack,
+  });
+}
+
 }
 
 
