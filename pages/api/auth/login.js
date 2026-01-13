@@ -14,12 +14,15 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-  if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET is missing");
-}
-
+  
 
   try {
+    if (!process.env.JWT_SECRET) {
+  return res.status(500).json({
+    error: "JWT_SECRET is missing on server",
+  });
+}
+
     const { email, password } = req.body;
 
     if (!email || !password) {
