@@ -1,4 +1,13 @@
 import { pgPool } from "../../../lib/db";
+import bcrypt from "bcryptjs";
+
+function generatePassword() {
+  // simple but strong enough for temp use
+  return (
+    Math.random().toString(36).slice(-6) +
+    Math.random().toString(36).slice(-4).toUpperCase()
+  );
+}
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -14,6 +23,7 @@ export default async function handler(req, res) {
   }
 
   const { email } = req.body;
+
   if (!email) {
     return res.status(400).json({ error: "Email required" });
   }
@@ -21,7 +31,7 @@ export default async function handler(req, res) {
   const client = await pgPool.connect();
 
   try {
-    // ✅ CHECK MESS (NOT USERS)
+    // 1️⃣ Check mess exists
     const messRes = await client.query(
       `SELECT id FROM messes WHERE email = $1`,
       [email]
@@ -33,15 +43,17 @@ export default async function handler(req, res) {
 
     const messId = messRes.rows[0].id;
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // 2️⃣ Generate new password
+    const newPassword = generatePassword();
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+    // 3️⃣ Update password
     await client.query(
-      `INSERT INTO password_resets (mess_id, code, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
-      [messId, code]
+      `UPDATE messes SET password = $1 WHERE id = $2`,
+      [hashedPassword, messId]
     );
 
-    // ✅ SEND EMAIL (Brevo)
+    // 4️⃣ Send email (Brevo)
     const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -52,11 +64,17 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         sender: { email: process.env.EMAIL_FROM },
         to: [{ email }],
-        subject: "BiteTrack Password Reset",
+        subject: "Your BiteTrack Login Credentials",
         htmlContent: `
-          <p>Your password reset code is:</p>
-          <h2>${code}</h2>
-          <p>This code expires in 15 minutes.</p>
+          <p>Your BiteTrack password has been reset.</p>
+
+          <p><b>Email:</b> ${email}</p>
+          <p><b>New Password:</b> ${newPassword}</p>
+
+          <p>
+            Please log in using this password.
+            For security reasons, change your password after login.
+          </p>
         `,
       }),
     });
@@ -66,7 +84,10 @@ export default async function handler(req, res) {
       throw new Error("Brevo error: " + JSON.stringify(data));
     }
 
-    return res.json({ ok: true });
+    return res.json({
+      ok: true,
+      message: "New password sent to your email",
+    });
   } catch (err) {
     console.error("FORGOT PASSWORD ERROR:", err);
     return res.status(500).json({ error: "Internal server error" });
