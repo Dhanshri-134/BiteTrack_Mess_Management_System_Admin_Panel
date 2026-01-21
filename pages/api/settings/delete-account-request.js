@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ ok: false, message: "Unauthorized" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const messId = decoded.mess_id;
+    const messId = decoded.messId;
 
     const { reason } = req.body;
 
