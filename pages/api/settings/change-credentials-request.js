@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const check = await pgPool.query(
       `
       SELECT id
-      FROM mess_owners
+      FROM messes
       WHERE mess_id = $1
         AND password = crypt($2, password)
       `,
@@ -48,9 +48,9 @@ export default async function handler(req, res) {
     // 🔄 UPDATE CREDENTIALS
     const update = await pgPool.query(
       `
-      UPDATE mess_owners
+      UPDATE messes
       SET
-        username = COALESCE(NULLIF($1, ''), username),
+        email = COALESCE(NULLIF($1, ''), username),
         password = crypt($2, gen_salt('bf')),
         updated_at = NOW()
       WHERE mess_id = $3
