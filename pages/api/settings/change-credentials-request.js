@@ -6,77 +6,65 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST")
     return res.status(405).json({ ok: false, message: "Method not allowed" });
-  }
 
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({
-      ok: false,
-      message: "Email and password are required.",
-    });
-  }
-
-  // ======================================================
-  // 🔐 JWT — MANDATORY (NO FALLBACK)
-  // ======================================================
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ ok: false, message: "Unauthorized" });
-  }
-
-  let decoded;
   try {
-    const token = authHeader.split(" ")[1];
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch {
-    return res.status(401).json({ ok: false, message: "Invalid or expired token" });
-  }
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token)
+      return res.status(401).json({ ok: false, message: "Unauthorized" });
 
-  if (!decoded?.messId) {
-    return res.status(401).json({ ok: false, message: "Invalid token payload" });
-  }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const messId = decoded.mess_id;
 
-  const messId = decoded.messId;
+    const { oldPassword, newUsername, newPassword } = req.body;
 
-  // ======================================================
-  // 🟢 UPDATE OWNER CREDENTIALS
-  // ======================================================
-  try {
-    const query = `
-      UPDATE mess_owners
-      SET
-        email = $1,
-        password = crypt($2, gen_salt('bf')),
-        mail_sent = false,
-        verified = false,
-        updated_at = NOW()
-      WHERE mess_id = $3
-      RETURNING id;
-    `;
-
-    const result = await pgPool.query(query, [email, password, messId]);
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
         ok: false,
-        message: "Owner not found",
+        message: "Old password and new password are required",
       });
     }
 
+    // 🔐 VERIFY OLD PASSWORD
+    const check = await pgPool.query(
+      `
+      SELECT id
+      FROM mess_owners
+      WHERE mess_id = $1
+        AND password = crypt($2, password)
+      `,
+      [messId, oldPassword]
+    );
+
+    if (check.rowCount === 0) {
+      return res.status(401).json({
+        ok: false,
+        message: "Old password is incorrect",
+      });
+    }
+
+    // 🔄 UPDATE CREDENTIALS
+    const update = await pgPool.query(
+      `
+      UPDATE mess_owners
+      SET
+        username = COALESCE(NULLIF($1, ''), username),
+        password = crypt($2, gen_salt('bf')),
+        updated_at = NOW()
+      WHERE mess_id = $3
+      RETURNING id
+      `,
+      [newUsername, newPassword, messId]
+    );
+
     return res.status(200).json({
       ok: true,
-      message: "Change request submitted successfully.",
+      message: "✅ Credentials updated successfully",
     });
   } catch (err) {
-    console.error("❌ Error updating credentials:", err);
+    console.error("Change credentials error:", err);
     return res.status(500).json({
       ok: false,
       message: "Internal server error",
