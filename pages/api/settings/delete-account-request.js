@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     // 🚫 Prevent duplicate pending request
     const existing = await pgPool.query(
       `
-      SELECT id FROM account_deletion_requests
+      SELECT id FROM mess_account_deletion_requests
       WHERE mess_id = $1 AND status = 'pending'
       `,
       [messId]
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
     // 🧾 Insert request
     await pgPool.query(
       `
-      INSERT INTO account_deletion_requests (mess_id, email, reason)
+      INSERT INTO mess_account_deletion_requests (mess_id, email, reason)
       VALUES ($1, $2, $3)
       `,
       [messId, email, reason || null]
