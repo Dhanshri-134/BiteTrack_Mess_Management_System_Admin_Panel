@@ -9,19 +9,14 @@ export default async function handler(req, res) {
     "Content-Type, Authorization"
   );
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST")
     return res.status(405).json({ ok: false, message: "Method not allowed" });
-  }
 
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
+    if (!token)
       return res.status(401).json({ ok: false, message: "Unauthorized" });
-    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const messId = decoded.mess_id;
@@ -35,25 +30,25 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ verify old password
-    const check = await pgPool.query(
+    // 🔐 verify old password
+    const verify = await pgPool.query(
       `
-      SELECT mess_id
+      SELECT id
       FROM messes
-      WHERE mess_id = $1
+      WHERE id = $1
         AND password = crypt($2, password)
       `,
       [messId, oldPassword]
     );
 
-    if (check.rowCount === 0) {
+    if (verify.rowCount === 0) {
       return res.status(401).json({
         ok: false,
         message: "Old password is incorrect",
       });
     }
 
-    // ✅ update
+    // 🔄 update
     await pgPool.query(
       `
       UPDATE messes
@@ -61,7 +56,7 @@ export default async function handler(req, res) {
         email = COALESCE(NULLIF($1, ''), email),
         password = crypt($2, gen_salt('bf')),
         updated_at = NOW()
-      WHERE mess_id = $3
+      WHERE id = $3
       `,
       [newEmail || "", newPassword, messId]
     );
