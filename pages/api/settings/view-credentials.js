@@ -16,14 +16,14 @@ export default async function handler(req, res) {
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const messId = decoded.mess_id;
+    const messId = decoded.messId;
 
     const { password } = req.body;
     if (!password)
       return res.status(400).json({ message: "Password required" });
 
     const { rows } = await pgPool.query(
-      "SELECT email, password FROM messes WHERE mess_id = $1",
+      "SELECT email, password FROM messes WHERE id = $1",
       [messId]
     );
 
