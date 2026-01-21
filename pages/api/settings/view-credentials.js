@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: "Password required" });
 
     const { rows } = await pgPool.query(
-      "SELECT email, password FROM mess_owners WHERE mess_id = $1",
+      "SELECT email, password FROM messes WHERE mess_id = $1",
       [messId]
     );
 
