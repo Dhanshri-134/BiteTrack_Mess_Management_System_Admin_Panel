@@ -58,7 +58,7 @@ export default async function handler(req, res) {
   // ➕ ADD SPECIAL DISH
   // -----------------------------------------------------
   try {
-    const { dish_name, is_veg } = req.body;
+    const { dish_name, is_veg, image_url } = req.body;
 
     if (!dish_name || typeof is_veg === "undefined") {
       return res.status(400).json({ error: "dish_name and is_veg required" });
@@ -66,8 +66,8 @@ export default async function handler(req, res) {
 
     await pgPool.query(
       `
-      INSERT INTO special_dishes (dish_name, is_veg, mess_id)
-      VALUES ($1, $2, $3)
+      INSERT INTO special_dishes (dish_name, is_veg, image_url,mess_id)
+      VALUES ($1, $2, $3, $4)
     `,
       [dish_name, is_veg, messId] // ✅ mess_id strictly from token
     );
