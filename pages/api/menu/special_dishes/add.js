@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       INSERT INTO special_dishes (dish_name, is_veg, image_url,mess_id)
       VALUES ($1, $2, $3, $4)
     `,
-      [dish_name, is_veg, messId] // ✅ mess_id strictly from token
+      [dish_name, is_veg, image_url || null, messId] // ✅ mess_id strictly from token
     );
 
     return res.status(200).json({ message: "Dish added successfully" });
