@@ -1,96 +1,95 @@
-import { pgPool } from "../../../lib/db";
+import { pgPool } from "@/lib/db";
+import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+  if (req.method === "OPTIONS") return res.status(200).end();
+
   try {
-    if (req.method === "GET") {
-      // Fetch mess info
-      const query = `
-        SELECT 
-          id,
-          name
-        FROM messes
-        LIMIT 1;
-      `;
-      const { rows } = await pgPool.query(query);
-      return res.status(200).json(rows[0] || {});
+    // 🔐 JWT verify
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ ok: false, message: "Unauthorized" });
     }
 
-    if (req.method === "POST") {
-      const {
-        id,
-        name,
-      } = req.body;
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      if (!name || !contact) {
-        return res
-          .status(400)
-          .json({ ok: false, message: "Missing required fields." });
+    if (!decoded?.messId) {
+      return res.status(401).json({ ok: false, message: "Invalid token" });
+    }
+
+    const messId = decoded.messId;
+
+    // ======================================================
+    // 🔵 GET — list staff
+    // ======================================================
+    if (req.method === "GET") {
+      const { rows } = await pgPool.query(
+        `
+        SELECT id, name, email, role, is_active, created_at
+        FROM staffs
+        WHERE mess_id = $1
+        ORDER BY created_at ASC
+        `,
+        [messId]
+      );
+
+      return res.status(200).json({ ok: true, data: rows });
+    }
+
+    // ======================================================
+    // 🟢 POST — add staff
+    // ======================================================
+    if (req.method === "POST") {
+      const { name, email, password, role } = req.body;
+
+      if (!name || !email || !password) {
+        return res.status(400).json({
+          ok: false,
+          message: "Name, email and password are required",
+        });
       }
 
-      const query = `
-        INSERT INTO mess_info (
-          id,
-          name,
-          contact,
-          address,
-          description,
-          rules,
-          policies,
-          features,
-          functionalities,
-          updated_at
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
-        ON CONFLICT (id)
-        DO UPDATE SET
-          name = EXCLUDED.name,
-          contact = EXCLUDED.contact,
-          address = EXCLUDED.address,
-          description = EXCLUDED.description,
-          rules = EXCLUDED.rules,
-          policies = EXCLUDED.policies,
-          features = EXCLUDED.features,
-          functionalities = EXCLUDED.functionalities,
-          updated_at = NOW()
-        RETURNING id;
-      `;
+      // Check duplicate email
+      const exists = await pgPool.query(
+        `SELECT id FROM staffs WHERE email = $1 LIMIT 1`,
+        [email]
+      );
 
-      const values = [
-        id || 1,
-        name,
-        contact,
-        address,
-        description,
-        rules,
-        policies,
-        features,
-        functionalities,
-      ];
-
-      const result = await pgPool.query(query, values);
-      return res
-        .status(200)
-        .json({
-          ok: true,
-          id: result.rows[0].id,
-          message: "Mess info updated successfully.",
+      if (exists.rowCount > 0) {
+        return res.status(409).json({
+          ok: false,
+          message: "Email already exists",
         });
+      }
+
+      await pgPool.query(
+        `
+        INSERT INTO staffs (mess_id, name, email, password, role)
+        VALUES ($1, $2, $3, crypt($4, gen_salt('bf')), $5)
+        `,
+        [messId, name, email, password, role || "STAFF"]
+      );
+
+      return res.status(201).json({
+        ok: true,
+        message: "Staff added successfully",
+      });
     }
 
-    return res
-      .status(405)
-      .json({ ok: false, message: "Method not allowed." });
-  } catch (error) {
-    console.error("Error in /api/settings/messInfo:", error);
-    res
-      .status(500)
-      .json({ ok: false, message: "Internal server error." });
+    return res.status(405).json({ ok: false, message: "Method not allowed" });
+  } catch (err) {
+    console.error("❌ staffs API error:", err);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
   }
 }
