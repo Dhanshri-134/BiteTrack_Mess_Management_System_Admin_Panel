@@ -1,99 +1,90 @@
-import { pgPool } from "../../../lib/db";
+import { pgPool } from "@/lib/db";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
+  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ message: "Method not allowed" });
   }
 
   try {
     const {
-      messName,
+      name,
       email,
       password,
+      per_day_rate,
       location,
-      perDayRate,
+      open_time,
+      allowed_leave_days,
+      monthly_price,
     } = req.body;
 
-    if (!messName || !email || !password) {
+    if (!name || !email || !password || !per_day_rate) {
       return res.status(400).json({
-        error: "Mess name, email and password are required",
+        message: "Required fields missing",
       });
     }
 
-    // 1️⃣ Check if mess already exists
     const existing = await pgPool.query(
-      "SELECT id FROM messes WHERE email = $1",
+      `SELECT id FROM messes WHERE email = $1`,
       [email]
     );
 
     if (existing.rowCount > 0) {
       return res.status(409).json({
-        error: "Mess already registered with this email",
+        message: "Email already registered",
       });
     }
 
-    // 2️⃣ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3️⃣ Trial dates
-    const trialStart = new Date();
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 14); // 14-day trial
-
-    // 4️⃣ Insert mess
-    const result = await pgPool.query(
+    await pgPool.query(
       `
       INSERT INTO messes (
         name,
         email,
         password,
-        location,
         per_day_rate,
-        trial_start_date,
-        trial_end_date,
-        subscription_status
+        location,
+        open_time,
+        allowed_leave_days,
+        monthly_price,
+        subscription_status,
+        force_password_change
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 'trial')
-      RETURNING id, name, email, subscription_status, trial_end_date
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        'pending_approval',
+        true
+      )
       `,
       [
-        messName,
+        name,
         email,
         hashedPassword,
+        per_day_rate,
         location || null,
-        perDayRate || 1.0,
-        trialStart,
-        trialEnd,
+        open_time || null,
+        allowed_leave_days || null,
+        monthly_price || "₹0",
       ]
     );
 
-    const mess = result.rows[0];
-
-    // 5️⃣ JWT (admin)
-    const token = jwt.sign(
-      {
-        messId: mess.id,
-        role: "MESS_ADMIN",
-      },
-      process.env.JWT_SECRET
-    );
-
     return res.status(201).json({
-      token,
-      mess,
+      ok: true,
+      message: "Registration submitted. Awaiting admin approval.",
     });
   } catch (err) {
-    console.error("REGISTER API ERROR:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("❌ register-mess error:", err);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 }
