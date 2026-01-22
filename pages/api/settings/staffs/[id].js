@@ -30,9 +30,7 @@ export default async function handler(req, res) {
     const messId = decoded.messId;
     const { id } = req.query;
 
-    // ======================================================
-    // 🟡 PUT — update staff credentials (OWNER ACTION)
-    // ======================================================
+    /* ================= PUT ================= */
     if (req.method === "PUT") {
       const { newEmail, newPassword } = req.body;
 
@@ -45,27 +43,33 @@ export default async function handler(req, res) {
 
       const updates = [];
       const values = [];
-      let idx = 1;
+      let i = 1;
 
       if (newEmail) {
-        updates.push(`email = $${idx++}`);
+        updates.push(`email = $${i++}`);
         values.push(newEmail);
       }
 
       if (newPassword) {
-        updates.push(`password = crypt($${idx++}, gen_salt('bf'))`);
+        updates.push(`password = crypt($${i++}, gen_salt('bf'))`);
         values.push(newPassword);
       }
 
-      await pgPool.query(
+      const result = await pgPool.query(
         `
         UPDATE staffs
-        SET ${updates.join(", ")},
-            updated_at = NOW()
-        WHERE id = $${idx} AND mess_id = $${idx + 1}
+        SET ${updates.join(", ")}, updated_at = NOW()
+        WHERE id = $${i} AND mess_id = $${i + 1}
         `,
         [...values, id, messId]
       );
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          ok: false,
+          message: "Staff not found",
+        });
+      }
 
       return res.status(200).json({
         ok: true,
@@ -73,9 +77,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // ======================================================
-    // 🔴 DELETE — remove staff
-    // ======================================================
+    /* ================= DELETE ================= */
     if (req.method === "DELETE") {
       const result = await pgPool.query(
         `
@@ -98,12 +100,9 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(405).json({
-      ok: false,
-      message: "Method not allowed",
-    });
+    return res.status(405).json({ ok: false, message: "Method not allowed" });
   } catch (err) {
-    console.error("❌ staff [id] API error:", err);
+    console.error("❌ staff [id] error:", err);
     return res.status(500).json({
       ok: false,
       message: "Internal server error",
