@@ -2,104 +2,91 @@ import { pgPool } from "../../../lib/db";
 import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-  if (req.method !== "POST") {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
-  }
 
-  const { qr, userId } = req.body;
-
-  // -------------------------------------------------------
-  // 1️⃣ JWT is REQUIRED (no fallback, no bypass)
-  // -------------------------------------------------------
+  // 🔐 JWT required ONLY for auth
   const auth = req.headers.authorization;
-
-  if (!auth || !auth.startsWith("Bearer ")) {
+  if (!auth?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Missing Authorization header" });
   }
 
-  let decoded;
   try {
-    const token = auth.split(" ")[1];
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch (err) {
+    jwt.verify(auth.split(" ")[1], process.env.JWT_SECRET);
+  } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 
-  // messId must come ONLY from JWT
-  const messId = decoded?.messId;
-  if (!messId) {
-    return res.status(401).json({ error: "messId missing in token" });
+  const { qr } = req.body;
+  if (!qr) {
+    return res.status(400).json({ error: "QR is required" });
   }
 
-  // -------------------------------------------------------
-  // 2️⃣ Extract ONLY userId (QR or direct)
-  // -------------------------------------------------------
-  let uid = null;
-
-  if (qr) {
-    const parts = qr.split("-");
-    if (parts.length !== 2) {
-      return res.status(400).json({ error: "Invalid QR format. Expected messId-userId" });
-    }
-
-    // We ignore QR messId ALWAYS, only use JWT messId
-    uid = Number(parts[1]);
-  } else if (userId) {
-    uid = Number(userId);
+  // ------------------------------------------------
+  // ✅ Extract messId & userId FROM QR ONLY
+  // ------------------------------------------------
+  const parts = qr.split("-");
+  if (parts.length !== 2) {
+    return res
+      .status(400)
+      .json({ error: "Invalid QR format. Expected messId-userId" });
   }
 
-  if (!uid || isNaN(uid)) {
-    return res.status(400).json({ error: "Invalid userId" });
+  const messId = Number(parts[0]);
+  const userId = Number(parts[1]);
+
+  if (!messId || !userId) {
+    return res.status(400).json({ error: "Invalid messId or userId" });
   }
 
   try {
-    // -------------------------------------------------------
-    // 3️⃣ Ensure user belongs to this mess (strict)
-    // -------------------------------------------------------
+    // 🔎 Ensure user belongs to this mess
     const userCheck = await pgPool.query(
       "SELECT id FROM users WHERE id=$1 AND mess_id=$2",
-      [uid, messId]
+      [userId, messId]
     );
 
     if (userCheck.rows.length === 0) {
-      return res.status(403).json({ error: "User does not belong to this mess" });
+      return res
+        .status(403)
+        .json({ error: "User does not belong to this mess" });
     }
 
-    // -------------------------------------------------------
-    // 4️⃣ Attendance Logic
-    // -------------------------------------------------------
     const today = new Date().toISOString().slice(0, 10);
 
     const already = await pgPool.query(
       "SELECT id FROM attendance WHERE user_id=$1 AND att_date=$2",
-      [uid, today]
+      [userId, today]
     );
 
     if (already.rows.length > 0) {
       return res.status(200).json({ message: "Attendance already marked" });
     }
 
+    // ------------------------------------------------
+    // ✅ INSERT mess_id ALSO
+    // ------------------------------------------------
     await pgPool.query(
-      "INSERT INTO attendance (user_id, att_date) VALUES ($1, $2)",
-      [uid, today]
+      `
+      INSERT INTO attendance (user_id, att_date, mess_id)
+      VALUES ($1, $2, $3)
+      `,
+      [userId, today, messId]
     );
 
-    return res.status(200).json({ message: "Attendance marked successfully" });
-
+    return res.status(200).json({
+      message: "Attendance marked successfully",
+    });
   } catch (err) {
     console.error("Attendance error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
-
-
 
 
 
