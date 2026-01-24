@@ -6,7 +6,7 @@ import PDFDocument from "pdfkit";
 export default async function handler(req, res) {
 
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   if (req.method === "OPTIONS") {
@@ -19,13 +19,21 @@ export default async function handler(req, res) {
   // -------------------------------------------------------------
   // 1. AUTHENTICATE JWT
   // -------------------------------------------------------------
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith("Bearer "))
-    return res.status(401).json({ error: "Unauthorized" });
+const headerAuth = req.headers.authorization;
+const queryToken = req.query.token;
 
+let token;
+
+if (headerAuth && headerAuth.startsWith("Bearer ")) {
+  token = headerAuth.split(" ")[1];
+} else if (queryToken) {
+  token = queryToken;
+} else {
+  return res.status(401).json({ error: "Unauthorized" });
+}
   let messId;
   try {
-    const token = auth.split(" ")[1];
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     messId = decoded.messId;
