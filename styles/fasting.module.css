@@ -1,37 +1,87 @@
 .container {
-  padding: 1.5rem;
+  /* padding: 0.75rem; */
+  width: 100%;
 }
 
-/* Summary Card */
-.summarySection {
-  display: flex;
-  gap: 1rem;
+/* Header */
+.header {
   margin-bottom: 1rem;
 }
 
-.card {
-  flex: 1;
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
+.header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #007171;
+}
+
+.header p {
+  font-size: 0.85rem;
+  color: #417e7e;
+}
+
+/* Summary card */
+.summaryCard {
+  background: #007171;
   color: white;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
   font-weight: 500;
+  margin-bottom: 1rem;
 }
 
-.approved {
-  background: #3b82f6;
+/* List wrapper */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-/* Table */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-}
-
-.table th,
-.table td {
+/* Each request card */
+.requestCard {
+  background: #ffffff;
+  border-radius: 14px;
   border: 1px solid #e5e7eb;
-  padding: 8px 12px;
-  text-align: left;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* Row inside card */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.row:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  font-size: 0.75rem;
+  color: #016161;
+}
+
+.value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #007171;
+  text-align: right;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 1.5rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+/* Desktop enhancement */
+@media (min-width: 768px) {
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 }

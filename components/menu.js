@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/menu.module.css";
+import toast from "react-hot-toast";
 
 export default function MenuPage() {
   const [menu, setMenu] = useState({});
@@ -25,10 +26,10 @@ export default function MenuPage() {
 
 
   // Fetch weekly menu
-  useEffect(() => {
+  // useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const res = await fetch("/api/menu/fetch");
+        const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/");
         const data = await res.json();
         if (res.ok && data?.menu) setMenu(data.menu);
         else setMenu(defaultMenu);
@@ -37,37 +38,40 @@ export default function MenuPage() {
         setMenu(defaultMenu);
       }
     };
-    fetchMenu();
-  }, []);
-
-  // Fetch ratings
-  useEffect(() => {
-    const fetchRatings = async () => {
-      try {
-        const res = await fetch("/api/menu/ratings/fetch");
-        const data = await res.json();
+  //   fetchMenu();
+  // }, []);
+  
+  
+  const fetchRatings = async () => {
+    try {
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/ratings/fetch/");
+      const data = await res.json();
         if (res.ok) setRatings(data);
       } catch (err) {
         console.error("Error fetching ratings:", err);
       }
     };
-    fetchRatings();
-  }, []);
-
-  // Fetch votes
-  useEffect(() => {
+    
     const fetchVotes = async () => {
       try {
-        const res = await fetch("/api/menu/votes/fetch");
+        const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/votes/fetch/");
         const data = await res.json();
         if (res.ok) setVotes(data);
       } catch (err) {
         console.error("Error fetching votes:", err);
       }
     };
-    fetchVotes();
-  }, []);
-
+    // Fetch votes
+    useEffect(() => {
+      fetchData();
+    }, []);
+    
+    const fetchData = async () =>{
+      fetchVotes();
+      fetchRatings();
+      fetchMenu();
+      
+  }
   // Update selected day
   useEffect(() => {
     if (menu[selectedDay]) {
@@ -86,14 +90,14 @@ export default function MenuPage() {
 
     setMenu(updatedMenu);
 
-    const res = await fetch("/api/menu/update", {
+    const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/update/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ menu: updatedMenu }),
     });
 
     const data = await res.json();
-    alert(data.message || "Menu update complete!");
+    toast.success(data.message || "Menu update complete!");
   };
 
   const renderStars = (avg) => {

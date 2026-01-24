@@ -38,10 +38,10 @@ export default function HardwareScanner({ onScan }) {
 
   return (
     <div style={{ marginTop: "10px" }}>
-      <p style={{ fontStyle: "italic", color: "#666" }}>
+      {/* <p style={{ fontStyle: "italic", color: "#666" }}>
         Ready for hardware scanner input...
-      </p>
-      {currentBuffer && <p>Buffer: {currentBuffer}</p>}
+      </p> */}
+      {/* {currentBuffer && <p>Buffer: {currentBuffer}</p>} */}
     </div>
   );
 }

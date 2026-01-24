@@ -2,18 +2,19 @@
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #fff;
   padding: 2rem;
 }
 
 .main {
   flex: 1;
-  padding: 2rem;
+  padding: 0.8rem;
   max-width: 900px;
-  margin: 0 auto;
   background-color: #fff;
   border-radius: 0.75rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-size: 0.8rem;
+  margin: 0 auto;
 }
 
 .searchInput {
@@ -27,6 +28,9 @@
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 
+.main h1{
+  margin-bottom: 20px;
+}
 .userList {
   list-style: none;
   padding: 0;

@@ -1,0 +1,114 @@
+.container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 2rem;
+}
+
+.main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.userList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.userList li {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s;
+}
+
+.userList li:last-child {
+  border-bottom: none;
+}
+
+.userList li:hover {
+  background-color: #e0f2fe;
+}
+
+.selectedUser {
+  background-color: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+}
+
+.changeEmailForm {
+  margin-top: 1.5rem;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  background: #f1f5f9;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.changeEmailForm p {
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.changeEmailForm input {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.changeEmailForm input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
+.changeEmailForm button {
+  padding: 0.75rem 1rem;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.changeEmailForm button:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.changeEmailForm button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

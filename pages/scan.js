@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
+import { queueAction } from "@/lib/queueAction";
+import toast from "react-hot-toast";
 
 export default function Scanner({ onAttendanceMarked }) {
   const scannerRef = useRef(null);
@@ -37,22 +39,37 @@ export default function Scanner({ onAttendanceMarked }) {
     setLastScan(decodedText);
 
     try {
-      const res = await fetch("/api/attendance", {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Unauthorized. Please login again.");
+        return;
+      }
+
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ qr: decodedText }),
       });
       const data = await res.json();
 
-      if (data.ok) {
-        alert(`Attendance marked: ${data.name} (${data.date})`);
-        if (onAttendanceMarked) onAttendanceMarked();
-      } else {
-        alert(data.error || "Failed to mark attendance");
-      }
+      if (res.ok) {
+  toast(data.message);
+  onAttendanceMarked?.(decodedText);
+} else {
+  toast(data.error || data.message || "Failed to mark attendance");
+}
+
     } catch (err) {
-      console.error(err);
-      alert("Error marking attendance");
+      // console.error(err);
+      // alert("Error marking attendance");
+      await queueAction({
+        type: "ATTENDANCE_SCAN",
+        payload: { qr: decodedText },
+      });
+
+      toast("Attendance saved offline");
     }
   };
 

@@ -1,0 +1,89 @@
+.container {
+  padding: 20px;
+}
+
+/* h1 {
+  margin-bottom: 20px;
+} */
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 18px;
+  background: #eee;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.activeTab {
+  background: #0070f3;
+  color: white;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.pending {
+  background: #ffeb99;
+}
+
+.approved {
+  background: #b1ffc3;
+}
+
+.rejected {
+  background: #ffb3b3;
+}
+
+.completed {
+  background: #cfe1ff;
+}
+
+.actions button {
+  margin-right: 8px;
+  padding: 6px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.approve {
+  background: #4caf50;
+  color: white;
+}
+
+.reject {
+  background: #f44336;
+  color: white;
+}

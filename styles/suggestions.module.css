@@ -1,15 +1,20 @@
 .container {
-  padding: 1.5rem;
+  /* display: flex; */
+  min-height: 100vh;
+  background: transparent; /* CRITICAL FIX */
+  max-width: 100%;
 }
 
 .title {
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 1rem;
+  color:#007170;
+  /* text-align: center; */
 }
 
 .empty {
-  color: #6b7280;
+  color: #007777;
   font-style: italic;
 }
 
@@ -21,6 +26,7 @@
 
 .feedbackCard {
   background: #f9fafb;
+  color:#007170 !important;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 1rem;
@@ -43,7 +49,7 @@
 }
 
 .type {
-  background: #2563eb;
+  background: #006161;
   color: white;
   font-size: 0.75rem;
   padding: 0.2rem 0.6rem;
@@ -59,5 +65,5 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: #3f7676;
 }

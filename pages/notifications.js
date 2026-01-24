@@ -1,17 +1,413 @@
+// // pages/notifications.js
+// import { useState, useEffect } from "react";
+// import Layout from "../components/Layout";
+// import styles from "../styles/notification.module.css";
+// import { offlineFetch } from "@/lib/offlineFetch";
+// import toast from "react-hot-toast";
+
+
+// function decodeToken(token) {
+//   if (!token || typeof token !== "string") return null;
+//   const parts = token.split(".");
+//   if (parts.length !== 3) return null;
+
+//   try {
+//     return JSON.parse(atob(parts[1]));
+//   } catch {
+//     return null;
+//   }
+// }
+
+
+// const getToken = () =>
+//   typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+// const tokenHeader = () => {
+//   const t = getToken();
+//   if (!t) throw new Error("Token missing");
+//   return { Authorization: `Bearer ${t}` };
+// };
+
+// export default function Notifications() {
+//   // 🔥 NEW: tab switching
+//   const [activeTab, setActiveTab] = useState("push");
+//  const [role, setRole] = useState(null);
+
+//   // push notifications (mess-level) — grouped
+//   const [pushList, setPushList] = useState([]);
+//   const [pushGroups, setPushGroups] = useState([]);
+
+//   // superadmin notifications (company-level)
+//   const [superList, setSuperList] = useState([]);
+
+//   const [form, setForm] = useState({
+//     title: "",
+//     message: "",
+//     notification_type: "general",
+//     priority: "normal",
+//   });
+
+//   const tokenHeader = () => {
+//     const t = localStorage.getItem("token");
+//     return { Authorization: `Bearer ${t}` };
+//   };
+
+//   // ---- Load push notifications ----
+//   const loadPush = async () => {
+//   try {
+//     const data = await offlineFetch("push-notifications", async () => {
+//       const res = await fetch(
+//         "https://bite-track-mess-management-system-a.vercel.app/api/notifications/",
+//         { headers: tokenHeader() }
+//       );
+
+//       if (!res.ok) throw new Error("Failed to load push notifications");
+//       return res.json();
+//     });
+
+//     const list = Array.isArray(data) ? data : [];
+//     setPushList(list);
+//     setPushGroups(groupPush(list));
+//   } catch (err) {
+//     console.error("loadPush error:", err);
+//     setPushList([]);
+//     setPushGroups([]);
+//   }
+// };
+
+
+//   // ---- Group logic (unchanged) ----
+//   const groupPush = (items) => {
+//     const map = {};
+//     items.forEach((n) => {
+//       const created = new Date(n.created_at);
+//       const minuteKey = created.toISOString().slice(0, 16);
+//       const key = `${n.title}__${n.message}__${minuteKey}`;
+
+//       if (!map[key]) {
+//         map[key] = {
+//           title: n.title,
+//           message: n.message,
+//           notification_type: n.notification_type,
+//           priority: n.priority,
+//           created_at: minuteKey,
+//           count: 0,
+//           ids: [],
+//         };
+//       }
+
+//       map[key].count++;
+//       map[key].ids.push(n.id);
+//     });
+
+//     return Object.values(map).sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+//   };
+
+//   // ---- Load superadmin notifications ----
+//  const loadSuper = async () => {
+//   try {
+//     const data = await offlineFetch("super-notifications", async () => {
+//       const res = await fetch(
+//         "https://bite-track-mess-management-system-a.vercel.app/api/superadmin-notifications/",
+//         { headers: tokenHeader() }
+//       );
+
+//       if (!res.ok) throw new Error("Failed to load superadmin notifications");
+//       return res.json();
+//     });
+
+//     setSuperList(Array.isArray(data) ? data : []);
+//   } catch (err) {
+//     console.error("loadSuper error:", err);
+//     setSuperList([]);
+//   }
+// };
+
+//  const loadAll = async () => {
+//   try {
+//     await loadPush();
+//     if (role !== "STAFF") {
+//       await loadSuper();
+//     }
+//   } catch (err) {
+//     console.error("loadAll error:", err);
+//   }
+// };
+
+// useEffect(() => {
+//   if (role) loadAll();
+// }, [role]);
+// ;
+
+//   useEffect(() => {
+//   const token = localStorage.getItem("token");
+//   const decoded = decodeToken(token);
+//   if (decoded?.role) {
+//     setRole(decoded.role); // STAFF | MESS_ADMIN
+//   }
+// }, []);
+
+//   // ---- Send push ----
+//   const createPush = async () => {
+//     if (!form.title || !form.message) return toast("Title and message required");
+
+//     const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/notifications/", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json", ...tokenHeader() },
+//       body: JSON.stringify(form),
+//     });
+
+//     const data = await res.json();
+//     // toast.succes(data.message || "Sent");
+//     setForm({ title: "", message: "", notification_type: "general", priority: "normal" });
+//     loadPush();
+//   };
+
+//   // ---- Delete grouped ----
+//   const deletePushGroup = async (ids) => {
+//     if (!confirm(`Delete ${ids.length} notifications in this group?`)) return;
+
+//     try {
+//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/notifications/delete-group/", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json", ...tokenHeader() },
+//         body: JSON.stringify({ ids }),
+//       });
+
+//       if (!res.ok) {
+//         for (const id of ids) {
+//           await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/notifications?id=${id}/`, {
+//             method: "DELETE",
+//             headers: { ...tokenHeader() },
+//           });
+//         }
+//       }
+
+//       loadPush();
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Something went wrong. Please try again.");
+//     }
+//   };
+
+//   // ---- Seen superadmin ----
+//   const seenSuper = async (id) => {
+//     if (!confirm("Mark as seen? This will delete the notification.")) return;
+
+//     const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/superadmin-notifications?id=${id}/`, {
+//       method: "DELETE",
+//       headers: tokenHeader(),
+//     });
+
+//     const data = await res.json();
+
+//     if (!res.ok) return toast.error("Something went wrong. Please try again.");
+
+//     loadSuper();
+//   };
+
+//   return (
+//   <Layout>
+//     <div className={styles.container}>
+
+//       {/* 🔥 TAB HEADER */}
+//       <div className={styles.tabs}>
+//         <button
+//           className={`${styles.tabBtn} ${activeTab === "push" ? styles.active : ""}`}
+//           onClick={() => setActiveTab("push")}
+//         >
+//           Push Notifications
+//         </button>
+
+//         {role !== "STAFF" && (
+//     <button
+//       className={`${styles.tabBtn} ${activeTab === "super" ? styles.active : ""}`}
+//       onClick={() => setActiveTab("super")}
+//     >
+//       Superadmin Notifications
+//     </button>
+//   )}
+//       </div>
+
+//       {/* ---------------- TAB CONTENT ---------------- */}
+
+//       {activeTab === "push" && (
+//         <section className={styles.card}>
+//           <h2 className={styles.header}>Push Notifications</h2>
+
+//           {/* Create form */}
+//           <div className={styles.inputGroup}>
+//             <label className={styles.label}>Title</label>
+//             <input
+//               className={styles.input}
+//               value={form.title}
+//               onChange={(e) => setForm({ ...form, title: e.target.value })}
+//             />
+//           </div>
+
+//           <div className={styles.inputGroup}>
+//             <label className={styles.label}>Message</label>
+//             <textarea
+//               className={styles.textarea}
+//               value={form.message}
+//               onChange={(e) => setForm({ ...form, message: e.target.value })}
+//             />
+//           </div>
+
+//           <div className={styles.formRow}>
+//   <select
+//     className={styles.select}
+//     value={form.notification_type}
+//     onChange={(e) => setForm({ ...form, notification_type: e.target.value })}
+//   >
+//     <option value="general">General</option>
+//     <option value="announcement">Announcement</option>
+//     <option value="event">Event</option>
+//     <option value="poll">Poll</option>
+//   </select>
+
+//   <select
+//     className={styles.select}
+//     value={form.priority}
+//     onChange={(e) => setForm({ ...form, priority: e.target.value })}
+//   >
+//     <option value="normal">Normal</option>
+//     <option value="high">High</option>
+//     <option value="urgent">Urgent</option>
+//   </select>
+
+//   <button className={styles.button} onClick={createPush}>Send</button>
+// </div>
+
+
+//           {/* Grouped table */}
+//           <div>
+//             <h3 className={styles.header2}>Grouped (duplicates collapsed)</h3>
+//             <table className={styles.list}>
+//               <thead>
+//                 <tr>
+//                   <th>Count</th>
+//                   <th>Title</th>
+//                   <th>Message</th>
+//                   <th>Time</th>
+//                   <th></th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {pushGroups.length > 0 ? (
+//                   pushGroups.map((g, i) => (
+//                     <tr key={i}>
+//                       <td>{g.count}</td>
+//                       <td>{g.title}</td>
+//                       <td>{g.message}</td>
+//                       <td>{new Date(g.created_at).toLocaleString()}</td>
+//                       <td>
+//                         <button className={styles.actionBtn} onClick={() => deletePushGroup(g.ids)}>
+//                           Delete Group
+//                         </button>
+//                       </td>
+//                     </tr>
+//                   ))
+//                 ) : (
+//                   <tr>
+//                     <td colSpan="5" style={{ textAlign: "center", padding: 18 }}>
+//                       No push notifications
+//                     </td>
+//                   </tr>
+//                 )}
+//               </tbody>
+//             </table>
+//           </div>
+//         </section>
+//       )}
+
+//       {activeTab === "super" && (
+//         <section className={styles.card}>
+//           <h2 className={styles.header}>Notifications From Shris Tech</h2>
+
+//           <table className={styles.list}>
+//             <thead>
+//               <tr>
+//                 <th>Title</th>
+//                 <th>Message</th>
+//                 <th>Time</th>
+//                 <th></th>
+//               </tr>
+//             </thead>
+
+//             <tbody>
+//               {superList.length > 0 ? (
+//                 superList.map((s) => (
+//                   <tr key={s.id}>
+//                     <td>{s.title}</td>
+//                     <td>{s.message}</td>
+//                     <td>{new Date(s.created_at).toLocaleString()}</td>
+//                     <td>
+//                       <button className={styles.actionBtn} onClick={() => seenSuper(s.id)}>
+//                         Seen
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))
+//               ) : (
+//                 <tr>
+//                   <td colSpan="4" style={{ textAlign: "center", padding: 18 }}>
+//                     No company notifications
+//                   </td>
+//                 </tr>
+//               )}
+//             </tbody>
+//           </table>
+//         </section>
+//       )}
+
+//     </div>
+//   </Layout>
+// );
+
+// }
+
 // pages/notifications.js
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/notification.module.css";
+import { offlineFetch } from "@/lib/offlineFetch";
+import toast from "react-hot-toast";
+import { useLanguage } from "../context/LanguageContext";
+
+function decodeToken(token) {
+  if (!token || typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+
+  try {
+    return JSON.parse(atob(parts[1]));
+  } catch {
+    return null;
+  }
+}
+
+const getToken = () =>
+  typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+const tokenHeader = () => {
+  const t = getToken();
+  if (!t) throw new Error("Token missing");
+  return { Authorization: `Bearer ${t}` };
+};
 
 export default function Notifications() {
+  const { t } = useLanguage();
+
   // 🔥 NEW: tab switching
   const [activeTab, setActiveTab] = useState("push");
+  const [role, setRole] = useState(null);
 
-  // push notifications (mess-level) — grouped
+  // push notifications
   const [pushList, setPushList] = useState([]);
   const [pushGroups, setPushGroups] = useState([]);
 
-  // superadmin notifications (company-level)
+  // superadmin notifications
   const [superList, setSuperList] = useState([]);
 
   const [form, setForm] = useState({
@@ -28,11 +424,25 @@ export default function Notifications() {
 
   // ---- Load push notifications ----
   const loadPush = async () => {
-    const res = await fetch("/api/notifications", { headers: { ...tokenHeader() } });
-    const data = await res.json();
+    try {
+      const data = await offlineFetch("push-notifications", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/notifications/",
+          { headers: tokenHeader() }
+        );
 
-    setPushList(Array.isArray(data) ? data : []);
-    setPushGroups(groupPush(Array.isArray(data) ? data : []));
+        if (!res.ok) throw new Error(t("failedToLoadPush"));
+        return res.json();
+      });
+
+      const list = Array.isArray(data) ? data : [];
+      setPushList(list);
+      setPushGroups(groupPush(list));
+    } catch (err) {
+      console.error("loadPush error:", err);
+      setPushList([]);
+      setPushGroups([]);
+    }
   };
 
   // ---- Group logic (unchanged) ----
@@ -59,82 +469,124 @@ export default function Notifications() {
       map[key].ids.push(n.id);
     });
 
-    return Object.values(map).sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+    return Object.values(map).sort((a, b) =>
+      b.created_at > a.created_at ? 1 : -1
+    );
   };
 
   // ---- Load superadmin notifications ----
   const loadSuper = async () => {
-    const res = await fetch("/api/superadmin-notifications", {
-      headers: tokenHeader(),
-    });
+    try {
+      const data = await offlineFetch("super-notifications", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/superadmin-notifications/",
+          { headers: tokenHeader() }
+        );
 
-    const data = await res.json();
-    setSuperList(Array.isArray(data) ? data : []);
+        if (!res.ok) throw new Error(t("failedToLoadSuper"));
+        return res.json();
+      });
+
+      setSuperList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("loadSuper error:", err);
+      setSuperList([]);
+    }
   };
 
   const loadAll = async () => {
-    await Promise.all([loadPush(), loadSuper()]);
+    try {
+      await loadPush();
+      if (role !== "STAFF") {
+        await loadSuper();
+      }
+    } catch (err) {
+      console.error("loadAll error:", err);
+    }
   };
 
   useEffect(() => {
-    loadAll();
+    if (role) loadAll();
+  }, [role]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const decoded = decodeToken(token);
+    if (decoded?.role) {
+      setRole(decoded.role); // STAFF | MESS_ADMIN
+    }
   }, []);
 
   // ---- Send push ----
   const createPush = async () => {
-    if (!form.title || !form.message) return alert("Title and message required");
+    if (!form.title || !form.message)
+      return toast(t("titleMessageRequired"));
 
-    const res = await fetch("/api/notifications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...tokenHeader() },
-      body: JSON.stringify(form),
+    const res = await fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/notifications/",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...tokenHeader() },
+        body: JSON.stringify(form),
+      }
+    );
+
+    await res.json();
+    setForm({
+      title: "",
+      message: "",
+      notification_type: "general",
+      priority: "normal",
     });
-
-    const data = await res.json();
-    alert(data.message || "Sent");
-    setForm({ title: "", message: "", notification_type: "general", priority: "normal" });
     loadPush();
   };
 
   // ---- Delete grouped ----
   const deletePushGroup = async (ids) => {
-    if (!confirm(`Delete ${ids.length} notifications in this group?`)) return;
+    if (!confirm(t("deleteGroupConfirm", { count: ids.length }))) return;
 
     try {
-      const res = await fetch("/api/notifications/delete-group", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...tokenHeader() },
-        body: JSON.stringify({ ids }),
-      });
+      const res = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/notifications/delete-group/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...tokenHeader() },
+          body: JSON.stringify({ ids }),
+        }
+      );
 
       if (!res.ok) {
         for (const id of ids) {
-          await fetch(`/api/notifications?id=${id}`, {
-            method: "DELETE",
-            headers: { ...tokenHeader() },
-          });
+          await fetch(
+            `https://bite-track-mess-management-system-a.vercel.app/api/notifications?id=${id}/`,
+            {
+              method: "DELETE",
+              headers: { ...tokenHeader() },
+            }
+          );
         }
       }
 
       loadPush();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete group");
+      toast.error(t("somethingWentWrong"));
     }
   };
 
   // ---- Seen superadmin ----
   const seenSuper = async (id) => {
-    if (!confirm("Mark as seen? This will delete the notification.")) return;
+    if (!confirm(t("markSeenConfirm"))) return;
 
-    const res = await fetch(`/api/superadmin-notifications?id=${id}`, {
-      method: "DELETE",
-      headers: tokenHeader(),
-    });
+    const res = await fetch(
+      `https://bite-track-mess-management-system-a.vercel.app/api/superadmin-notifications?id=${id}/`,
+      {
+        method: "DELETE",
+        headers: tokenHeader(),
+      }
+    );
 
-    const data = await res.json();
-
-    if (!res.ok) return alert(data.message || "Failed");
+    if (!res.ok) return toast.error(t("somethingWentWrong"));
 
     loadSuper();
   };
@@ -142,421 +594,178 @@ export default function Notifications() {
   return (
     <Layout>
       <div className={styles.container}>
-        
         {/* 🔥 TAB HEADER */}
         <div className={styles.tabs}>
           <button
-            className={`${styles.tabBtn} ${activeTab === "push" ? styles.active : ""}`}
+            className={`${styles.tabBtn} ${
+              activeTab === "push" ? styles.active : ""
+            }`}
             onClick={() => setActiveTab("push")}
           >
-            Push Notifications
+            {t("pushNotifications")}
           </button>
 
-          <button
-            className={`${styles.tabBtn} ${activeTab === "super" ? styles.active : ""}`}
-            onClick={() => setActiveTab("super")}
-          >
-            Superadmin Notifications
-          </button>
+          {role !== "STAFF" && (
+            <button
+              className={`${styles.tabBtn} ${
+                activeTab === "super" ? styles.active : ""
+              }`}
+              onClick={() => setActiveTab("super")}
+            >
+              {t("superadminNotifications")}
+            </button>
+          )}
         </div>
 
         {/* ---------------- TAB CONTENT ---------------- */}
 
         {activeTab === "push" && (
-          <>
-            {/* Push Notifications section */}
-            <section className={styles.card} style={{ marginBottom: 24 }}>
-              <h2 className={styles.header}>Push Notifications</h2>
+          <section className={styles.card}>
+            <h2 className={styles.header}>{t("pushNotifications")}</h2>
 
-              {/* Create form */}
-              <div style={{ marginBottom: 12 }}>
-                <div className={styles.inputGroup}>
-                  <label className={styles.label}>Title</label>
-                  <input
-                    className={styles.input}
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  />
-                </div>
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>{t("title")}</label>
+              <input
+                className={styles.input}
+                value={form.title}
+                onChange={(e) =>
+                  setForm({ ...form, title: e.target.value })
+                }
+              />
+            </div>
 
-                <div className={styles.inputGroup}>
-                  <label className={styles.label}>Message</label>
-                  <textarea
-                    className={styles.textarea}
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  />
-                </div>
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>{t("message")}</label>
+              <textarea
+                className={styles.textarea}
+                value={form.message}
+                onChange={(e) =>
+                  setForm({ ...form, message: e.target.value })
+                }
+              />
+            </div>
 
-                <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-                  <select
-                    className={styles.select}
-                    value={form.notification_type}
-                    onChange={(e) => setForm({ ...form, notification_type: e.target.value })}
-                  >
-                    <option value="general">General</option>
-                    <option value="announcement">Announcement</option>
-                    <option value="event">Event</option>
-                    <option value="poll">Poll</option>
-                  </select>
+            <div className={styles.formRow}>
+              <select
+                className={styles.select}
+                value={form.notification_type}
+                onChange={(e) =>
+                  setForm({ ...form, notification_type: e.target.value })
+                }
+              >
+                <option value="general">{t("general")}</option>
+                <option value="announcement">{t("announcement")}</option>
+                <option value="event">{t("event")}</option>
+                <option value="poll">{t("poll")}</option>
+              </select>
 
-                  <select
-                    className={styles.select}
-                    value={form.priority}
-                    onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
+              <select
+                className={styles.select}
+                value={form.priority}
+                onChange={(e) =>
+                  setForm({ ...form, priority: e.target.value })
+                }
+              >
+                <option value="normal">{t("normal")}</option>
+                <option value="high">{t("high")}</option>
+                <option value="urgent">{t("urgent")}</option>
+              </select>
 
-                  <button className={styles.button} onClick={createPush}>Send</button>
-                </div>
-              </div>
+              <button className={styles.button} onClick={createPush}>
+                {t("send")}
+              </button>
+            </div>
 
-              {/* Group table */}
-              <div>
-                <h3 style={{ marginBottom: 8 }}>Grouped (duplicates collapsed)</h3>
-                <table className={styles.list}>
-                  <thead>
-                    <tr>
-                      <th>Count</th>
-                      <th>Title</th>
-                      <th>Message</th>
-                      <th>Time</th>
-                      <th></th>
+            <h3 className={styles.header2}>
+              {t("groupedDuplicates")}
+            </h3>
+
+            <table className={styles.list}>
+              <thead>
+                <tr>
+                  <th>{t("count")}</th>
+                  <th>{t("title")}</th>
+                  <th>{t("message")}</th>
+                  <th>{t("time")}</th>
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {pushGroups.length > 0 ? (
+                  pushGroups.map((g, i) => (
+                    <tr key={i}>
+                      <td>{g.count}</td>
+                      <td>{g.title}</td>
+                      <td>{g.message}</td>
+                      <td>{new Date(g.created_at).toLocaleString()}</td>
+                      <td>
+                        <button
+                          className={styles.actionBtn}
+                          onClick={() => deletePushGroup(g.ids)}
+                        >
+                          {t("deleteGroup")}
+                        </button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {pushGroups.length > 0 ? (
-                      pushGroups.map((g, i) => (
-                        <tr key={i}>
-                          <td>{g.count}</td>
-                          <td>{g.title}</td>
-                          <td style={{ maxWidth: 420 }}>{g.message}</td>
-                          <td>{new Date(g.created_at).toLocaleString()}</td>
-                          <td>
-                            <button className={styles.actionBtn} onClick={() => deletePushGroup(g.ids)}>
-                              Delete Group
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr><td colSpan="5" style={{ textAlign: "center", padding: 18 }}>No push notifications</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: "center", padding: 18 }}>
+                      {t("noPushNotifications")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </section>
         )}
 
         {activeTab === "super" && (
-          <>
-            {/* Superadmin Notifications */}
-            <section className={styles.card}>
-              <h2 className={styles.header}>Notifications From Shris Tech</h2>
+          <section className={styles.card}>
+            <h2 className={styles.header}>
+              {t("notificationsFromShrisTech")}
+            </h2>
 
-              <table className={styles.list}>
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Message</th>
-                    <th>Time</th>
-                    <th></th>
-                  </tr>
-                </thead>
+            <table className={styles.list}>
+              <thead>
+                <tr>
+                  <th>{t("title")}</th>
+                  <th>{t("message")}</th>
+                  <th>{t("time")}</th>
+                  <th></th>
+                </tr>
+              </thead>
 
-                <tbody>
-                  {superList.length > 0 ? (
-                    superList.map((s) => (
-                      <tr key={s.id}>
-                        <td style={{ width: 240 }}>{s.title}</td>
-                        <td style={{ maxWidth: 560 }}>{s.message}</td>
-                        <td>{new Date(s.created_at).toLocaleString()}</td>
-                        <td>
-                          <button className={styles.actionBtn} onClick={() => seenSuper(s.id)}>
-                            Seen
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="4" style={{ textAlign: "center", padding: 18 }}>
-                        No company notifications
+              <tbody>
+                {superList.length > 0 ? (
+                  superList.map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.title}</td>
+                      <td>{s.message}</td>
+                      <td>{new Date(s.created_at).toLocaleString()}</td>
+                      <td>
+                        <button
+                          className={styles.actionBtn}
+                          onClick={() => seenSuper(s.id)}
+                        >
+                          {t("seen")}
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </section>
-          </>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: "center", padding: 18 }}>
+                      {t("noCompanyNotifications")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </section>
         )}
       </div>
     </Layout>
   );
 }
-
-
-
-// // pages/notifications.js
-// import { useState, useEffect } from "react";
-// import Layout from "../components/Layout";
-// import styles from "../styles/notification.module.css";
-
-// export default function Notifications() {
-//   // push notifications (mess-level) — grouped
-//   const [pushList, setPushList] = useState([]);
-//   const [pushGroups, setPushGroups] = useState([]);
-
-//   // superadmin notifications (company-level)
-//   const [superList, setSuperList] = useState([]);
-
-//   const [form, setForm] = useState({
-//     title: "",
-//     message: "",
-//     notification_type: "general",
-//     priority: "normal",
-//   });
-
-//   const tokenHeader = () => {
-//   const t = localStorage.getItem("token");
-//   return { Authorization: `Bearer ${t}` };
-// };
-
-
-//   // ---- Load push notifications (your notifications table) ----
-//   const loadPush = async () => {
-//     const res = await fetch("/api/notifications", { headers: { ...tokenHeader() } });
-//     const data = await res.json();
-//     // data is expected array of notifications
-//     setPushList(Array.isArray(data) ? data : []);
-//     setPushGroups(groupPush(Array.isArray(data) ? data : []));
-//   };
-
-//   // Grouping: same title + same message + same exact minute timestamp
-//   const groupPush = (items) => {
-//     const map = {};
-//     items.forEach((n) => {
-//       // create minute-precision key (YYYY-MM-DDTHH:MM)
-//       const created = new Date(n.created_at);
-//       const minuteKey = created.toISOString().slice(0, 16); // up to minutes
-//       const key = `${n.title}__${n.message}__${minuteKey}`;
-
-//       if (!map[key]) {
-//         map[key] = {
-//           title: n.title,
-//           message: n.message,
-//           notification_type: n.notification_type,
-//           priority: n.priority,
-//           created_at: minuteKey,
-//           count: 0,
-//           ids: [],
-//         };
-//       }
-//       map[key].count += 1;
-//       map[key].ids.push(n.id);
-//     });
-
-//     // sort newest first
-//     return Object.values(map).sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
-//   };
-
-//   // ---- Load superadmin notifications ----
-//   const loadSuper = async () => {
-//   const res = await fetch("/api/superadmin-notifications", {
-//     headers: tokenHeader(),
-//   });
-
-//   const data = await res.json();
-//   setSuperList(Array.isArray(data) ? data : []);
-// };
-
-
-
-//   // combined loader
-//   const loadAll = async () => {
-//   await Promise.all([loadPush(), loadSuper()]);
-// };
-
-
-//   useEffect(() => {
-//     loadAll();
-//   }, []);
-
-//   // ---- Create push notification (POST /api/notifications) ----
-//   const createPush = async () => {
-//     if (!form.title || !form.message) return alert("Title and message required");
-
-//     const res = await fetch("/api/notifications", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json", ...tokenHeader() },
-//       body: JSON.stringify(form),
-//     });
-
-//     const data = await res.json();
-//     alert(data.message || "Sent");
-//     setForm({ title: "", message: "", notification_type: "general", priority: "normal" });
-//     loadPush();
-//   };
-
-//   // ---- Delete group of push notifications ----
-//   const deletePushGroup = async (ids) => {
-//     if (!confirm(`Delete ${ids.length} notifications in this group?`)) return;
-//     // prefer batch endpoint if exists
-//     try {
-//       const res = await fetch("/api/notifications/delete-group", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json", ...tokenHeader() },
-//         body: JSON.stringify({ ids }),
-//       });
-
-//       if (!res.ok) {
-//         // fallback: delete each individually
-//         for (const id of ids) {
-//           await fetch(`/api/notifications?id=${id}`, { method: "DELETE", headers: { ...tokenHeader() } });
-//         }
-//       }
-
-//       loadPush();
-//     } catch (err) {
-//       console.error(err);
-//       alert("Failed to delete group");
-//     }
-//   };
-
-//   // ---- Mark superadmin notification as seen (DELETE) ----
-//   const seenSuper = async (id) => {
-//   if (!confirm("Mark as seen? This will delete the notification.")) return;
-
-//   const res = await fetch(`/api/superadmin-notifications?id=${id}`, {
-//     method: "DELETE",
-//     headers: tokenHeader(),
-//   });
-
-//   const data = await res.json();
-
-//   if (!res.ok) {
-//     alert(data.message || "Failed");
-//     return;
-//   }
-
-//   loadSuper();
-// };
-
-
-//   return (
-//     <Layout>
-//       <div className={styles.container}>
-
-//         {/* Push Notifications section */}
-//         <section className={styles.card} style={{ marginBottom: 24 }}>
-//           <h2 className={styles.header}>Push Notifications</h2>
-
-//           {/* Create form */}
-//           <div style={{ marginBottom: 12 }}>
-//             <div className={styles.inputGroup}>
-//               <label className={styles.label}>Title</label>
-//               <input className={styles.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-//             </div>
-
-//             <div className={styles.inputGroup}>
-//               <label className={styles.label}>Message</label>
-//               <textarea className={styles.textarea} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
-//             </div>
-
-//             <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
-//               <select className={styles.select} value={form.notification_type} onChange={(e) => setForm({ ...form, notification_type: e.target.value })}>
-//                 <option value="general">General</option>
-//                 <option value="announcement">Announcement</option>
-//                 <option value="event">Event</option>
-//                 <option value="poll">Poll</option>
-//               </select>
-
-//               <select className={styles.select} value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
-//                 <option value="normal">Normal</option>
-//                 <option value="high">High</option>
-//                 <option value="urgent">Urgent</option>
-//               </select>
-
-//               <button className={styles.button} onClick={createPush}>Send</button>
-//             </div>
-//           </div>
-
-//           {/* Grouped push notifications table */}
-//           <div>
-//             <h3 style={{ marginBottom: 8 }}>Grouped (duplicates collapsed)</h3>
-//             <table className={styles.list}>
-//               <thead>
-//                 <tr>
-//                   <th>Count</th>
-//                   <th>Title</th>
-//                   <th>Message</th>
-//                   <th>Time</th>
-//                   <th></th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {pushGroups.length > 0 ? pushGroups.map((g, i) => (
-//                   <tr key={i}>
-//                     <td>{g.count}</td>
-//                     <td>{g.title}</td>
-//                     <td style={{ maxWidth: 420, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.message}</td>
-//                     <td>{new Date(g.created_at).toLocaleString()}</td>
-//                     <td>
-//                       <button className={styles.actionBtn} onClick={() => deletePushGroup(g.ids)}>Delete Group</button>
-//                     </td>
-//                   </tr>
-//                 )) : (
-//                   <tr><td colSpan="5" style={{ textAlign: "center", padding: 18 }}>No push notifications</td></tr>
-//                 )}
-//               </tbody>
-//             </table>
-//           </div>
-//         </section>
-
-//         {/* SuperAdmin Notifications section */}
-//         <section className={styles.card}>
-//   <h2 className={styles.header}>Notifications (From Company / SuperAdmin)</h2>
-
-//   <table className={styles.list}>
-//     <thead>
-//       <tr>
-//         <th>Title</th>
-//         <th>Message</th>
-//         <th>Time</th>
-//         <th></th>
-//       </tr>
-//     </thead>
-
-//     <tbody>
-//       {superList.length > 0 ? (
-//         superList.map((s) => (
-//           <tr key={s.id}>
-//             <td style={{ width: 240 }}>{s.title}</td>
-//             <td style={{ maxWidth: 560 }}>{s.message}</td>
-//             <td>{new Date(s.created_at).toLocaleString()}</td>
-//             <td>
-//               <button className={styles.actionBtn} onClick={() => seenSuper(s.id)}>
-//                 Seen
-//               </button>
-//             </td>
-//           </tr>
-//         ))
-//       ) : (
-//         <tr>
-//           <td colSpan="4" style={{ textAlign: "center", padding: 18 }}>
-//             No company notifications
-//           </td>
-//         </tr>
-//       )}
-//     </tbody>
-//   </table>
-// </section>
-
-//       </div>
-//     </Layout>
-//   );
-// }

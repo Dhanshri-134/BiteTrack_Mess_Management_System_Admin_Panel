@@ -1,50 +1,74 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/suggestions.module.css";
+import { offlineFetch } from "../lib/offlineFetch";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Suggestions() {
+  const { t } = useLanguage();
+
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
-useEffect(() => {
-  async function fetchFeedback() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Session expired. Please login again.");
-      return;
+  
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const data = await offlineFetch("feedback-list", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/feedback/fetch/",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!res.ok) throw new Error("Fetch failed");
+        return await res.json();
+      });
+
+      setFeedbacks(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setFeedbacks([]);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const res = await fetch("/api/feedback/fetch", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-    const data = await res.json();
-    setFeedbacks(data);
-    setLoading(false);
-  }
-
-  fetchFeedback();
-}, []);
-
-
-  if (loading) return <Layout><p>Loading feedback...</p></Layout>;
+  // if (loading) return <Layout><p>Loading feedback...</p></Layout>;
 
   return (
     <Layout>
       <div className={styles.container}>
-        <h2 className={styles.title}>Student Suggestions & Feedback</h2>
+        <h2 className={styles.title}>{t("suggestionsAndFeedback")}</h2>
+
         {feedbacks.length === 0 ? (
-          <p className={styles.empty}>No feedback submitted yet.</p>
+          <p className={styles.empty}>{t("noFeedbackYet")}</p>
         ) : (
           <div className={styles.feedbackList}>
             {feedbacks.map((fb) => (
               <div key={fb.id} className={styles.feedbackCard}>
                 <div className={styles.header}>
                   <span className={styles.name}>{fb.name}</span>
-                  <span className={styles.type}>{fb.feedback_type}</span>
+                  <span className={styles.type}>
+  {t(
+    `feedbackType_${String(fb.feedback_type)
+      .toLowerCase()
+      .replace(/\s+/g, "_")}`
+  ) || fb.feedback_type}
+</span>
+
+
                 </div>
+
                 <p className={styles.message}>{fb.message}</p>
+
                 <div className={styles.footer}>
                   <span className={styles.email}>{fb.email}</span>
                   <span className={styles.date}>

@@ -1,28 +1,38 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Layout from "../../components/Layout";
-import Sidebar from "../../components/Sidebar";
 import MenuManagement from "./MenuManagement";
 import MenuPreview from "./MenuPreview";
 import SpecialDish from "./SpecialDish";
 import RatingsReviews from "./RatingsReviews";
 import FastingRequests from "./fasting";
-import styles from "../../styles/menu.module.css"; 
+import styles from "../../styles/menu.module.css";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function MenuPage() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("MenuManagement");
+  const { t } = useLanguage();
 
   const tabs = [
-    { key: "MenuManagement", label: "Menu Management" },
-    { key: "MenuPreview", label: "Menu Preview" },
-    { key: "Specials", label: "Special Dishes" },
-    { key: "RatingsReviews", label: "Ratings & Reviews" },
-    { key: "FastingRequests", label: "Fasting Requests" },
+    { key: "MenuManagement", label: t("menuManagement") },
+    { key: "MenuPreview", label: t("menuPreview") },
+    { key: "Specials", label: t("specialDishes") },
+    { key: "RatingsReviews", label: t("ratingsReviews") },
+    { key: "FastingRequests", label: t("fastingRequests") },
   ];
+
+  // Set initial tab based on URL param
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && tabs.some((t) => t.key === tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
 
   return (
     <Layout>
       <div className={styles.container}>
-        <Sidebar /> {/* sidebar on the left */}
         <main className={styles.main}>
           {/* Tabs */}
           <div className={styles.tabs}>
@@ -39,7 +49,7 @@ export default function MenuPage() {
             ))}
           </div>
 
-          {/* Tab Content */}
+          {/* Content */}
           <div className={styles.tabContent}>
             {activeTab === "MenuManagement" && <MenuManagement />}
             {activeTab === "MenuPreview" && <MenuPreview />}

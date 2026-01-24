@@ -1,0 +1,35 @@
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: #1f1f1f;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.active {
+  color: #4caf50;
+}
+
+.expired {
+  color: #f44336;
+}
+
+.warning {
+  background: #2a1a1a;
+  padding: 12px;
+  border-left: 4px solid #f44336;
+  margin-bottom: 16px;
+}
+
+.payButton {
+  padding: 10px 20px;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+}

@@ -1,0 +1,639 @@
+.sidebar {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  height: calc(100vh - 60px);
+  width: 220px;
+  background: #111827;
+  color: white;
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: width 0.3s ease, padding 0.3s ease;
+  z-index: 999;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  animation: slideIn 0.25s ease-out;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+  padding: 1rem 0.4rem;
+}
+
+/* Toggle Button */
+.toggleBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 1rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.toggleBtn:hover {
+  transform: scale(1.1);
+  color: #93c5fd;
+}
+
+/* Nav Links */
+.nav {
+  display: flex;
+  flex-direction: column;
+   flex-grow: 1; 
+  gap: 0.6rem;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #d1d5db;
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+.nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding-left: 1rem;
+}
+
+/* Collapsed state */
+.sidebar.collapsed .nav a {
+  justify-content: center;
+  padding: 0.6rem;
+}
+.sidebar.collapsed .nav a span {
+  display: none;
+}
+
+/* Scanner Section (bottom) */
+.scannerSection {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 1rem 0.9rem 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.scannerHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  color: #e5e7eb;
+}
+
+.scannerHeader h4 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ddd;
+  margin: 0;
+}
+
+.status {
+  font-size: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.connected {
+  color: #10b981;
+}
+
+.disconnected {
+  color: #ef4444;
+}
+
+/* Connect / Disconnect button */
+.scannerBtn {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.25s ease;
+}
+
+.connect {
+  background-color: #2563eb;
+  color: white;
+}
+
+.disconnect {
+  background-color: #dc2626;
+  color: white;
+}
+
+.scannerBtn:hover {
+  opacity: 0.9;
+}
+
+/* Scan Box */
+.scanBox {
+  margin-top: 0.8rem;
+  border: 2px dashed #6b7280;
+  border-radius: 8px;
+  padding: 0.8rem;
+  text-align: center;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.scanBox:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #9ca3af;
+}
+
+.scanResult {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+}
+
+/* Hide extra text in collapsed mode */
+.sidebar.collapsed .scannerSection h4,
+.sidebar.collapsed .scannerSection p,
+.sidebar.collapsed .scannerSection .scanBox,
+.sidebar.collapsed .scannerSection .scanResult {
+  display: none;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+
+
+
+
+
+.messageBanner{
+  font-size: 0.8rem;
+  color:rgb(212, 207, 201);
+  padding: 1rem 0.75rem;
+  flex-shrink: 0; 
+  /* position: fixed;
+  bottom: 40px;
+  width: 70%; */
+}
+
+
+/* Toggle Button */
+.toggleBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 1rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.toggleBtn:hover {
+  transform: scale(1.1);
+  color: #93c5fd;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;                 
+  overflow-y: scroll;        
+  overflow-x: scroll; 
+  
+  padding-bottom: 140px;
+  padding: 1rem 0.75rem;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #d1d5db;
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+.nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding-left: 1rem;
+}
+
+/* Scanner Section (bottom) */
+.scannerSection {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 1rem 0.9rem 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.scannerHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  color: #e5e7eb;
+}
+
+.scannerHeader h4 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ddd;
+  margin: 0;
+}
+
+.status {
+  font-size: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.connected {
+  color: #10b981;
+}
+
+.disconnected {
+  color: #ef4444;
+}
+
+/* Connect / Disconnect button */
+.scannerBtn {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.25s ease;
+}
+
+.connect {
+  background-color: #2563eb;
+  color: white;
+}
+
+.disconnect {
+  background-color: #dc2626;
+  color: white;
+}
+
+.scannerBtn:hover {
+  opacity: 0.9;
+}
+
+/* Scan Box */
+.scanBox {
+  margin-top: 0.8rem;
+  border: 2px dashed #6b7280;
+  border-radius: 8px;
+  padding: 0.8rem;
+  text-align: center;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.scanBox:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #9ca3af;
+}
+
+.scanResult {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+}
+
+/* Hide extra text in collapsed mode */
+.sidebar.collapsed .scannerSection h4,
+.sidebar.collapsed .scannerSection p,
+.sidebar.collapsed .scannerSection .scanBox,
+.sidebar.collapsed .scannerSection .scanResult {
+  display: none;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.sidebar {
+  position: fixed;
+  top: 90px;
+  left: 0;
+  /* height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px); */
+  width: 220px;
+  background:#007171;
+  color: white;
+  /* padding: 1rem 0.75rem; */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: width 0.3s ease, padding 0.3s ease;
+  z-index: 5000 !important;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  animation: slideIn 0.25s ease-out;
+  overflow:hidden !important;  
+}
+.logoutBtn {
+  background: #dc2626;
+  border: none;
+  color: white ;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight:normal;
+  position:relative;
+  width: 100%;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 2000;
+}
+
+/* Collapsed */
+.sidebar.collapsed {
+  width: 70px;
+  padding: 1rem 0.4rem;
+}
+
+/* Nav */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  /* flex: 1;           
+  min-height: 0;      
+  overflow-y: auto;   
+  overflow-x: hidden; */
+
+  padding: 1rem 0.75rem;
+}
+/* Owner-only vertical centering */
+.centerNav {
+  justify-content: center;
+}
+
+
+/* Collapsed nav */
+.sidebar.collapsed .nav a {
+  justify-content: center;
+  padding: 0.6rem;
+}
+
+.sidebar.collapsed .nav a span {
+  display: none;
+}
+
+.logoutWrapper {
+  margin-top: 32px;
+  color: white;
+  padding: 0.75rem;
+  flex-shrink: 0;
+  /* position: fixed;
+  bottom: 70px;
+  width: 70%; */
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    top: 0;
+    height: 100vh;
+    min-height: 100vh;
+    width: 80%;
+    max-width: 260px;
+  }
+  .nav{
+    margin-top: 20px;
+  }
+}
+
+/* ========================= */
+/* Collapsible Sections – Unified with Nav */
+/* ========================= */
+
+/* Section header behaves EXACTLY like .nav a */
+.sectionHeader {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 90%;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+
+  color: #d1d5db;
+  font-size: 0.95rem;
+  cursor: pointer;
+
+  transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+.sectionHeader:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding-left: 1rem;
+}
+
+/* Title aligns with nav icon + text */
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; 
+  color: #d1d5db;
+}
+.arrow {
+  /* content: "›";             */
+  margin-left: 0px;         
+  font-size: 1rem;
+  opacity: 0.85;
+  transition: transform 0.25s ease;
+  color: #d1d5db !important;
+}
+
+/* Collapsible body */
+.sectionBody {
+  overflow: hidden;
+  /* max-height: 0; */
+  opacity: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 12px;
+
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease;
+}
+ .sectionOpen {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.sectionClosed {
+  max-height: 0;
+  opacity: 0;
+}
+.sectionBody.open {
+  max-height: 1000px; 
+  opacity: 1;
+}
+
+.sectionBody.closed {
+  max-height: 0;
+  opacity: 0; 
+} 
+
+
+/* Sub-links behave like nested nav links */
+.sectionBody a {
+  display: flex;
+  align-items: center;
+
+  padding: 0.55rem 2.5rem;
+  border-radius: 6px;
+
+  font-size: 0.9rem;
+  color: #d1d5db;
+  text-decoration: none;
+
+  transition: background 0.2s ease, color 0.2s ease, padding-left 0.2s ease;
+}
+
+.sectionBody a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  padding-left: 1rem;
+}
+
+/* Arrow animation */
+.sectionHeader svg {
+  transition: transform 0.25s ease;
+  
+}
+
+/* .sectionHeader[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+} */
+
+
+
+.sidebar.collapsed .sectionHeader {
+  justify-content: center;
+  padding: 0.6rem;
+}
+
+.sidebar.collapsed .sectionTitle span {
+  display: none;
+}
+
+.sidebar.collapsed .sectionBody {
+  display: none;
+}
+
+.profileBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 15%;
+  background-color: #fff;
+  padding: 0.75rem 0.6rem 1rem;
+  margin:0px !important;
+  color: #007171;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+.avatarWrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.profileName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #009191;
+}
+
+.profileRole {
+  font-size: 0.75rem;
+  color: #009191;
+}
+.sidebar.collapsed .profileInfo {
+  display: none;
+}
+
+.sidebar.collapsed .profileBar {
+  justify-content: center;
+}
+
+/* .footer{
+  background-color: #2563eb;
+  z-index: 60000;
+  position: fixed;
+  bottom: 50px;
+  display: block;
+} */
+
+

@@ -1,11 +1,24 @@
+/* ================================
+   CONTAINER
+================================ */
 .container {
-  padding: 20px;
+   /* display: flex; */
+  min-height: 100vh;
+  background: transparent; /* CRITICAL FIX */
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* h1 {
-  margin-bottom: 20px;
-} */
-
+.container h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  color: #007170;
+  text-align: center;
+}
+/* ================================
+   TABS
+================================ */
 .tabs {
   display: flex;
   gap: 10px;
@@ -22,10 +35,13 @@
 }
 
 .activeTab {
-  background: #0070f3;
+  background: #007170;
   color: white;
 }
 
+/* ================================
+   TABLE (DESKTOP)
+================================ */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -39,13 +55,18 @@
   padding: 12px;
   border-bottom: 1px solid #ddd;
   text-align: left;
+  color: #006161;
 }
 
 .table th {
   background: #f5f5f5;
   font-weight: 600;
+   color: #006161;
 }
 
+/* ================================
+   STATUS TAGS (FUTURE SAFE)
+================================ */
 .status {
   padding: 4px 8px;
   border-radius: 5px;
@@ -70,8 +91,15 @@
   background: #cfe1ff;
 }
 
+/* ================================
+   ACTION BUTTONS
+================================ */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
 .actions button {
-  margin-right: 8px;
   padding: 6px 10px;
   border: none;
   cursor: pointer;
@@ -86,4 +114,49 @@
 .reject {
   background: #f44336;
   color: white;
+}
+
+/* ================================
+   MOBILE / ANDROID VIEW
+   TABLE → STACKED CARDS
+================================ */
+@media (max-width: 768px) {
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    background: white;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #006161;
+    padding-right: 10px;
+  }
+
+  .actions {
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
 }

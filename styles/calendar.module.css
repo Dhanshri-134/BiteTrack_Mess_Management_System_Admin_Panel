@@ -1,50 +1,99 @@
+/* ===============================
+   Calendar Container
+   =============================== */
+
 .calendarContainer {
   width: 100%;
-  max-width: 400px;
-  margin: 10px auto;
+  max-width: 420px;
+  margin: 12px auto;
+  padding: 0.5rem;
 }
+
+/* ===============================
+   Calendar Grid
+   =============================== */
 
 .calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 0.35rem;
 }
+
+/* ===============================
+   Weekday Header
+   =============================== */
 
 .weekday {
-  font-weight: bold;
   text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #64748B;
 }
 
-.dayCell {
-  width: 40px;
-  height: 40px;
-  text-align: center;
-  line-height: 40px;
-  border-radius: 4px;
-  font-weight: bold;
-  color: white;
-}
+/* ===============================
+   Empty Cell
+   =============================== */
 
 .emptyCell {
-  width: 40px;
-  height: 40px;
+  aspect-ratio: 1;
 }
 
+/* ===============================
+   Day Cell (Base)
+   =============================== */
+
+.dayCell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+
+  color: #ffffff;
+  user-select: none;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+/* ===============================
+   Attendance States
+   =============================== */
+
 .present {
-  background-color: green;
+  background-color: #22C55E;
 }
 
 .absent {
-  background-color: red;
+  background-color: #ef4444;
 }
 
+/* Hover (safe on web, ignored on touch) */
+.dayCell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+/* ===============================
+   Optional Parent Container
+   =============================== */
 
 .container {
   max-width: 600px;
   margin: 2rem auto;
+  padding: 0 1rem;
   text-align: center;
-  color: white;
+  color: #0F172A;
 }
+
+/* ===============================
+   Header (Month Navigation)
+   =============================== */
 
 .header {
   display: flex;
@@ -56,20 +105,33 @@
 .navBtn {
   background: none;
   border: none;
-  color: #00aaff;
-  font-size: 1.5rem;
   cursor: pointer;
-  transition: 0.2s;
+
+  font-size: 1.4rem;
+  font-weight: 600;
+
+  color: #0f766e;
+  transition: color 0.2s ease, transform 0.1s ease;
 }
 
 .navBtn:hover {
-  color: #00ffcc;
+  color: #14B8A6;
+  transform: scale(1.1);
 }
+
+/* ===============================
+   Stats Section
+   =============================== */
 
 .stats {
   margin-bottom: 1rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  color: #64748B;
 }
+
+/* ===============================
+   Alternative Grid (if reused)
+   =============================== */
 
 .grid {
   display: grid;
@@ -77,25 +139,54 @@
   gap: 0.5rem;
 }
 
+/* ===============================
+   Alternative Day Box
+   =============================== */
+
 .dayBox {
-  padding: 0.7rem;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: 0.2s;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.present {
-  background-color: #1abc9c; /* green */
-  color: white;
+.dayBox.present {
+  background-color: #22C55E;
+  color: #ffffff;
 }
 
-.absent {
-  background-color: #555; /* grey */
-  color: #ccc;
+.dayBox.absent {
+  background-color: #929292;
+  color: #e5e7eb;
 }
 
 .dayBox:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(0, 255, 200, 0.3);
+  transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(15, 23, 42, 0.2);
+}
+
+/* ===============================
+   Mobile Optimizations
+   =============================== */
+
+@media (max-width: 768px) {
+  .calendarContainer {
+    max-width: 100%;
+    padding: 0.25rem;
+  }
+
+  .weekday {
+    font-size: 0.7rem;
+  }
+
+  .dayCell,
+  .dayBox {
+    font-size: 0.75rem;
+  }
 }

@@ -269,7 +269,7 @@
 .title {
   margin: 0 0 12px 0;
   font-size: 1.5rem;
-  color: #0f172a;
+  color: ##0F172A;
 }
 
 /* Controls 
@@ -356,7 +356,7 @@
 }
 
 .table thead {
-  background: #0f172a;
+  background: ##0F172A;
   color: #fff;
 }
 
@@ -450,22 +450,22 @@
    Layout
 =========================== */
 .container {
-  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  background: #F8FAFC;
 }
 
 .main {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 22px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 1.25rem;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
 .main h1 {
-  font-size: 1.6rem;
-  margin-bottom: 20px;
-  color: #0f172a;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+  color: #007171;
 }
 
 /* ===========================
@@ -474,310 +474,301 @@
 .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 12px;
   align-items: flex-end;
-  margin-bottom: 18px;
+  margin-bottom: 1rem;
 }
 
 .controlItem {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 160px;
+  gap: 5px;
+  width:100%;
+  min-width: 140px;
 }
 
 .controlItem label {
-  font-size: 0.85rem;
-  color: #374151;
+  font-size: 0.8rem;
+  color: #006161;
 }
 
 .controlItem input,
 .controlItem select {
-  padding: 8px 10px;
-  border: 1px solid #e6eef8;
-  border-radius: 6px;
-  background: #f8fafc;
-  outline: none;
+  padding: 10px;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  background: #ffffff;
   font-size: 0.9rem;
 }
 
 .controlItem input:focus,
 .controlItem select:focus {
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
-  border-color: #6366f1;
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Per-day rate radio */
-.rateRow {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.dropdown {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  border-radius: 18px;
+  border: 1px solid #cfdcdc;
+  background-color: #ffffff!important;
+  color: #015151;
+  cursor: pointer;
+  /* outline: none; */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Action buttons (refresh / pdf) */
+/* Hover */
+.dropdown:hover {
+  border-color: #007171;
+}
+
+/* Focus */
+.dropdown:focus {
+  border-color: #007171;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Disabled */
+.dropdown:disabled {
+  background-color: #f3f6f6;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .controlItemActions {
   margin-left: auto;
   display: flex;
   gap: 10px;
-  align-items: center;
+  flex-wrap: wrap;
 }
 
+/* ===========================
+   Buttons
+=========================== */
 .btnPrimary {
-  background: #0ea5a4;
-  color: white;
+  background: #016161;
+  color: #fff;
   border: none;
-  padding: 9px 14px;
+  padding:0.5rem !important;
+  padding-top: 1px;
   border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .btnSecondary {
-  background: #64748b;
-  color: white;
+  background: #016161;
+  color: #fff;
   border: none;
-  padding: 9px 14px;
+  padding: 10px 14px;
   border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
 }
+
+.btnAction {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Paid / Unpaid */
+.btnPaid { background: #06ac00; color: #fff; }
+.btnPaidDisabled { background: var(--muted); cursor: not-allowed; }
+
+/* Freeze / Unfreeze */
+.btnFreeze { background: #ff0000; color: #fff; }
+.btnUnfreeze { background: #00782e; color: #fff; }
+.btnDisabled { background: gray; cursor: not-allowed; opacity: 0.6; color: white;}
+
+/* Calendar */
+.btnCalendar { background:rgb(0, 115, 222); color: #fff; }
 
 /* ===========================
    Table
 =========================== */
 .tableWrapper {
+  width: 100%;
   overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid #e6eef8;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
   width: 100%;
-  min-width: 1100px;
+  min-width: 1000px;
   border-collapse: collapse;
 }
 
 .table thead {
-  background: #0f172a;
-  color: #ffffff;
+  background: #0c5f58;
+  color: #fff;
 }
 
 .table th,
 .table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #eef2f7;
+  padding: 10px;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 0.85rem;
   text-align: left;
-  font-size: 0.93rem;
 }
 
 .table tbody tr:nth-child(even) {
-  background: #fbfdff;
+  background: #7cb3b7;
 }
 
-/* Action buttons column */
 .actionsCell {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-/* Empty & Loading */
-.loading {
-  padding: 40px;
-  text-align: center;
-  color: #64748b;
-  font-size: 1rem;
-}
-
+/* ===========================
+   Loading / Empty
+=========================== */
+.loading,
 .empty {
-  padding: 30px;
+  padding: 2rem;
   text-align: center;
-  color: #64748b;
-  font-size: 1rem;
+  color: #64748B;
 }
 
 /* ===========================
-   Modal (Common)
+   Modal (Global)
 =========================== */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.55);
+  background: rgba(2, 6, 23, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
-  padding: 16px;
+  z-index: 9999;
+  padding: 1rem;
 }
 
 .modalContent {
-  background: #ffffff;
+  background: #FFFFFF;
   width: min(600px, 95%);
   max-height: 90vh;
   overflow-y: auto;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.35);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
 }
 
-/* Modal header */
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
 }
 
 .closeX {
   border: none;
   background: none;
   font-size: 1.25rem;
-  cursor: pointer;
-  color: #475569;
+  color: #64748B;
 }
 
 /* ===========================
-   Payment Modal Form
+   Form
 =========================== */
 .formGroup {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .formGroup label {
-  font-size: 0.85rem;
-  color: #374151;
+  font-size: 0.8rem;
+  color: #326362;
 }
 
 .formGroup input,
 .formGroup select {
-  padding: 8px 10px;
-  border: 1px solid #e6eef8;
-  border-radius: 6px;
-  background: #f8fafc;
-  font-size: 0.9rem;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  background: #91d5ff;
 }
 
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 1rem;
 }
 
 /* ===========================
-   Attendance Modal
+   Mobile
 =========================== */
-.attendanceModal {
-  max-width: 800px !important;
-}
+@media (max-width: 768px) {
+  .controlItemActions {
+    width: 100%;
+    justify-content: stretch;
+  }
 
-/* ===========================
-   Responsive
-=========================== */
-@media (max-width: 900px) {
-  .controls {
-    gap: 10px;
+  .btnPrimary,
+  .btnSecondary {
+    flex: 1;
   }
-  .controlItem {
-    min-width: 140px;
-  }
+
   .table {
-    font-size: 0.85rem;
-  }
-  .modalContent {
-    width: 95%;
+    min-width: 900px;
   }
 }
-/* ===========================
-   Bill Action Buttons
-=========================== */
-
-.btnAction {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 600;
-  transition: 0.2s ease;
+/* ===== Responsive Switch ===== */
+.mobileList {
+  display: none;
 }
 
-/* Mark Paid / Unmark Paid */
-.btnPaid {
-  background: #16a34a;
-  color: #fff;
-}
-.btnUnpaid {
-  background: #ff8c00;
-  color: #fff;
-}
-.btnPaid:hover {
-  background: #12833c;
-}
-.btnUnpaid:hover {
-  background: #e67b00;
+@media (max-width: 768px) {
+  .tableWrapper {
+    display: none;
+  }
+  .mobileList {
+    display: block;
+  }
 }
 
-/* Freeze / Unfreeze */
-.btnFreeze {
-  background: #dc2626; /* red */
-  color: #fff;
-}
-.btnUnfreeze {
-  background: #2563eb; /* blue */
-  color: #fff;
-}
-.btnFreeze:hover {
-  background: #b91c1c;
-}
-.btnUnfreeze:hover {
-  background: #1d4ed8;
+/* ===== Mobile Card ===== */
+.mobileCard {
+  background: var(--card-bg, #fff);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* Disabled Freeze button */
-.btnDisabled {
-  background: #9ca3af !important;
-  cursor: not-allowed !important;
-  opacity: 0.6 !important;
-}
-
-/* View Calendar */
-.btnCalendar {
-  background: #6b7280;
-  color: #fff;
-}
-.btnCalendar:hover {
-  background: #4b5563;
-}
-
-/* Wrapper */
-.actionsCell {
+.cardRow {
   display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.cardRow span {
+  color: #006161;
+}
+
+.cardRow strong {
+  color: #007171;
+  font-weight: 600;
+}
+
+/* ===== Card Actions ===== */
+.cardActions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-wrap: wrap;
-}
-.btnPaid {
-  background-color: #4caf50;
-  color: white;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  border: none;
-  transition: 0.2s ease;
 }
 
-.btnPaid:hover {
-  background-color: #45a049;
-}
-
-/* Disabled version (when already paid) */
-.btnPaidDisabled {
-  background-color: #9e9e9e !important;
-  color: white;
-  cursor: not-allowed !important;
-  opacity: 0.7;
+.cardActions button {
+  width: 100%;
 }

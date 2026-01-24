@@ -1,16 +1,22 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.example.app',
+  appId: 'com.shristech.bitetrackadmin',
   appName: 'mess-management-frontend',
-  webDir: "out",
-  "server": {
-    "cleartext": true,
-    "androidScheme": "https"
+  webDir: 'out',
+  server: {
+    androidScheme: 'https',
   },
-  "android": {
-    "allowMixedContent": true
-  }
+  android:{
+    allowMixedContent:true,
+    
+  },
+  plugins: {
+  Camera: {
+    permissions: ["camera"],
+  },
+}
+
 };
 
 export default config;

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import styles from "../styles/verify.module.css";
-import Sidebar from "../components/Sidebar";
 import Layout from "../components/Layout";
 
 export default function Verify() {
@@ -25,7 +24,7 @@ export default function Verify() {
     setMessage("Verifying...");
 
     try {
-      const res = await fetch("/api/verify", {
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/verify/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -43,8 +42,6 @@ export default function Verify() {
   };
 
   return (
-  <Layout>
-
     <div className={styles.container}>
       <div className={styles.main}>
 
@@ -85,6 +82,5 @@ export default function Verify() {
       </div>
             </div>
     </div>
-            </Layout>
   );
 }

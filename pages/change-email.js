@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import Sidebar from "../components/Sidebar";
 import styles from "../styles/changeemail.module.css";
+import { offlineFetch } from "@/lib/offlineFetch";
+import toast from "react-hot-toast";
 
 export default function ChangeEmail() {
   const [users, setUsers] = useState([]);
@@ -10,18 +12,39 @@ export default function ChangeEmail() {
   const [newEmail, setNewEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+
+  const getToken = () =>
+  typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${getToken()}`,
+});
+
+
   // Fetch all users
+  const fetchData = async () => {
+     try {
+    const token = getToken();
+    if (!token) return console.warn("Token missing");
+
+    const data = await offlineFetch("users-list", async () => {
+      const res = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/users/list/",
+        { headers: authHeaders() }
+      );
+      if (!res.ok) throw new Error("Failed to fetch users");
+      return res.json();
+    });
+
+    setUsers(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("fetch users error:", err);
+    setUsers([]);
+  }
+  };
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch("/api/users/list");
-        const data = await res.json();
-        setUsers(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchUsers();
+    fetchData();
   }, []);
 
   const filteredUsers = users.filter(
@@ -38,9 +61,9 @@ export default function ChangeEmail() {
 
     try {
       setLoading(true);
-      const res = await fetch("/api/users/update-email", {
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/update-email/", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({
           id: selectedUser.id,
           email: newEmail,
@@ -51,22 +74,21 @@ export default function ChangeEmail() {
       const data = await res.json();
       if (!res.ok) return alert(data.error || "Failed to update email");
 
-      alert("Email updated successfully!");
+      toast.success("Email updated successfully!");
       setSelectedUser(null);
       setNewEmail("");
       setSearchTerm("");
+      fetchData();
     } catch (err) {
       console.error(err);
-      alert("Error updating email");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Layout>
   <div className={styles.container}>
-    <Sidebar />
     <main className={styles.main}>
       <h1>Change User Email</h1>
 
@@ -110,6 +132,5 @@ export default function ChangeEmail() {
       )}
     </main>
   </div>
-</Layout>
   );
 }

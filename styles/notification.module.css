@@ -1,50 +1,102 @@
+/* ===== Container ===== */
 .container {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #F8FAFC;
+  min-height: 100vh;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
+/* ===== Headers ===== */
 .header {
-  font-size: 22px;
+  font-size: 1.35rem;
   font-weight: 600;
+  color: #007170;
+  margin-bottom: 16px;
+}
+
+.header2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #007170;
+  margin-bottom: 16px;
+}
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 20px;
-  color: #1f2937;
 }
 
+.tabBtn {
+  padding: 10px 20px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #64748B;
+  transition: all 0.2s ease;
+}
+
+.tabBtn:hover {
+  background-color: #0f766e;
+}
+
+.active {
+  background-color: #0f766e;
+  color: #FFFFFF !important;
+  border-color: #0f766e;
+}
+
+/* ===== Cards ===== */
 .card {
-  background: #ffffff;
-  padding: 20px;
+  background-color: #FFFFFF;
   border-radius: 14px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  margin-bottom: 25px;
-  border: 1px solid #f1f1f1;
+  padding: 20px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color:#0f766e;
 }
 
+/* ===== Input Groups ===== */
 .inputGroup {
   display: flex;
   flex-direction: column;
-  margin-bottom: 15px;
+  gap: 6px;
 }
 
 .label {
   font-size: 14px;
   font-weight: 500;
-  margin-bottom: 6px;
-  color: #374151;
+  color: #0f766e;
 }
+
 .input,
 .textarea,
 .select {
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #E2E8F0;
   border-radius: 8px;
   font-size: 14px;
-  transition: border 0.3s ease;
+  background-color: #FFFFFF;
+  color: #0f766e;
+  transition: all 0.3s ease;
 }
 
 .input:focus,
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2);
 }
 
 .textarea {
@@ -52,86 +104,173 @@
   resize: vertical;
 }
 
+/* ===== Form Row ===== */
+.formRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ===== Buttons ===== */
 .button {
-  background: #3b82f6;
-  color: white;
+  background-color: #0f766e;
+  color: #FFFFFF;
   border: none;
   padding: 10px 16px;
-  font-size: 15px;
   border-radius: 8px;
+  font-size: 15px;
   cursor: pointer;
-  margin-top: 10px;
-  transition: background 0.25s ease;
+  transition: all 0.25s ease;
+  margin-bottom: 1.5rem;
 }
 
 .button:hover {
-  background: #2563eb;
+  background-color: #14B8A6;
 }
 
+.actionBtn {
+  background-color: #EF4444;
+  color: #FFFFFF;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  background-color: #dc2626;
+}
+
+/* ===== Tables ===== */
 .list {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  overflow-x: auto;
+  display: block;
+  border-radius: 12px;
+  color: #0f766e !important;
 }
 
-.list th, .list td {
+.list thead {
+  background-color: #F8FAFC;
+}
+
+.list th,
+.list td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #ededed;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 14px;
+  color: #006160;
 }
 
 .list th {
-  background: #f9fafb;
   font-weight: 600;
-  font-size: 14px;
+  color: #017171;
 }
 
 .list td {
-  font-size: 14px;
-  color: #374151;
+  color: #006161;
+  margin-bottom: 1rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-align: justify;
 }
 
-.actionBtn {
-  background: #ef4444;
-  color: white;
-  padding: 6px 10px;
-  font-size: 13px;
-  border-radius: 6px;
-  cursor: pointer;
-  border: none;
+.list tr:nth-child(even) {
+  background-color: #F8FAFC;
 }
 
-.actionBtn:hover {
-  background: #dc2626;
+.list tr:hover {
+  background-color: rgba(15, 118, 110, 0.05);
 }
 
+/* ===== Responsive Tables ===== */
 @media (max-width: 768px) {
-  .list th, .list td {
+  .list th,
+  .list td {
     padding: 10px;
   }
 }
 
-.tabs {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
+@media (max-width: 640px) {
+  .list,
+  .list thead,
+  .list tbody,
+  .list th,
+  .list td,
+  .list tr {
+    display: block;
+    width: 100%;
+  }
 
-.tabBtn {
-  padding: 10px 18px;
-  background: #eee;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  color: gray;
-}
+  .list thead {
+    display: none;
+  }
 
-.tabBtn:hover {
-  background: #ddd;
-}
+  .list tr {
+    margin-bottom: 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 12px;
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
 
-.active {
-  background: #0070f3;
-  color: white !important;
+  .list td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border: none;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .list td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #64748B;
+    margin-right: 6px;
+    flex-basis: 45%;
+  }
+
+  .actionBtn {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .formRow {
+    flex-direction: column;
+  }
+
+  .select,
+  .button {
+    width: 100%;
+  }
+
+  .textarea {
+    min-height: 100px;
+  }
+
+  .tabs {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tabBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
 }

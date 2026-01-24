@@ -1,19 +1,29 @@
+
+import { useState } from "react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import BottomNav from "./Footer";
 import styles from "../styles/layout.module.css";
-import { useState } from "react";
 
 export default function Layout({ children }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className={styles.container}>
-      <Navbar />
+      <Navbar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
+
       <div className={styles.body}>
-        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-        <main className={collapsed ? styles.mainCollapsed : styles.main}>
+        {sidebarOpen && (
+          <Sidebar closeSidebar={() => setSidebarOpen(false)} />
+        )}
+
+        <main className={styles.main}>
           {children}
         </main>
+         <BottomNav />
       </div>
     </div>
   );

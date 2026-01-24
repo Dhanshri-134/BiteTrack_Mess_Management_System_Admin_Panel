@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import styles from "../styles/register.module.css";
 import Layout from "../components/Layout";
@@ -20,7 +20,39 @@ export default function Register() {
     parent_address: "",
   });
 
+  const [hostels, setHostels] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [message, setMessage] = useState("");
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const fetchMeta = async () => {
+      try {
+        const [hRes, cRes] = await Promise.all([
+          fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/hostels/fetch/",
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/courses/fetch/",
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+        ]);
+
+        setHostels(await hRes.json());
+        setCourses(await cRes.json());
+      } catch (err) {
+        console.error("Failed to load hostels/courses", err);
+      }
+    };
+
+    fetchMeta();
+  }, []);
+
+
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -29,8 +61,10 @@ export default function Register() {
     e.preventDefault();
     setMessage("Submitting...");
 
+
+
     try {
-      const res = await fetch("/api/register", {
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -48,7 +82,7 @@ export default function Register() {
   };
 
   return (
-    <Layout>
+  
 
     <div className={styles.container}>
         <h1 className={styles.title}>Register User</h1>
@@ -86,20 +120,51 @@ export default function Register() {
             </div>
           </div>
 
-          <div className={styles.row}>
+         <div className={styles.row}>
             <div className={styles.field}>
-              <label>Room Number</label>
-              <input type="text" name="room_no" onChange={handleChange} className={styles.input} />
+            <input name="room_no" placeholder="Room No." onChange={handleChange} />
             </div>
+
             <div className={styles.field}>
-              <label>Hostel Name</label>
-              <input type="text" name="hostel_name" onChange={handleChange} className={styles.input} />
+            <select name="hostel_name" required onChange={handleChange}>
+              <option value="">Select Hostel</option>
+              {hostels.map((h) => (
+                <option key={h.id} value={h.name}>
+                  {h.name}
+                </option>
+              ))}
+            </select>
             </div>
+
             <div className={styles.field}>
-              <label>Course</label>
-              <input type="text" name="course" onChange={handleChange} className={styles.input} />
+            <select name="course" required onChange={handleChange}>
+              <option value="">Select Course</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
             </div>
           </div>
+
+            <div className={styles.field}>
+              <select name="gender" onChange={handleChange}>
+  <option value="">Gender</option>
+  <option value="Male">Male</option>
+  <option value="Female">Female</option>
+  <option value="Other">Other</option>
+</select>
+
+
+            </div>
+            <div className={styles.field}>
+<select name="food_preference" onChange={handleChange}>
+  <option value="">Food Preference</option>
+  <option value="veg">Veg</option>
+  <option value="nonveg">Non-Veg</option>
+</select>
+              </div>
 
           <div className={styles.field}>
             <label>Date of Joining</label>
@@ -131,6 +196,5 @@ export default function Register() {
         {message && <p className={styles.message}>{message}</p>}
       </div>
     </div>
-    </Layout>
   );
 }

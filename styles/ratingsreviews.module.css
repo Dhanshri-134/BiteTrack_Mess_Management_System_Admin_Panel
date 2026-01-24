@@ -1,24 +1,30 @@
+/* ================================
+   CONTAINER
+================================ */
 .container {
-  padding: 1.5rem 2rem;
   background-color: #f9fafb;
   min-height: calc(100vh - 70px);
 }
 
-.header {
-  margin-bottom: 1.5rem;
-}
+/* ================================
+   HEADER
+================================ */
+
 
 .header h1 {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #005151;
 }
 
 .header p {
-  color: #6b7280;
+  color: #3d7777;
   font-size: 0.95rem;
 }
 
+/* ================================
+   STATES
+================================ */
 .loading,
 .noData {
   text-align: center;
@@ -27,33 +33,40 @@
   margin-top: 2rem;
 }
 
-/* Grid for reviews */
+/* ================================
+   GRID LAYOUT
+================================ */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.2rem;
+  gap: 1.25rem;
 }
 
-/* Review card */
+/* ================================
+   REVIEW CARD
+================================ */
 .card {
   background: #fff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 1.1rem 1.25rem;
   transition: all 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
-/* Header Row */
+/* ================================
+   CARD HEADER
+================================ */
 .headerRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 0.75rem;
 }
 
@@ -61,39 +74,52 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .avatar {
-  background: #3b82f6;
+  background: #007171;
   color: #fff;
   font-weight: 600;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .userInfo h3 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #111827;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .email {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Rating stars */
+/* ================================
+   RATING
+================================ */
 .rating {
-  font-size: 1rem;
+  font-size: 0.5rem;
   color: #facc15;
+  white-space: nowrap;
 }
 
-/* Comment section */
+/* ================================
+   COMMENT (OPTIONAL)
+================================ */
 .comment {
   font-size: 0.95rem;
   color: #374151;
@@ -101,7 +127,9 @@
   line-height: 1.4;
 }
 
-/* Footer */
+/* ================================
+   FOOTER
+================================ */
 .footer {
   display: flex;
   justify-content: space-between;
@@ -115,7 +143,7 @@
 .type {
   background-color: #eef2ff;
   color: #4338ca;
-  padding: 0.2rem 0.5rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 6px;
   font-size: 0.75rem;
   text-transform: capitalize;
@@ -123,4 +151,31 @@
 
 .date {
   font-size: 0.8rem;
+}
+
+/* ================================
+   MOBILE OPTIMIZATION
+================================ */
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .grid {
+    gap: 1rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.35rem;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
 }

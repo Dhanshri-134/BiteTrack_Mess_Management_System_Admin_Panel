@@ -1,0 +1,37 @@
+.container {
+  padding: 1.5rem;
+}
+
+/* Summary Card */
+.summarySection {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  font-weight: 500;
+}
+
+.approved {
+  background: #3b82f6;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.table th,
+.table td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  text-align: left;
+}

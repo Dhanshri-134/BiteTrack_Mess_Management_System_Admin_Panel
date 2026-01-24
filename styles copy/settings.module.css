@@ -1,0 +1,335 @@
+/* settings.module.css */
+
+/* Container & main layout */
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f0fdf4; /* light green background */
+}
+
+.main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Page title */
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #166534; /* dark green */
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Subtitle for sections */
+.subtitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.8rem 0;
+  color: #14532d; /* darker green */
+  border-bottom: 2px solid #10b981;
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+/* Form wrapper */
+.formWrapper {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0px 6px 15px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+/* Rows: 3 columns by default */
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Field wrapper */
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Labels */
+.field label {
+  font-weight: 600;
+  color: #065f46; /* green */
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+}
+
+/* Inputs & .textareas */
+.input, .textarea {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  background-color: #ffffff;
+  color: #111827;
+  transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #9ca3af;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #10b981;
+  outline: none;
+  background-color: #f0fdf4;
+  box-shadow: 0px 0px 0px 2px rgba(16, 185, 129, 0.3);
+}
+
+/* Button */
+.button {
+  width: 100%;
+  padding: 0.9rem;
+  background-color: #10b981;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.1s ease;
+}
+
+.button:hover {
+  background-color: #059669;
+  transform: scale(1.02);
+}
+
+/* Feedback message */
+.message {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #166534;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Other modules section */
+.additionalModules {
+  margin-top: 2rem;
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.actionCard {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.8rem;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.actionCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 6px 20px rgba(0,0,0,0.15);
+}
+
+.actionCard h3 {
+  color: #047857;
+  margin-bottom: 0.5rem;
+}
+
+.actionCard p {
+  color: #065f46;
+  font-size: 0.95rem;
+}
+
+
+/* Modal Styling */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal h2 {
+  color: #1e293b;
+  margin-bottom: 1.2rem;
+  font-size: 1.3rem;
+}
+
+.modal input {
+  width: 100%;
+  margin-bottom: 0.9rem;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.modalButtons button {
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .actionsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  .subtitle {
+    font-size: 1.2rem;
+  }
+}
+
+
+
+.container { display: flex; gap: 1rem; }
+.main {
+  flex: 1;
+  padding: 2rem;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+.cardsContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+
+.card { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 3px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 1rem; }
+
+.card h2 { font-size: 1.2rem; font-weight: 600; border-bottom: 1px solid #ddd; padding-bottom: 0.3rem; margin-bottom: 0.5rem; }
+
+.card input, .card textarea { padding: 0.6rem; border-radius: 6px; border: 1px solid #ccc; width: 100%; }
+.card textarea { min-height: 80px; font-family: inherit; }
+
+.uploadWrapper { display: flex; flex-direction: column; gap: 0.5rem; }
+.imagesPreview { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.preview { max-width: 100px; max-height: 100px; border-radius: 6px; border: 1px solid #ddd; object-fit: cover; }
+
+.saveButton { margin-top: 1rem; padding: 0.8rem 1.5rem; border: none; border-radius: 8px; background-color: #4caf50; color: #fff; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.saveButton:hover { background-color: #45a049; }
+/* full-width card */
+.fullWidthCard {
+  grid-column: 1 / -1; /* spans full row */
+  padding: 1rem;
+}
+
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.message {
+  padding: 0.5rem 1rem;
+  background: #e0ffe0;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+/* Each upload row */
+.uploadRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem; /* space between input and preview */
+  margin-bottom: 1.5rem;
+}
+
+/* Left side: file input */
+.uploadLeft {
+  flex: 1; /* takes half or custom proportion */
+}
+
+/* Right side: preview */
+.uploadRight {
+  flex: 1; 
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.uploadLabel {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+/* Preview images */
+.preview {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}

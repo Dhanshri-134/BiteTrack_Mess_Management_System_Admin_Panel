@@ -12,7 +12,7 @@
 
 //   async function fetchBookings() {
 //     try {
-//       const res = await fetch("/api/bookings/fetch");
+//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bookings/fetch");
 //       const data = await res.json();
 //       setBookings(data);
 //     } catch (err) {
@@ -24,7 +24,7 @@
 
 //   async function updateStatus(id, newStatus) {
 //     try {
-//       const res = await fetch("/api/bookings/updateStatus", {
+//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bookings/updateStatus", {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify({ id, status: newStatus }),
@@ -113,11 +113,16 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/bookingRequests.module.css";
+import { offlineFetch } from "../lib/offlineFetch";
+import toast from "react-hot-toast";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function bookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  
+  const { t } = useLanguage();
 
   // Format date properly (YYYY-MM-DD)
   const formatDate = (dateString) => {
@@ -129,14 +134,22 @@ export default function bookings() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/bookings", {
+      const token = localStorage.getItem("token");
+      if (!token) {
+      console.warn("Session expired! Please login again.");
+      return;
+    }
+      const data = await offlineFetch("bookings-list", async () => {
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bookings/", {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to fetch bookings");
-      setBookings(data);
+      return data;
+      });
+      setBookings(data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -153,7 +166,7 @@ export default function bookings() {
       return;
 
     try {
-      const res = await fetch(`/api/bookings/${id}`, {
+      const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/bookings/${id}/`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",
@@ -166,98 +179,140 @@ export default function bookings() {
       if (!res.ok) throw new Error(data.error || "Failed to update booking");
       fetchBookings();
     } catch (err) {
-      alert("Error updating booking: " + err.message);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
   const filtered = filter === "All"
     ? bookings
     : bookings.filter(b => b.status === filter);
+    const sortedFiltered = [...filtered].sort((a, b) => a.id - b.id);
 
-  return (
+
+   return (
     <Layout>
       <div className={styles.container}>
-        <h1>🎉 Function Bookings</h1>
+        <h1>{t("functionBookings")}</h1>
 
         <div className={styles.controls}>
-          <label>Filter:</label>
+          <label>{t("filter")}:</label>
           <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option>All</option>
-            <option>Pending</option>
-            <option>Confirmed</option>
-            <option>Rejected</option>
-            <option>Completed</option>
+            <option>{t("all")}</option>
+            <option>{t("pending")}</option>
+            <option>{t("confirmed")}</option>
+            <option>{t("rejected")}</option>
+            <option>{t("completed")}</option>
           </select>
         </div>
 
         {loading ? (
-          <p>Loading bookings...</p>
+          <p>{t("loadingBookings")}</p>
         ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Mobile</th>
-                <th>People</th>
-                <th>Menu Pref.</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Notes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* ===== DESKTOP TABLE ===== */}
+            <div className={styles.desktopOnly}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>{t("id")}</th>
+                    <th>{t("user")}</th>
+                    <th>{t("mobile")}</th>
+                    <th>{t("people")}</th>
+                    <th>{t("menuPreference")}</th>
+                    <th>{t("date")}</th>
+                    <th>{t("status")}</th>
+                    <th>{t("notes")}</th>
+                    <th>{t("actions")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr><td colSpan="9">{t("noBookingsFound")}</td></tr>
+                  ) : (
+                    sortedFiltered.map(b => (
+                      <tr key={b.id}>
+                        <td>{b.id}</td>
+                        <td>{b.name}</td>
+                        <td>{b.mobile_no}</td>
+                        <td>{b.people_count}</td>
+                        <td>{b.menu_preference}</td>
+                        <td>{formatDate(b.function_date)}</td>
+                        <td>
+                          <span className={`${styles.status} ${styles[b.status.toLowerCase()]}`}>
+                            {t(b.status.toLowerCase())}
+                          </span>
+                        </td>
+                        <td>{b.notes || "-"}</td>
+                        <td className={styles.actions}>
+                          {b.status === "Pending" && (
+                            <>
+                              <button onClick={() => updateStatus(b.id, "Confirmed")} className={styles.confirm}>
+                                {t("confirm")}
+                              </button>
+                              <button onClick={() => updateStatus(b.id, "Rejected")} className={styles.reject}>
+                                {t("reject")}
+                              </button>
+                            </>
+                          )}
+                          {b.status === "Confirmed" && (
+                            <button onClick={() => updateStatus(b.id, "Completed")} className={styles.complete}>
+                              {t("complete")}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ===== MOBILE CARDS ===== */}
+            <div className={styles.mobileOnly}>
               {filtered.length === 0 ? (
-                <tr><td colSpan="9">No bookings found.</td></tr>
+                <p>{t("noBookingsFound")}</p>
               ) : (
-                filtered.map(b => (
-                  <tr key={b.id}>
-                    <td>{b.id}</td>
-                    <td>{b.name}</td>
-                    <td>{b.mobile_no}</td>
-                    <td>{b.people_count}</td>
-                    <td>{b.menu_preference}</td>
-                    <td>{formatDate(b.function_date)}</td>
-                    <td>
+                sortedFiltered.map(b => (
+                  <div key={b.id} className={styles.bookingCard}>
+                    <div className={styles.cardHeader}>
+                      <strong>#{b.id}</strong>
                       <span className={`${styles.status} ${styles[b.status.toLowerCase()]}`}>
-                        {b.status}
+                        {t(b.status.toLowerCase())}
                       </span>
-                    </td>
-                    <td>{b.notes || "-"}</td>
-                    <td className={styles.actions}>
+                    </div>
+
+                    <div className={styles.cardRow}><b>{t("user")}:</b> {b.name}</div>
+                    <div className={styles.cardRow}><b>{t("mobile")}:</b> {b.mobile_no}</div>
+                    <div className={styles.cardRow}><b>{t("people")}:</b> {b.people_count}</div>
+                    <div className={styles.cardRow}><b>{t("menu")}:</b> {b.menu_preference}</div>
+                    <div className={styles.cardRow}><b>{t("date")}:</b> {formatDate(b.function_date)}</div>
+                    <div className={styles.cardRow}><b>{t("notes")}:</b> {b.notes || "-"}</div>
+
+                    <div className={styles.actions}>
                       {b.status === "Pending" && (
                         <>
-                          <button 
-                            onClick={() => updateStatus(b.id, "Confirmed")} 
-                            className={styles.confirm}
-                          >
-                            Confirm
+                          <button onClick={() => updateStatus(b.id, "Confirmed")} className={styles.confirm}>
+                            {t("confirm")}
                           </button>
-                          <button 
-                            onClick={() => updateStatus(b.id, "Rejected")} 
-                            className={styles.reject}
-                          >
-                            Reject
+                          <button onClick={() => updateStatus(b.id, "Rejected")} className={styles.reject}>
+                            {t("reject")}
                           </button>
                         </>
                       )}
 
                       {b.status === "Confirmed" && (
-                        <button 
-                          onClick={() => updateStatus(b.id, "Completed")} 
-                          className={styles.complete}
-                        >
-                          Complete
+                        <button onClick={() => updateStatus(b.id, "Completed")} className={styles.complete}>
+                          {t("complete")}
                         </button>
                       )}
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 ))
               )}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
+
       </div>
     </Layout>
   );

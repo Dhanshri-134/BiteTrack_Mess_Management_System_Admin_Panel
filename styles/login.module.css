@@ -1,33 +1,36 @@
 .container {
-  display: flex;
+  /* display: flex; */
   justify-content: center;
   align-items: center;
+  padding: 0px 15px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f9fafb, #e5ffe0);
+  background: linear-gradient(135deg, #f9fafb, #c7fabc);
   font-family: 'Inter', sans-serif;
+  /* background-color: #007170 !important; */
 }
 
 .card {
+  margin:auto;
   background: white;
   padding: 2.5rem;
-  border-radius: 12px;
+  border-radius: 18px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
   width: 100%;
   max-width: 400px;
   text-align: center;
 }
 
-.logo {
+.Header {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #16a34a;
+  color: #006161;
   margin-bottom: 1rem;
 }
 
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 2rem;
+  color: #066161;
 }
 
 .form {
@@ -58,16 +61,16 @@
 
 .formGroup input:focus {
   outline: none;
-  border-color: #16a34a;
+  border-color: #096666;
   box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
 }
 
 .loginBtn {
-  background: #16a34a;
+  background: #007171;
   color: white;
   border: none;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: 20px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -75,7 +78,7 @@
 }
 
 .loginBtn:hover {
-  background: #15803d;
+  background: #005151;
 }
 
 /* Responsive */
@@ -83,4 +86,128 @@
   .card {
     padding: 2rem 1.5rem;
   }
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  display:block;
+  padding: 0px !important;
+  object-fit: cover;   
+  object-position: center;
+}
+
+.forgot {
+  text-align: right;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  color: #5a86e7;
+  /* text-decoration: underline; */
+}
+
+.forgot:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: red;
+  font-size: 0.85rem;
+}
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordWrapper input {
+  padding-right: 2.5rem;
+}
+
+.eyeIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.eyeIcon:hover {
+  color: #111827;
+}
+
+/* Tabs */
+.tabs {
+  position: relative;
+  display: flex;
+  background: #f2f2f2;
+  border-radius: 18px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 1;
+  color: #007170;
+}
+
+.tab::after,.tab::before{
+  background-color: #005151;
+}
+
+.active {
+  color: #fff;
+}
+
+/* Sliding indicator */
+.slider {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  background: #007170;
+  left: 0;
+  top: 0;
+  transition: all 0.35s ease;
+  border-radius: 18px;
+}
+
+.right {
+  left: 50%;
+}
+
+/* Smooth form animation */
+.fade {
+  animation: fadeSlide 0.35s ease;
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.regbtn{
+  color:gray;
+}
+
+.toggleBtn{
+  margin:0px !important;
+  padding: 0px !important;
+  color: #005151 !important;
+  position: absolute;
+  top:10px;
+  right: 10px;
+  font-size: 0.8rem;
+  background-color: transparent;
 }

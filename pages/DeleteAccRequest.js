@@ -1,12 +1,24 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/deleteRequests.module.css";
+import { offlineFetch } from "@/lib/offlineFetch";
+import toast from "react-hot-toast";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function DeleteRequests() {
   const [requests, setRequests] = useState([]);
   const [inactiveUsers, setInactiveUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("requests");
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
+
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const authHeaders = () => ({
+    Authorization: `Bearer ${getToken()}`,
+    "Content-Type": "application/json",
+  });
 
   // Format date
   const formatDate = (dateString) => {
@@ -21,67 +33,99 @@ export default function DeleteRequests() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
+      if (!token) return console.warn(t("tokenMissing"));
 
-      // Fetch delete requests
-      const reqRes = await fetch("/api/accountDeletion/list", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const data = await offlineFetch("delete-requests-all", async () => {
+        // fetch delete requests
+        const reqRes = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/accountDeletion/list/",
+          { headers: authHeaders() }
+        );
+        if (!reqRes.ok) throw new Error(t("failedToFetchDeleteRequests"));
+        const reqData = await reqRes.json();
+
+        // fetch inactive users
+        const inactiveRes = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/users/inactive/",
+          { headers: authHeaders() }
+        );
+        if (!inactiveRes.ok) throw new Error(t("failedToFetchInactiveUsers"));
+        const inactiveData = await inactiveRes.json();
+
+        return {
+          requests: reqData,
+          inactive: inactiveData.data || [],
+        };
       });
-      const reqData = await reqRes.json();
 
-      // Fetch inactive users
-      const inactiveRes = await fetch("/api/users/inactive", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const inactiveData = await inactiveRes.json();
+      setRequests(
+        Array.isArray(data.requests)
+          ? data.requests.filter((r) => r.status === "pending")
+          : []
+      );
 
-      if (!reqRes.ok) throw new Error(reqData.error);
-      if (!inactiveRes.ok) throw new Error(inactiveData.error);
-
-      setRequests(reqData.filter((r) => r.status === "pending"));
-      setInactiveUsers(inactiveData.data || []);
+      setInactiveUsers(Array.isArray(data.inactive) ? data.inactive : []);
     } catch (err) {
-      console.error(err);
+      console.error(t("fetchAllError"), err);
+      setRequests([]);
+      setInactiveUsers([]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchAll();
   }, []);
 
+  const deleteUser = async (user) => {
+  const confirmDelete = confirm(`${t("confirmDeleteUser")} ${user.name}?`);
+  if (!confirmDelete) return;
+
+  const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/delete/", {
+    method: "DELETE",
+    headers: authHeaders(),
+    body: JSON.stringify({ id: user.id }),
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    toast.success(t("userDeletedSuccess"));
+    fetchAll();
+  } else {
+    toast.error(t("somethingWentWrong"));
+  }
+};
+
   // Update request status (Approve / Reject)
   const updateStatus = async (id, status) => {
-    if (!confirm(`Mark this request as ${status}?`)) return;
+    if (!confirm(t("confirmMarkRequest", { status }))) return;
 
     try {
-      const res = await fetch(`/api/accountDeletion/update`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ id, status }),
-      });
+      const res = await fetch(
+        `https://bite-track-mess-management-system-a.vercel.app/api/accountDeletion/update/`,
+        {
+          method: "PATCH",
+          headers: authHeaders(),
+          body: JSON.stringify({ id, status }),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
       fetchAll();
     } catch (err) {
-      alert("Error updating request: " + err.message);
+      toast.error(t("somethingWentWrong"));
     }
   };
 
   return (
     <Layout>
       <div className={styles.container}>
-        <h1>🗑 Delete Account Management</h1>
+        <h1>{t("deleteAccountRequests")}</h1>
 
         {/* Tabs */}
         <div className={styles.tabs}>
@@ -91,7 +135,7 @@ export default function DeleteRequests() {
             }`}
             onClick={() => setActiveTab("requests")}
           >
-            Requests
+            {t("requests")}
           </button>
 
           <button
@@ -100,52 +144,54 @@ export default function DeleteRequests() {
             }`}
             onClick={() => setActiveTab("inactive")}
           >
-            Inactive Members
+            {t("inactiveMembers")}
           </button>
         </div>
 
         {loading ? (
-          <p>Loading...</p>
+          <p>{t("loading")}</p>
         ) : activeTab === "requests" ? (
-          // 🔵 PENDING REQUESTS TABLE
+          /* 🔵 DELETE REQUESTS */
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Email</th>
-                <th>Reason</th>
-                <th>Requested At</th>
-                <th>Actions</th>
+                <th>{t("id")}</th>
+                <th>{t("user")}</th>
+                <th>{t("email")}</th>
+                <th>{t("reason")}</th>
+                <th>{t("requestedAt")}</th>
+                <th>{t("actions")}</th>
               </tr>
             </thead>
 
             <tbody>
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan="6">No pending requests.</td>
+                  <td colSpan="6">{t("noPendingRequests")}</td>
                 </tr>
               ) : (
                 requests.map((r) => (
                   <tr key={r.id}>
-                    <td>{r.id}</td>
-                    <td>{r.user_name}</td>
-                    <td>{r.user_email}</td>
-                    <td>{r.reason || "-"}</td>
-                    <td>{formatDate(r.requested_at)}</td>
-                    <td className={styles.actions}>
+                    <td data-label={t("id")}>{r.id}</td>
+                    <td data-label={t("user")}>{r.user_name}</td>
+                    <td data-label={t("email")}>{r.user_email}</td>
+                    <td data-label={t("reason")}>{r.reason || "-"}</td>
+                    <td data-label={t("requestedAt")}>
+                      {formatDate(r.requested_at)}
+                    </td>
+                    <td data-label={t("actions")} className={styles.actions}>
                       <button
                         className={styles.approve}
                         onClick={() => updateStatus(r.id, "approved")}
                       >
-                        Approve
+                        {t("approve")}
                       </button>
 
                       <button
                         className={styles.reject}
                         onClick={() => updateStatus(r.id, "rejected")}
                       >
-                        Reject
+                        {t("reject")}
                       </button>
                     </td>
                   </tr>
@@ -154,33 +200,38 @@ export default function DeleteRequests() {
             </tbody>
           </table>
         ) : (
-          // 🔴 INACTIVE USERS TABLE — NO ACTION BUTTONS
+          /* 🔴 INACTIVE MEMBERS */
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>User</th>
-                <th>Email</th>
-                <th>Hostel</th>
-                <th>Room</th>
-                <th>Course</th>
-                <th>Date of Joining</th>
+                <th>{t("user")}</th>
+                <th>{t("email")}</th>
+                <th>{t("hostel")}</th>
+                <th>{t("room")}</th>
+                <th>{t("course")}</th>
+                <th>{t("dateOfJoining")}</th>
               </tr>
             </thead>
 
             <tbody>
               {inactiveUsers.length === 0 ? (
                 <tr>
-                  <td colSpan="6">No inactive members.</td>
+                  <td colSpan="6">{t("noInactiveMembers")}</td>
                 </tr>
               ) : (
                 inactiveUsers.map((u) => (
                   <tr key={u.id}>
-                    <td>{u.name}</td>
-                    <td>{u.email}</td>
-                    <td>{u.hostel_name || "-"}</td>
-                    <td>{u.room_no || "-"}</td>
-                    <td>{u.course || "-"}</td>
-                    <td>{formatDate(u.date_of_joining)}</td>
+                    <td data-label={t("user")}>{u.name}</td>
+                    <td data-label={t("email")}>{u.email}</td>
+                    <td data-label={t("hostel")}>{u.hostel_name || "-"}</td>
+                    <td data-label={t("room")}>{u.room_no || "-"}</td>
+                    <td data-label={t("course")}>{u.course || "-"}</td>
+                    <td data-label={t("dateOfJoining")}>
+                      {formatDate(u.date_of_joining)}
+                    </td>
+                    <button className={styles.button} onClick={() => deleteUser(u)}>
+                          {t("delete")}
+                        </button>
                   </tr>
                 ))
               )}

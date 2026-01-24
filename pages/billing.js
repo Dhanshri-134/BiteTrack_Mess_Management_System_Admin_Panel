@@ -324,14 +324,14 @@
 //     return billedDays;
 //   };
 
-  
-  
-  
+
+
+
 //   const fetchBills = async () => {
 //     try {
 //       const token = localStorage.getItem("token");
 //       setLoading(true);
-//       let url = "/api/bills/fetch";
+//       let url = "https://bite-track-mess-management-system-a.vercel.app/api/bills/fetch";
 //       if (month && year) url += `?month=${month}&year=${year}`;
 
 //       const res = await fetch(url,{
@@ -376,7 +376,7 @@
 
 //   const handleScan = async (qr) => {
 //     try {
-//       const res = await fetch("/api/attendance/mark", {
+//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark", {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify({ qr }),
@@ -388,7 +388,7 @@
 
 //         // fetch the names of recently marked users
 //         const ids = qr.split("-").map((p) => Number(p)).filter(Boolean);
-//         const namesRes = await fetch("/api/users/names", {
+//         const namesRes = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/names", {
 //           method: "POST",
 //           headers: { "Content-Type": "application/json" },
 //           body: JSON.stringify({ userIds: ids }),
@@ -414,7 +414,7 @@
 
 //   const handleGenerateBills = async () => {
 //     try {
-//       const res = await fetch("/api/bills/generate", { method: "POST" });
+//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/generate", { method: "POST" });
 //       if (!res.ok) throw new Error("Failed to generate bills");
 //       await fetchBills();
 //       alert("Bills generated successfully");
@@ -425,7 +425,7 @@
 
 //   const handlePaidToggle = async (userId, month, year) => {
 //     try {
-//       const res = await fetch("/api/bills/mark-paid", {
+//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/mark-paid", {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify({ userId, month, year }),
@@ -450,7 +450,7 @@
 //     }
 
 //     try {
-//       const res = await fetch(`/api/users/freeze`, {
+//       const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/users/freeze`, {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify({ user_id: bill.user_id }),
@@ -580,7 +580,7 @@
 //               className={styles.generateButton}
 //               onClick={() => {
 //                 if (!month || !year) return alert("Please select month and year");
-//                 window.open(`/api/bills/download?month=${month}&year=${year}`, "_blank");
+//                 window.open(`https://bite-track-mess-management-system-a.vercel.app/api/bills/download?month=${month}&year=${year}`, "_blank");
 //               }}
 //             >
 //               Download Monthly Bills
@@ -669,7 +669,7 @@
 //                             >
 //                               {b.paid ? "Unmark Paid" : "Mark Paid"}
 //                             </button>
-                            
+
 //                             <button
 //                               onClick={() =>
 //                                 setSelectedAttendance({
@@ -889,12 +889,15 @@
 
 
 
-// pages/bills/index.jsx
+// pages/billing.js
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import AttendanceCalendar from "../components/AttedanceCalendar";
 import styles from "../styles/billing.module.css";
 import useAuth from "../hooks/useAuth";
+import { offlineFetch } from "@/lib/offlineFetch";
+import toast from "react-hot-toast";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function BillsPage() {
   useAuth(); // keeps login redirect behavior
@@ -911,51 +914,51 @@ export default function BillsPage() {
   // // Per-day rate option
   // const [perDayMode, setPerDayMode] = useState("mess"); // mess | optionA
   // const [optionARate, setOptionARate] = useState("76.67");
-  const [freezeModal, setFreezeModal] = useState(null); 
+  const [freezeModal, setFreezeModal] = useState(null);
 
   // UI
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [confirmUnmark, setConfirmUnmark] = useState({
-  show: false,
-  bill: null,
-});
+    show: false,
+    bill: null,
+  });
 
   const [paymentModal, setPaymentModal] = useState(null); // { bill } or null
-const [paymentData, setPaymentData] = useState({
-  amount: "",
-  payment_type: "monthly",
-  payment_method: "",
-  upi_id: "",
-  transaction_id: "",
-  receipt_number: "",
-  payment_date: new Date().toISOString().slice(0, 10),
-});
-
-const openPaymentModal = (bill) => {
-  setPaymentData({
-    amount: bill.total_amount ?? 0,
+  const [paymentData, setPaymentData] = useState({
+    amount: "",
     payment_type: "monthly",
     payment_method: "",
     upi_id: "",
     transaction_id: "",
-    receipt_number: `REC-${bill.user_id}-${bill.month}-${bill.year}-${Date.now()}`,
+    receipt_number: "",
     payment_date: new Date().toISOString().slice(0, 10),
   });
-  setPaymentModal(bill);
-};
+
+  const openPaymentModal = (bill) => {
+    setPaymentData({
+      amount: bill.total_amount ?? 0,
+      payment_type: "monthly",
+      payment_method: "",
+      upi_id: "",
+      transaction_id: "",
+      receipt_number: `REC-${bill.user_id}-${bill.month}-${bill.year}-${Date.now()}`,
+      payment_date: new Date().toISOString().slice(0, 10),
+    });
+    setPaymentModal(bill);
+  };
 
 
 
-const [pdfBase64, setPdfBase64] = useState(null);
+  const [pdfBase64, setPdfBase64] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
   const openModal = async () => {
     setIsOpen(true);
-    const res = await fetch("/api/bills/generate-receipt", {
+    const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/generate-receipt/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        payment:"abc",
+        payment: "abc",
         userName: "John Doe",
         prefixedUserId: "U-101",
         userEmail: "john@example.com",
@@ -973,60 +976,60 @@ const [pdfBase64, setPdfBase64] = useState(null);
     setPdfBase64(null);
   };
 
-const submitPayment = async () => {
-  if (!paymentModal) return;
+  const submitPayment = async () => {
+    if (!paymentModal) return;
 
-  if (!paymentData.amount || Number(paymentData.amount) <= 0)
-    return alert("Enter a valid amount");
+    if (!paymentData.amount || Number(paymentData.amount) <= 0)
+      return toast.error("Enter a valid amount");
 
-  if (!paymentData.payment_type) return alert("Select payment type");
-  if (!paymentData.payment_method) return alert("Select payment method");
+    if (!paymentData.payment_type) return toast("Select payment type");
+    if (!paymentData.payment_method) return toast("Select payment method");
 
-  const payload = {
-    user_id: paymentModal.user_id,
-    month: paymentModal.month,
-    year: new Date().getFullYear(), // current year
-    amount: Number(paymentData.amount),
-    payment_type: paymentData.payment_type,
-    payment_method: paymentData.payment_method,
-    upi_id: paymentData.upi_id || null,
-    transaction_id: paymentData.transaction_id || null,
-    payment_date: paymentData.payment_date,
-    mess_id: paymentModal.mess_id,
+    const payload = {
+      user_id: paymentModal.user_id,
+      month: paymentModal.month,
+      year: paymentModal.year, // current year
+      amount: Number(paymentData.amount),
+      payment_type: paymentData.payment_type,
+      payment_method: paymentData.payment_method,
+      upi_id: paymentData.upi_id || null,
+      transaction_id: paymentData.transaction_id || null,
+      payment_date: paymentData.payment_date,
+      mess_id: paymentModal.mess_id,
+    };
+
+    try {
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/mark-paid/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to mark payment");
+
+      toast.success("Payment recorded successfully!");
+      setPaymentModal(null);
+      fetchBills();
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong");
+    }
   };
-
-  try {
-    const res = await fetch("/api/bills/mark-paid", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to mark payment");
-
-    alert("Payment recorded successfully!");
-    setPaymentModal(null);
-    fetchBills();
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
-};
 
   // Token
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const authHeaders = () => ({ Authorization: `Bearer ${token}`, "Content-Type": "application/json" });
 
   // Helpers for start/end dates
- function todayLocalISO() {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 10);
-}
+  function todayLocalISO() {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+  }
 
 
   // const computeStartDate = (b) => {
@@ -1040,23 +1043,31 @@ const submitPayment = async () => {
   // };
   // const getPerDayRate = (b) => perDayMode === "optionA" ? Number(optionARate) || 0 : Number(b.per_day_rate ?? 0);
 
-  // Fetch bills
-  const fetchBills = async () => {
-  if (!token) return;
-  if (!month || !year) {
-    setBills([]);
-    setLoading(false);
-    return;
-  }
-
+ const fetchBills = async () => {
   try {
     setLoading(true);
-    const url = `/api/bills/fetch?month=${month}&year=${year}`;
-    const res = await fetch(url, { headers: authHeaders() });
-    if (!res.ok) throw new Error(await res.text());
-    const data = await res.json();
 
-    setBills(data || []);
+    const isFiltered = month && year;
+
+    const cacheKey = isFiltered
+      ? `bills-${month}-${year}`
+      : `bills-all`;
+
+    const url = isFiltered
+      ? `https://bite-track-mess-management-system-a.vercel.app/api/bills/fetch?month=${month}&year=${year}`
+      : `https://bite-track-mess-management-system-a.vercel.app/api/bills/all/`;
+
+    const data = await offlineFetch(cacheKey, async () => {
+      const res = await fetch(url, { headers: authHeaders() });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      return res.json();
+    });
+
+    setBills(Array.isArray(data) ? data : []);
   } catch (err) {
     console.error("fetchBills error:", err);
     setBills([]);
@@ -1065,14 +1076,16 @@ const submitPayment = async () => {
   }
 };
 
+
   useEffect(() => {
     fetchBills();
-  }, [month, year, token]);
+  }, [month, year]);
+
 
   // Actions
   const togglePaid = async (userId, billMonth, billYear) => {
     try {
-      const res = await fetch("/api/bills/toggle-paid", {
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/toggle-paid/", {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({ userId, month: billMonth, year: billYear }),
@@ -1080,62 +1093,62 @@ const submitPayment = async () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to toggle paid");
       await fetchBills();
-      alert(`Payment status changed: ${data.paid ? "Paid" : "Unpaid"}`);
+      toast.success(`Payment status changed: ${data.paid ? "Paid" : "Unpaid"}`);
     } catch (err) {
       console.error(err);
-      alert("Error toggling payment status");
+      toast.error("Something went wrong. Please try again.");
     }
   };
-// REPLACE existing toggleFreeze with this implementation
-const toggleFreeze = async (userId, action) => {
-  try {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) return alert("Not authenticated. Please login.");
-
-    // action must be 'freeze' or 'unfreeze'
-    if (!["freeze", "unfreeze"].includes(action)) {
-      return alert("Invalid action for freeze/unfreeze");
-    }
-
-    // UI optimistic lock: disable button by setting local in-flight marker (optional)
-    // You can add state to track inFlight if you want.
-
-    const res = await fetch("/api/bills/toggle-freeze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ userId, action }),
-    });
-
-    // try parse JSON safely (server sometimes returns HTML on unexpected errors)
-    let data;
+  // REPLACE existing toggleFreeze with this implementation
+  const toggleFreeze = async (userId, action) => {
     try {
-      data = await res.json();
-    } catch (parseErr) {
-      console.error("Non-JSON response from toggle-freeze", parseErr);
-      return alert("Unexpected response from server. Check server logs.");
-    }
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      // if (!token) return alert("Not authenticated. Please login.");
 
-    if (res.status === 401) {
-      return alert("Unauthorized — please login again.");
-    }
+      // action must be 'freeze' or 'unfreeze'
+      if (!["freeze", "unfreeze"].includes(action)) {
+        return toast.error("Something went wrong. Please try again.");
+      }
 
-    if (!res.ok) {
-      // API returns { error: '...' }
-      console.error("Toggle response:", data);
-      return alert(data.error || "Failed to toggle freeze/unfreeze");
-    }
+      // UI optimistic lock: disable button by setting local in-flight marker (optional)
+      // You can add state to track inFlight if you want.
 
-    // success: server returns { ok: true, action: 'freeze'|'unfreeze', user: { ... } }
-    console.log("Toggle response:", data);
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/toggle-freeze/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, action }),
+      });
 
-    // Update local bills state so UI reflects new status immediately
-    setBills((prev) =>
-      prev.map((b) =>
-        b.user_id === userId
-          ? {
+      // try parse JSON safely (server sometimes returns HTML on unexpected errors)
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        console.error("Non-JSON response from toggle-freeze", parseErr);
+        return toast.error("Something went wrong. Please try again.");
+      }
+
+      if (res.status === 401) {
+        return toast.error("Unauthorized. Please login again.");
+      }
+
+      if (!res.ok) {
+        // API returns { error: '...' }
+        console.error("Toggle response:", data);
+        toast.error("Something went wrong. Please try again.");
+      }
+
+      // success: server returns { ok: true, action: 'freeze'|'unfreeze', user: { ... } }
+      console.log("Toggle response:", data);
+
+      // Update local bills state so UI reflects new status immediately
+      setBills((prev) =>
+        prev.map((b) =>
+          b.user_id === userId
+            ? {
               ...b,
               // update status from returned user if present, else set according to action
               status: data.user?.status ?? (action === "freeze" ? "Inactive" : "Active"),
@@ -1143,43 +1156,51 @@ const toggleFreeze = async (userId, action) => {
               unfreeze_date: data.user?.unfreeze_date ?? b.unfreeze_date,
               // if action is freeze, keep paid unchanged; if unfreeze, nothing about paid
             }
-          : b
-      )
-    );
+            : b
+        )
+      );
 
-    // show confirmation modal
-    setFreezeModal({
-      userId,
-      action,
-      message:
-        action === "freeze"
-          ? "User has been frozen. Billing will stop from freeze date and attendance after that date is cleared."
-          : "User has been unfrozen. first_attendance_date set to today and billing resumes."
-    });
+      // show confirmation modal
+      setFreezeModal({
+        userId,
+        action,
+        message:
+          action === "freeze"
+            ? "User has been frozen. Billing will stop from freeze date and attendance after that date is cleared."
+            : "User has been unfrozen. first_attendance_date set to today and billing resumes."
+      });
 
-    // optionally refresh data from server (keeps UI canonical)
-    // await fetchBills();
-  } catch (err) {
-    console.error("Error in toggleFreeze:", err);
-    alert(err.message || "An error occurred while toggling freeze/unfreeze");
-  }
-};
+      // optionally refresh data from server (keeps UI canonical)
+      // await fetchBills();
+    } catch (err) {
+      console.error("Error in toggleFreeze:", err);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
 
 
 
   const downloadMonthlyPDF = async () => {
-    if (!month || !year) return alert("Please select month and year.");
+    if (!month || !year) return toast("Please select month and year.");
     try {
       const token = localStorage.getItem("token"); // or from context
 
-const url = `/api/bills/downloadPDF?month=${month}&year=${year}`;
+      const url = `https://bite-track-mess-management-system-a.vercel.app/api/bills/downloadPDF/?month=${month}&year=${year}`;
 
-const res = await fetch(url, {
-  method: "GET",
-  headers: {
-    Authorization: `Bearer ${token}`,   // 🔥 REQUIRED
-  },
-});
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+       if (isMobile) {
+      // ✅ MOBILE: open PDF in new tab
+      window.open(url + `&token=${token}`, "_blank");
+      return;
+    }
+    
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,   // 🔥 REQUIRED
+        },
+      });
 
       if (!res.ok) throw new Error(await res.text());
       const blob = await res.blob();
@@ -1192,7 +1213,7 @@ const res = await fetch(url, {
       a.remove();
     } catch (err) {
       console.error(err);
-      alert("Failed to download PDF");
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -1208,65 +1229,66 @@ const res = await fetch(url, {
 
 
   const downloadExcel = async () => {
-  if (!month || !year) {
-    alert("Please select both month and year");
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/bills/download?month=${month}&year=${year}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      console.error("Excel download failed:", error);
-      alert(error.error || "Failed to download file");
+    if (!month || !year) {
+      toast.error("Something went wrong. Please try again.");
       return;
     }
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    try {
+      const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/bills/download/?month=${month}&year=${year}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-    a.href = url;
-    a.download = `billing_${year}_${month}.xlsx`;
-    a.click();
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Excel download failed:", error);
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
 
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Excel download error:", err);
-  }
-};
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
 
+      a.href = url;
+      a.download = `billing_${year}_${month}.xlsx`;
+      a.click();
 
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Excel download error:", err);
+    }
+  };
+
+  const { t } = useLanguage();
 
   return (
     <Layout>
       <div className={styles.container}>
         <main className={styles.main}>
-          <h1>Billing — Single Page</h1>
-      <button onClick={openModal}>Open Receipt</button>
+          <h1>{t("billing")}</h1>
 
-      {isOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button onClick={closeModal}>Close</button>
-            {pdfBase64 && (
-              <iframe
-                src={`data:application/pdf;base64,${pdfBase64}`}
-                width="100%"
-                height="600px"
-              />
-            )}
-          </div>
-        </div>
-      )}
+          {/* <button onClick={openModal}>Open Receipt</button> */}
 
-      <style jsx>{`
+          {isOpen && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <button onClick={closeModal}>{t("close")}</button>
+                {pdfBase64 && (
+                  <iframe
+                    src={`data:application/pdf;base64,${pdfBase64}`}
+                    width="100%"
+                    height="600px"
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          <style jsx>{`
         .modal-overlay {
           position: fixed;
           inset: 0;
@@ -1288,9 +1310,9 @@ const res = await fetch(url, {
           {/* Filters */}
           <div className={styles.controls}>
             <div className={styles.controlItem}>
-              <label>Month</label>
-              <select value={month} onChange={(e) => setMonth(e.target.value)}>
-                <option value="">Select Month</option>
+              <label>{t("month")}</label>
+              <select className={styles.dropdown} value={month} onChange={(e) => setMonth(e.target.value)}>
+                <option value="">{t("selectMonth")}</option>
                 {Array.from({ length: 12 }, (_, i) => {
                   const monthNum = (i + 1).toString().padStart(2, "0");
                   const monthName = new Date(0, i).toLocaleString("default", { month: "long" });
@@ -1300,24 +1322,24 @@ const res = await fetch(url, {
             </div>
 
             <div className={styles.controlItem}>
-              <label>Year</label>
-              <input type="number" placeholder="YYYY" value={year} onChange={(e) => setYear(e.target.value)} />
+              <label>{t("year")}</label>
+              <input type="number" placeholder={t("yearPlaceholder")} value={year} onChange={(e) => setYear(e.target.value)} />
             </div>
 
             <div className={styles.controlItem}>
-              <label>Payment</label>
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="all">All</option>
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
+              <label>{t("payment")}</label>
+              <select className={styles.dropdown} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                <option value="all">{t("all")}</option>
+                <option value="paid">{t("paid")}</option>
+                <option value="unpaid">{t("unpaid")}</option>
               </select>
             </div>
 
             <div className={styles.controlItem}>
-              <label>Search</label>
-              <input placeholder="Name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <label>{t("search")}</label>
+              <input placeholder={t("searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-{/* 
+            {/* 
             <div className={styles.controlItem}>
               <label>Per-day Rate</label>
               <div className={styles.rateRow}>
@@ -1328,304 +1350,336 @@ const res = await fetch(url, {
             </div> */}
 
             <div className={styles.controlItemActions}>
-              <button className={styles.btnPrimary} onClick={fetchBills}>Refresh</button>
-              <button className={styles.btnSecondary} onClick={downloadMonthlyPDF} disabled={!month || !year}>Download Monthly PDF</button>
-              <button className={styles.btnSecondary}  onClick={downloadExcel}>Download Excel</button>
-
+              <button className={styles.btnPrimary} onClick={fetchBills}>{t("refresh")}</button>
+              <button className={styles.btnSecondary} onClick={downloadMonthlyPDF} disabled={!month || !year}>{t("downloadMonthlyPdf")}</button>
+              <button className={styles.btnSecondary} onClick={downloadExcel} disabled={!month || !year}>{t("downloadExcel")}</button>
             </div>
           </div>
 
           {/* Table */}
           <section style={{ marginTop: 20 }}>
             {loading ? (
-              <div className={styles.loading}>Loading...</div>
+              <div className={styles.loading}>{t("loading")}</div>
             ) : filtered.length === 0 ? (
-              <div className={styles.empty}>No bills found.</div>
+              <div className={styles.empty}>{t("noBillsFound")}</div>
             ) : (
-              <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Sr. No.</th>
-                      <th>User</th>
-                      <th>Email</th>
-                      <th>Status</th>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                      <th>Days</th>
-                      <th>Per-day Rate</th>
-                      <th>Total (₹)</th>
-                      <th>Payment Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((b, idx) => (
-                      <tr key={b.id || `${b.user_id}-${b.year}-${b.month}`}>
-                        <td>{idx + 1}</td>
-                        <td>{b.name || b.user_name || "-"}</td>
-                        <td>{b.email || "-"}</td>
-                        <td>{b.status || "Active"}</td>
-                        <td>{b.start_date || "-"}</td>
-                        <td>{b.end_date || "-"}</td>
-                        <td>{b.days_billed}</td>
-                        <td>{Number(b.chosen_per_day_rate).toFixed(2)}</td>
-                        <td>{Number(b.total_amount).toFixed(2)}</td>
-                        <td>{b.paid ? "Paid" : "Unpaid"}</td>
-                        <td className={styles.actionsCell}>
-                          <button
-  className={`${styles.btnAction} ${b.paid ? styles.btnPaidDisabled : styles.btnPaid}`}
-  disabled={b.paid}
-  onClick={() => {
-    if (!b.paid) openPaymentModal(b);  // only open modal if unpaid
-  }}
->
-  {b.paid ? "Paid" : "Mark Paid"}
-</button>
-
-
-                          <button
-  // style={{
-  //   background:
-  //     b.status === "Active"
-  //       ? b.paid
-  //         ? "#DC2626" // red (freeze allowed)
-  //         : "#9CA3AF" // gray (disabled)
-  //       : "#2563EB", // blue (unfreeze)
-  //   color: "#fff",
-  //   cursor: b.status === "Active" && !b.paid ? "not-allowed" : "pointer",
-  //   opacity: b.status === "Active" && !b.paid ? 0.6 : 1,
-  //   marginRight: 8,
-  //   padding: "8px 10px",
-  //   borderRadius: 6,
-  //   border: "none",
-  // }}
-  className={`${styles.btnAction} ${
-      b.status === "Active"
-        ? b.paid
-          ? styles.btnFreeze
-          : styles.btnDisabled
-        : styles.btnUnfreeze
-    }`}
-  disabled={b.status === "Active" && !b.paid}
-  onClick={() => {
-    // freeze allowed only if paid
-    if (b.status === "Active" && !b.paid) {
-      return alert("Freeze is allowed only after bill is paid.");
-    }
-    const action = b.status === "Active" ? "freeze" : "unfreeze";
-    toggleFreeze(b.user_id, action);
-  }}
->
-  {b.status === "Active" ? "Freeze" : "Unfreeze"}
-</button>
-
-                          <button className={`${styles.btnAction} ${styles.btnCalendar}`} onClick={() => setSelectedAttendance({ year: b.year, month: b.month, attendanceMap: b.attendance_map, name: b.name })}>
-                            View Calendar
-                          </button>
-                        </td>
+              <>
+                <div className={styles.tableWrapper}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>{t("srNo")}</th>
+                        <th>{t("user")}</th>
+                        <th>{t("email")}</th>
+                        <th>{t("status")}</th>
+                        <th>{t("startDate")}</th>
+                        <th>{t("endDate")}</th>
+                        <th>{t("days")}</th>
+                        <th>{t("perDayRate")}</th>
+                        <th>{t("totalAmount")}</th>
+                        <th>{t("paymentStatus")}</th>
+                        <th>{t("actions")}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filtered.map((b, idx) => (
+                        <tr key={b.id || `${b.user_id}-${b.year}-${b.month}`}>
+                          <td>{idx + 1}</td>
+                          <td>{b.name || b.user_name || "-"}</td>
+                          <td>{b.email || "-"}</td>
+                          <td>{b.status || t("active")}</td>
+                          <td>{b.start_date || "-"}</td>
+                          <td>{b.end_date || "-"}</td>
+                          <td>{b.days_billed}</td>
+                          <td>{Number(b.chosen_per_day_rate).toFixed(2)}</td>
+                          <td>{Number(b.total_amount).toFixed(2)}</td>
+                          <td>{b.paid ? t("paid") : t("unpaid")}</td>
+                          <td className={styles.actionsCell}>
+                            <button
+                              className={`${styles.btnAction} ${b.paid ? styles.btnPaidDisabled : styles.btnPaid}`}
+                              disabled={b.paid}
+                              onClick={() => {
+                                if (!b.paid) openPaymentModal(b);  // only open modal if unpaid
+                              }}
+                            >
+                              {b.paid ? t("paid") : t("markPaid")}
+                            </button>
+
+                            <button
+                              className={`${styles.btnAction} ${b.status === "Active"
+                                  ? b.paid
+                                    ? styles.btnFreeze
+                                    : styles.btnDisabled
+                                  : styles.btnUnfreeze
+                                }`}
+                              disabled={b.status === "Active" && !b.paid}
+                              onClick={() => {
+                                if (b.status === "Active" && !b.paid) {
+                                  return toast.error(t("somethingWentWrong"));
+                                }
+                                const action = b.status === "Active" ? "freeze" : "unfreeze";
+                                toggleFreeze(b.user_id, action);
+                              }}
+                            >
+                              {b.status === "Active" ? t("freeze") : t("unfreeze")}
+                            </button>
+
+                            <button className={`${styles.btnAction} ${styles.btnCalendar}`} onClick={() => setSelectedAttendance({ year: b.year, month: b.month, attendanceMap: b.attendance_map, name: b.name })}>
+                              {t("viewCalendar")}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* ================= MOBILE / ANDROID CARDS ================= */}
+                <div className={styles.mobileList}>
+                  {filtered.map((b, idx) => (
+                    <div key={b.id || idx} className={styles.mobileCard}>
+                      <div className={styles.cardRow}><span>{t("srNo")}</span><strong>{idx + 1}</strong></div>
+                      <div className={styles.cardRow}><span>{t("user")}</span><strong>{b.name || "-"}</strong></div>
+                      <div className={styles.cardRow}><span>{t("email")}</span><strong>{b.email || "-"}</strong></div>
+                      <div className={styles.cardRow}><span>{t("status")}</span><strong>{b.status}</strong></div>
+                      <div className={styles.cardRow}><span>{t("startDate")}</span><strong>{b.start_date || "-"}</strong></div>
+                      <div className={styles.cardRow}><span>{t("endDate")}</span><strong>{b.end_date || "-"}</strong></div>
+                      <div className={styles.cardRow}><span>{t("days")}</span><strong>{b.days_billed}</strong></div>
+                      <div className={styles.cardRow}><span>{t("rate")}</span><strong>₹{Number(b.chosen_per_day_rate).toFixed(2)}</strong></div>
+                      <div className={styles.cardRow}><span>{t("total")}</span><strong>₹{Number(b.total_amount).toFixed(2)}</strong></div>
+                      <div className={styles.cardRow}><span>{t("payment")}</span><strong>{b.paid ? t("paid") : t("unpaid")}</strong></div>
+
+                      {/* ACTION BUTTONS */}
+                      <div className={styles.cardActions}>
+                        <button
+                          className={`${styles.btnAction} ${b.paid ? styles.btnPaidDisabled : styles.btnPaid}`}
+                          disabled={b.paid}
+                          onClick={() => !b.paid && openPaymentModal(b)}
+                        >
+                          {b.paid ? t("paid") : t("markPaid")}
+                        </button>
+
+                        <button
+                          className={`${styles.btnAction} ${b.status === "Active"
+                              ? b.paid
+                                ? styles.btnFreeze
+                                : styles.btnDisabled
+                              : styles.btnUnfreeze
+                            }`}
+                          disabled={b.status === "Active" && !b.paid}
+                          onClick={() => {
+                            if (b.status === "Active" && !b.paid) {
+                              return toast.error(t("somethingWentWrong"));
+                            }
+                            toggleFreeze(b.user_id, b.status === "Active" ? "freeze" : "unfreeze");
+                          }}
+                        >
+                          {b.status === "Active" ? t("freeze") : t("unfreeze")}
+                        </button>
+
+                        <button
+                          className={`${styles.btnAction} ${styles.btnCalendar}`}
+                          onClick={() =>
+                            setSelectedAttendance({
+                              year: b.year,
+                              month: b.month,
+                              attendanceMap: b.attendance_map || {},
+                              name: b.name,
+                            })
+                          }
+                        >
+                          {t("viewCalendar")}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </section>
-            {/* Payment Modal */}
 
+          {/* Payment Modal */}
+          {paymentModal && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modalContent}>
+                <h3>{t("markPayment")} — {paymentModal.name || paymentModal.user_name}</h3>
 
+                <div className={styles.formGroup}>
+                  <label>{t("amount")}</label>
+                  <input
+                    type="number"
+                    value={paymentData.amount}
+                    onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
+                  />
+                </div>
 
+                <div className={styles.formGroup}>
+                  <label>{t("paymentType")}</label>
+                  <select
+                    value={paymentData.payment_type}
+                    onChange={(e) => setPaymentData({ ...paymentData, payment_type: e.target.value })}
+                  >
+                    <option value="monthly">{t("monthly")}</option>
+                    <option value="daily">{t("daily")}</option>
+                  </select>
+                </div>
 
+                <div className={styles.formGroup}>
+                  <label>{t("paymentMethod")}</label>
+                  <select
+                    value={paymentData.payment_method}
+                    onChange={(e) => setPaymentData({ ...paymentData, payment_method: e.target.value })}
+                  >
+                    <option value="">{t("selectMethod")}</option>
+                    <option value="Cash">{t("cash")}</option>
+                    <option value="UPI">UPI</option>
+                  </select>
+                </div>
 
-{/* Payment Modal */}
-{paymentModal && (
-  <div className={styles.modalOverlay}>
-    <div className={styles.modalContent}>
-      <h3>Mark Payment — {paymentModal.name || paymentModal.user_name}</h3>
+                {paymentData.payment_method === "UPI" && (
+                  <div className={styles.formGroup}>
+                    <label>{t("upiId")}</label>
+                    <input
+                      type="text"
+                      value={paymentData.upi_id}
+                      onChange={(e) => setPaymentData({ ...paymentData, upi_id: e.target.value })}
+                    />
+                  </div>
+                )}
 
-      <div className={styles.formGroup}>
-        <label>Amount</label>
-        <input
-          type="number"
-          value={paymentData.amount}
-          onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
-        />
-      </div>
+                <div className={styles.formGroup}>
+                  <label>{t("transactionId")}</label>
+                  <input
+                    type="text"
+                    value={paymentData.transaction_id}
+                    onChange={(e) => setPaymentData({ ...paymentData, transaction_id: e.target.value })}
+                  />
+                </div>
 
-      <div className={styles.formGroup}>
-        <label>Payment Type</label>
-        <select
-          value={paymentData.payment_type}
-          onChange={(e) => setPaymentData({ ...paymentData, payment_type: e.target.value })}
-        >
-          <option value="monthly">Monthly</option>
-          <option value="daily">Daily</option>
-        </select>
-      </div>
+                <div className={styles.formGroup}>
+                  <label>{t("paymentDate")}</label>
+                  <input
+                    type="date"
+                    value={paymentData.payment_date}
+                    onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })}
+                  />
+                </div>
 
-      <div className={styles.formGroup}>
-        <label>Payment Method</label>
-        <select
-          value={paymentData.payment_method}
-          onChange={(e) => setPaymentData({ ...paymentData, payment_method: e.target.value })}
-        >
-          <option value="">Select Method</option>
-          <option value="Cash">Cash</option>
-          <option value="UPI">UPI</option>
-        </select>
-      </div>
+                <div className={styles.modalActions}>
+                  <button
+                    className={styles.btnPrimary}
+                    onClick={submitPayment} // call API https://bite-track-mess-management-system-a.vercel.app/api/bills/mark-paid
+                  >
+                    {t("submit")}
+                  </button>
+                  <button
+                    className={styles.btnSecondary}
+                    onClick={() => setPaymentModal(null)}
+                  >
+                    {t("cancel")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
-      {paymentData.payment_method === "UPI" && (
-        <div className={styles.formGroup}>
-          <label>UPI ID</label>
-          <input
-            type="text"
-            value={paymentData.upi_id}
-            onChange={(e) => setPaymentData({ ...paymentData, upi_id: e.target.value })}
-          />
-        </div>
-      )}
+          {freezeModal && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                background: "rgba(0,0,0,0.6)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 9999,
+              }}
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  padding: "24px",
+                  borderRadius: "12px",
+                  minWidth: "320px",
+                  textAlign: "center",
+                }}
+              >
+                <h3>{freezeModal.action === "freeze" ? t("userFrozen") : t("userUnfrozen")}</h3>
+                <p style={{ marginTop: 8 }}>{freezeModal.message}</p>
 
-      <div className={styles.formGroup}>
-        <label>Transaction ID</label>
-        <input
-          type="text"
-          value={paymentData.transaction_id}
-          onChange={(e) => setPaymentData({ ...paymentData, transaction_id: e.target.value })}
-        />
-      </div>
+                {freezeModal.user && (
+                  <div style={{ textAlign: "left", marginTop: 12 }}>
+                    <strong>{freezeModal.user.name}</strong>
+                    <div>{t("status")}: {freezeModal.user.status}</div>
+                    {freezeModal.user.freeze_date && <div>{t("freezeDate")}: {new Date(freezeModal.user.freeze_date).toISOString().slice(0, 10)}</div>}
+                    {freezeModal.user.unfreeze_date && <div>{t("unfreezeDate")}: {new Date(freezeModal.user.unfreeze_date).toISOString().slice(0, 10)}</div>}
+                  </div>
+                )}
 
-      <div className={styles.formGroup}>
-        <label>Payment Date</label>
-        <input
-          type="date"
-          value={paymentData.payment_date}
-          onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })}
-        />
-      </div>
+                <button
+                  style={{
+                    marginTop: "16px",
+                    background: "#2563EB",
+                    color: "#fff",
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    border: "none",
+                  }}
+                  onClick={() => setFreezeModal(null)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
 
-      <div className={styles.modalActions}>
-        <button
-          className={styles.btnPrimary}
-          onClick={submitPayment} // call API /api/bills/mark-paid
-        >
-          Submit
-        </button>
-        <button
-          className={styles.btnSecondary}
-          onClick={() => setPaymentModal(null)}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          {confirmUnmark.show && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modalContent}>
+                <h3>{t("unmarkPayment")}</h3>
+                <p style={{ marginTop: 8 }}>
+                  {t("unmarkPaymentConfirm")} <strong>{t("unmarkThisPayment")}</strong>?
+                </p>
 
+                <div className={styles.modalActions}>
+                  <button
+                    className={styles.btnPrimary}
+                    onClick={async () => {
+                      await togglePaid(
+                        confirmUnmark.bill.user_id,
+                        confirmUnmark.bill.month,
+                        confirmUnmark.bill.year
+                      );
+                      setConfirmUnmark({ show: false, bill: null });
+                    }}
+                  >
+                    {t("yesUnmark")}
+                  </button>
 
-
-
-
-
-{freezeModal && (
-  <div
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100vw",
-      height: "100vh",
-      background: "rgba(0,0,0,0.6)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 9999,
-    }}
-  >
-    <div
-      style={{
-        background: "#fff",
-        padding: "24px",
-        borderRadius: "12px",
-        minWidth: "320px",
-        textAlign: "center",
-      }}
-    >
-      <h3>{freezeModal.action === "freeze" ? "User Frozen" : "User Unfrozen"}</h3>
-      <p style={{ marginTop: 8 }}>{freezeModal.message}</p>
-
-      {freezeModal.user && (
-        <div style={{ textAlign: "left", marginTop: 12 }}>
-          <strong>{freezeModal.user.name}</strong>
-          <div>Status: {freezeModal.user.status}</div>
-          {freezeModal.user.freeze_date && <div>Freeze date: {new Date(freezeModal.user.freeze_date).toISOString().slice(0,10)}</div>}
-          {freezeModal.user.unfreeze_date && <div>Unfreeze date: {new Date(freezeModal.user.unfreeze_date).toISOString().slice(0,10)}</div>}
-        </div>
-      )}
-
-      <button
-        style={{
-          marginTop: "16px",
-          background: "#2563EB",
-          color: "#fff",
-          padding: "8px 16px",
-          borderRadius: "6px",
-          border: "none",
-        }}
-        onClick={() => setFreezeModal(null)}
-      >
-        OK
-      </button>
-    </div>
-  </div>
-)}
-{confirmUnmark.show && (
-  <div className={styles.modalOverlay}>
-    <div className={styles.modalContent}>
-      <h3>Unmark Payment?</h3>
-      <p style={{ marginTop: 8 }}>
-        Are you sure you want to <strong>unmark this payment</strong>?
-      </p>
-
-      <div className={styles.modalActions}>
-        <button
-          className={styles.btnPrimary}
-          onClick={async () => {
-            await togglePaid(
-              confirmUnmark.bill.user_id,
-              confirmUnmark.bill.month,
-              confirmUnmark.bill.year
-            );
-            setConfirmUnmark({ show: false, bill: null });
-          }}
-        >
-          Yes, Unmark
-        </button>
-
-        <button
-          className={styles.btnSecondary}
-          onClick={() => setConfirmUnmark({ show: false, bill: null })}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
+                  <button
+                    className={styles.btnSecondary}
+                    onClick={() => setConfirmUnmark({ show: false, bill: null })}
+                  >
+                    {t("cancel")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Attendance Modal */}
           {selectedAttendance && (
             <div className={styles.modalOverlay}>
               <div className={styles.modalContent}>
                 <div className={styles.modalHeader}>
-                  <h3>{selectedAttendance.name}'s Attendance</h3>
+                  <h3>{selectedAttendance.name}{t("attendanceSuffix")}</h3>
                   <button className={styles.closeX} onClick={() => setSelectedAttendance(null)}>✕</button>
                 </div>
                 <AttendanceCalendar year={selectedAttendance.year} month={selectedAttendance.month} attendanceMap={selectedAttendance.attendanceMap} />
                 <div style={{ textAlign: "right", marginTop: 12 }}>
-                  <button className={styles.btnSecondary} onClick={() => setSelectedAttendance(null)}>Close</button>
+                  <button className={styles.btnSecondary} onClick={() => setSelectedAttendance(null)}>{t("close")}</button>
                 </div>
               </div>
             </div>
@@ -1634,4 +1688,5 @@ const res = await fetch(url, {
       </div>
     </Layout>
   );
+
 }

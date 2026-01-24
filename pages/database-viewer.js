@@ -16,7 +16,7 @@ export default function DatabaseViewer() {
 
   const fetchTables = async () => {
     try {
-      const response = await fetch('/api/database/tables');
+      const response = await fetch('https://bite-track-mess-management-system-a.vercel.app/api/database/tables/');
       const data = await response.json();
       if (response.ok) {
         setTables(data.tables);
@@ -32,7 +32,7 @@ export default function DatabaseViewer() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/database/table-data?table=${tableName}`);
+      const response = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/database/table-data?table=${tableName}/`);
       const data = await response.json();
       if (response.ok) {
         setTableData(data.data);

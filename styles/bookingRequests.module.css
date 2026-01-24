@@ -101,7 +101,19 @@
 
 
 .container {
-  padding: 20px;
+  /* display: flex; */
+  min-height: 100vh;
+  background: transparent; /* CRITICAL FIX */
+  max-width: 100%;
+  overflow-x: hidden;
+  margin-bottom: 1.2rem;
+}
+
+.container h1{
+  color: #136134;
+  font-weight: 700;
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .controls {
@@ -109,6 +121,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  color: #136134;
+}
+.controls label{
+  color: #136134;
 }
 
 .table {
@@ -148,3 +164,66 @@
 .confirm { background: #16a34a; }
 .reject { background: #dc2626; }
 .complete { background: #2563eb; }
+/* ===== Responsive Switch ===== */
+.desktopOnly {
+  display: block;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none;
+  }
+  .mobileOnly {
+    display: block;
+  }
+}
+
+/* ===== Mobile Booking Cards ===== */
+.bookingCard {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cardRow {
+  display: flex;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  color: #136134;
+  justify-content: space-between;
+  align-items: right;
+}
+.cardRow b{
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  color: #136134;
+  /* justify-content: space-between; */
+  align-items: left;
+}
+
+.cardActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  justify-content:space-between;
+  align-items: center;
+}
+
+.cardActions button {
+  flex: 1;
+  align-items:left;
+}

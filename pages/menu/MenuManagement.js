@@ -1,34 +1,209 @@
+// import { useState, useEffect } from "react";
+// import styles from "../../styles/menu.module.css";
+// import { offlineFetch } from "../../lib/offlineFetch";
+// import toast from "react-hot-toast";
+
+// export default function MenuManagement() {
+//   const [menuData, setMenuData] = useState({});
+//   const [loading, setLoading] = useState(true);
+//   const daysOfWeek = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+//   const mealTypes = ["Breakfast", "Lunch", "Dinner"];
+
+//   useEffect(() => {
+//     async function fetchMenu() {
+//       setLoading(true);
+//       try {
+//         const token = localStorage.getItem("token");
+//         if (!token) throw new Error("Unauthorized — login required");
+
+//         const data = await offlineFetch("menuData", async () => {
+//           const res = await fetch(
+//             "https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/",
+//             { headers: { Authorization: `Bearer ${token}` } }
+//           );
+//           if (!res.ok) throw new Error("Failed to fetch menu");
+//           return await res.json();
+//         });
+
+//         setMenuData(data || {});
+//       } catch (err) {
+//         console.error("fetchMenu error:", err);
+//         toast.error("Something went wrong. Please try again.");
+//         setMenuData({});
+//       } finally {
+//         setLoading(false);
+//       }
+//     }
+
+//     fetchMenu();
+//   }, []);
+
+//   const handleAddDish = (day, mealType) => {
+//     setMenuData({
+//       ...menuData,
+//       [day]: { ...menuData[day], [mealType]: [...(menuData[day]?.[mealType] || []), ""] },
+//     });
+//   };
+
+//   const handleRemoveDish = (day, mealType, idx) => {
+//     const current = [...(menuData[day]?.[mealType] || [])];
+//     current.splice(idx, 1);
+//     setMenuData({
+//       ...menuData,
+//       [day]: { ...menuData[day], [mealType]: current },
+//     });
+//   };
+
+//   const handleDishChange = (day, mealType, idx, value) => {
+//     const updated = [...(menuData[day]?.[mealType] || [])];
+//     updated[idx] = value;
+//     setMenuData({
+//       ...menuData,
+//       [day]: { ...menuData[day], [mealType]: updated },
+//     });
+//   };
+
+//   const handleSave = async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       if (!token) throw new Error("Unauthorized — login required");
+
+//       const res = await fetch(
+//         "https://bite-track-mess-management-system-a.vercel.app/api/menu/update/",
+//         {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+//           body: JSON.stringify({ menuData }),
+//         }
+//       );
+
+//       const data = await res.json();
+//       if (!res.ok) throw new Error(data.error || "Failed to update menu");
+
+//       toast.success(data.message || "Menu updated successfully");
+//     } catch (err) {
+//       console.error("handleSave error:", err);
+//       toast.error("Something went wrong. Please try again.");
+//     }
+//   };
+
+//   if (loading) return <p>Loading menu...</p>;
+
+//   return (
+//     <div>
+//       {daysOfWeek.map((day) => (
+//         <div key={day} className={styles.dayCard}>
+//           <h3 className="font-bold mb-2">{day}</h3>
+//           {mealTypes.map((mealType) => (
+//             <div key={mealType} className={styles.mealSection}>
+//               <label className="font-semibold">{mealType}</label>
+//               <div className="flex flex-wrap gap-2 mt-1">
+//                 {(menuData[day]?.[mealType] || []).map((item, idx) => (
+//                   <div key={idx} className={styles.inputWrapper}>
+//                     <input
+//                       type="text"
+//                       className={styles.inputField}
+//                       value={item}
+//                       onChange={(e) => handleDishChange(day, mealType, idx, e.target.value)}
+//                       placeholder="Dish name"
+//                       aria-label={`Dish ${idx + 1} for ${mealType} on ${day}`}
+//                     />
+//                     <button
+//                       type="button"
+//                       className={styles.clearBtn}
+//                       onClick={() => handleRemoveDish(day, mealType, idx)}
+//                       aria-label="Remove dish"
+//                     >
+//                       ×
+//                     </button>
+//                   </div>
+//                 ))}
+//                 <button
+//                   type="button"
+//                   className={styles.addDishBtn}
+//                   onClick={() => handleAddDish(day, mealType)}
+//                 >
+//                   Add
+//                 </button>
+//               </div>
+              
+//             </div>
+            
+//           ))}
+//           {/* Special Dish Section (to be added later) */}
+//                 <button
+//         onClick={handleSave}
+//         className={styles.saveDayBtn}
+//       >
+//         Save Menu
+//       </button>
+//         </div>
+//       ))}
+//       {/* <button
+//         onClick={handleSave}
+//         className={styles.saveMenuBtn}
+//       >
+//         Save Menu
+//       </button> */}
+//     </div>
+//   );
+// }
+
+
+
+
 import { useState, useEffect } from "react";
 import styles from "../../styles/menu.module.css";
+import { offlineFetch } from "../../lib/offlineFetch";
+import toast from "react-hot-toast";
+import DayDropdown from "../../components/DayDropdown";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function MenuManagement() {
   const [menuData, setMenuData] = useState({});
-  const [messId, setMessId] = useState(1); 
-  const daysOfWeek = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState("All");
+
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  const dayOptions = ["All", ...daysOfWeek];
+const { t } = useLanguage();
+
   const mealTypes = ["Breakfast", "Lunch", "Dinner"];
 
   useEffect(() => {
     async function fetchMenu() {
-      const token = localStorage.getItem("token");
-      if (!token) {
-      alert("Login expired. Please login again.");
-      return (window.location.href = "/login");
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Unauthorized — login required");
+
+        const data = await offlineFetch("menuData", async () => {
+          const res = await fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!res.ok) throw new Error("Failed to fetch menu");
+          return await res.json();
+        });
+
+        setMenuData(data || {});
+      } catch (err) {
+        console.error("fetchMenu error:", err);
+        toast.error("Something went wrong. Please try again.");
+        setMenuData({});
+      } finally {
+        setLoading(false);
+      }
     }
-
-    const res = await fetch("/api/menu/fetch", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (res.status === 401) {
-      alert("Session expired. Please login again.");
-      return (window.location.href = "/login");
-    }
-
-    const data = await res.json();
-    setMenuData(data);
-  }
 
     fetchMenu();
   }, []);
@@ -36,10 +211,12 @@ export default function MenuManagement() {
   const handleAddDish = (day, mealType) => {
     setMenuData({
       ...menuData,
-      [day]: { ...menuData[day], [mealType]: [...menuData[day][mealType], ""] },
+      [day]: {
+        ...menuData[day],
+        [mealType]: [...(menuData[day]?.[mealType] || []), ""],
+      },
     });
   };
-
 
   const handleRemoveDish = (day, mealType, idx) => {
     const current = [...(menuData[day]?.[mealType] || [])];
@@ -51,7 +228,7 @@ export default function MenuManagement() {
   };
 
   const handleDishChange = (day, mealType, idx, value) => {
-    const updated = [...menuData[day][mealType]];
+    const updated = [...(menuData[day]?.[mealType] || [])];
     updated[idx] = value;
     setMenuData({
       ...menuData,
@@ -60,76 +237,99 @@ export default function MenuManagement() {
   };
 
   const handleSave = async () => {
-    const token = localStorage.getItem("token");
-     if (!token) {
-    alert("Login expired. Please login again.");
-    return (window.location.href = "/login");
-  }
-    const res = await fetch("/api/menu/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ menuData }),
-    });
-    const data = await res.json();
-    alert(data.message || "Menu updated successfully");
-  };  ``
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized — login required");
 
-  return (
-    <div>
-      {daysOfWeek.map((day) => (
-        <div key={day} className={styles.dayCard}>
-          <h3 className="font-bold mb-2">{day}</h3>
-          {mealTypes.map((mealType) => (
-            <div key={mealType} className={styles.mealSection}>
-              <label className="font-semibold">{mealType}</label>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {(menuData[day]?.[mealType] || []).map((item, idx) => (
-                  <div key={idx} className={styles.inputWrapper}>
-                    <input
-                      type="text"
-                      className={styles.inputField}
-                      value={item}
-                      onChange={(e) => handleDishChange(day, mealType, idx, e.target.value)}
-                      placeholder="Dish name"
-                      aria-label={`Dish ${idx + 1} for ${mealType} on ${day}`}
-                    />
-                    <button
-                      type="button"
-                      className={styles.clearBtn}
-                      onClick={() => handleRemoveDish(day, mealType, idx)}
-                      aria-label="Remove dish"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  className={styles.addDishBtn}
-                  onClick={() => handleAddDish(day, mealType)}
-                >
-                  Add
-                </button>
-              </div>
-              
-            </div>
-            
-          ))}
-          {/* Special Dish Section (to be added later) */}
-                <button
-        onClick={handleSave}
-        className={styles.saveDayBtn}
-      >
-        Save Menu
-      </button>
-        </div>
-      ))}
-      {/* <button
-        onClick={handleSave}
-        className={styles.saveMenuBtn}
-      >
-        Save Menu
-      </button> */}
+      const res = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/menu/update/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ menuData }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update menu");
+
+      toast.success(data.message || "Menu updated successfully");
+    } catch (err) {
+      console.error("handleSave error:", err);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
+
+  if (loading) return <p>Loading menu...</p>;
+
+  const visibleDays =
+    selectedDay === "All" ? daysOfWeek : [selectedDay];
+
+ return (
+  <div>
+    {/* ---------- Day Selector ---------- */}
+    <div className={styles.daySelector}>
+      <label>{t("selectDay")}</label>
+
+      <DayDropdown
+        options={dayOptions}
+        value={selectedDay}
+        onChange={setSelectedDay}
+      />
     </div>
-  );
+
+    {visibleDays.map((day) => (
+      <div key={day} className={styles.dayCard}>
+        <h3 className="font-bold mb-2">{t(day)}</h3>
+
+        {mealTypes.map((mealType) => (
+          <div key={mealType} className={styles.mealSection}>
+            <label className="font-semibold">{t(mealType)}</label>
+
+            <div className="flex flex-wrap gap-2 mt-1">
+              {(menuData[day]?.[mealType] || []).map((item, idx) => (
+                <div key={idx} className={styles.inputWrapper}>
+                  <input
+                    type="text"
+                    className={styles.inputField}
+                    value={item}
+                    onChange={(e) =>
+                      handleDishChange(day, mealType, idx, e.target.value)
+                    }
+                    placeholder={t("dishName")}
+                  />
+
+                  <button
+                    type="button"
+                    className={styles.clearBtn}
+                    onClick={() =>
+                      handleRemoveDish(day, mealType, idx)
+                    }
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                className={styles.addDishBtn}
+                onClick={() => handleAddDish(day, mealType)}
+              >
+                {t("add")}
+              </button>
+            </div>
+          </div>
+        ))}
+
+        <button onClick={handleSave} className={styles.saveDayBtn}>
+          {t("saveMenu")}
+        </button>
+      </div>
+    ))}
+  </div>
+);
 }
