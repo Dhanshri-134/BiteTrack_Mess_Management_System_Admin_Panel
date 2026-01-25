@@ -94,6 +94,8 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid token" });
     }
 
+    const mess_id =decoded.messId;
+
     const {
       user_id,
       month,
@@ -103,11 +105,11 @@ export default async function handler(req, res) {
       upi_id,
       transaction_id,
       payment_date,
-      mess_id,
+      note,
     } = req.body;
 
     // ✅ Validate required fields
-    if (!user_id || !month || !amount || !payment_type || !payment_method || !payment_date || !mess_id) {
+    if (!user_id || !month || !amount || !payment_type || !payment_method || !payment_date) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -135,6 +137,7 @@ export default async function handler(req, res) {
           transaction_id,
           mess_id,
           status,
+          note,
           created_at,
           updated_at
         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'paid',NOW(),NOW())
@@ -149,6 +152,7 @@ export default async function handler(req, res) {
           payment_method,
           upi_id || null,
           transaction_id || null,
+          note,
           mess_id,
         ]
       );

@@ -292,7 +292,7 @@ ORDER BY u.name;
 
     // Fetch payment_history for the selected month/year
     const paymentsQuery = `
-  SELECT user_id, payment_date, amount, status
+  SELECT user_id, payment_date, amount, status, note
   FROM payment_history
   WHERE mess_id = $1
     AND (
@@ -396,6 +396,7 @@ const bills = users.map(u => {
     chosen_per_day_rate: perDay,
     total_amount: total,
     paid: payment?.status === "paid",
+    note: payment?.note || null,
     attendance_map: attendance?.attendance_map ?? null,
   };
 });
