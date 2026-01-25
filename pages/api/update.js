@@ -78,7 +78,7 @@
 
 
 import { pgPool } from "../../lib/db";
-import { verifyToken } from "../../lib/auth";
+import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -110,18 +110,17 @@ export default async function handler(req, res) {
   if (!id) return res.status(400).json({ error: "Missing user ID" });
 
   // --- 🔐 Extract mess_id from token ---
-  let tokenMessId = null;
-  const token = req.headers.authorization?.split(" ")[1];
+let tokenMessId = null;
+const token = req.headers.authorization?.split(" ")[1];
 
-  if (token) {
-    try {
-      const decoded = await verifyToken(token);
-      tokenMessId = decoded?.mess_id || null;
-    } catch (e) {
-      console.log("Invalid token: ignoring token mess_id");
-    }
+if (token) {
+  try {
+    const decoded = jwt.decode(token);
+    tokenMessId = decoded?.messId || null;
+  } catch (e) {
+    console.log("Token decode failed");
   }
-
+}
   try {
     // --- If token has mess_id → verify user belongs to same mess ---
     if (tokenMessId) {
