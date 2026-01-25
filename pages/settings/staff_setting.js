@@ -185,6 +185,13 @@ export default function StaffHandling() {
       {/* 🔹 ADD STAFF MODAL */}
       {showAddModal && (
         <div className={styles.group}>
+          <button
+      className={styles.closeBtn}
+      onClick={() => setShowAddModal(false)}
+      aria-label="Close"
+    >
+      ✕
+    </button>
           <h3>{t("add_staff")}</h3>
 
           <label>{t("staff_name")}</label>
@@ -219,6 +226,17 @@ export default function StaffHandling() {
       {/* 🔹 EDIT CREDENTIALS MODAL */}
       {editStaff && (
         <div className={styles.group}>
+          <button
+      className={styles.closeBtn}
+      onClick={() => {
+        setEditStaff(null);
+        setCredForm({ newEmail: "", newPassword: "" });
+      }}
+      aria-label="Close"
+    >
+      ✕
+    </button>
+
           <h3>{t("edit_staff_credentials")}</h3>
 
           <label>{t("new_email_optional")}</label>

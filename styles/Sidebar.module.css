@@ -25,13 +25,13 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  /* gap: 0.5rem; */
   flex: 1;                 
   overflow-y: auto;        
   overflow-x: hidden; 
   
   /* padding-bottom: 140px; */
-  padding: 1rem 0.75rem;
+  /* padding: 1rem 0.75rem; */
 }
 
 .nav a {
@@ -155,8 +155,8 @@
   top: 0;
   left: 0;
    height: 100%; 
-  min-height: calc(100vh - 60px); 
-  width: 20vw;
+  min-height: calc(100svhh - 60px); 
+  width: 25vw;
   background:#007171;
   color: white;
   /* padding: 1rem 0.75rem; */
@@ -206,14 +206,16 @@
 .nav {
   display: flex;
   flex-direction: column;
-  /* gap: 0.6rem; */
+  gap: 0.6rem;
 
   /* flex: 1;           
   min-height: 0;      
   overflow-y: auto;   
   overflow-x: hidden; */
 
-  padding: 1rem 0.75rem;
+  margin-top: 5px !important;
+  padding-top: 0px !important;
+  padding: 0.75rem;
    /* padding-bottom: 180px;  */
 }
 /* Owner-only vertical centering */
@@ -233,7 +235,7 @@
 }
 
 .logoutWrapper {
-  margin-top: 32px;
+  /* margin-top: 3px; */
   color: white;
   /* padding: 0.75rem; */
   flex-shrink: 0;
@@ -248,8 +250,8 @@
 @media (max-width: 768px) {
   .sidebar {
     top: 0;
-    height: 100vh;
-    min-height: 100vh;
+    height: 100svhh;
+    min-height: 100svhh;
     width: 80%;
     max-width: 260px;
   }
@@ -440,3 +442,18 @@
   display: block;
 
 }
+
+/* @media(min-width:768px){
+  .sidebar{
+    position: relative !important;
+    margin-top: 0 !important;
+    padding: 0% !important;
+    z-index: 100;
+  }
+  .overlay {
+  position: relative;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 2000;
+}
+} */

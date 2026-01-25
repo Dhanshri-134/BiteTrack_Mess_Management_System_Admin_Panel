@@ -40,17 +40,17 @@
 const isMobile = process.env.BUILD_FOR_MOBILE === "true";
 
 module.exports = {
-  // output: "export",
+  output: "export",    //for android it is required
   trailingSlash: true,
   reactStrictMode: true,
   images: { unoptimized: true },
 
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
+  // typescript: {
+  //   ignoreBuildErrors: true,
+  // },
 
   // ✅ THIS IS THE FIX
   assetPrefix: isMobile ? "" : "",

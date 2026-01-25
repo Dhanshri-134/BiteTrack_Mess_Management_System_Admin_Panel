@@ -122,14 +122,16 @@ export default function Register() {
 
          <div className={styles.row}>
             <div className={styles.field}>
-            <input name="room_no" placeholder="Room No." onChange={handleChange} />
+              <label>Room No.</label>
+            <input name="room_no" onChange={handleChange} />
             </div>
 
             <div className={styles.field}>
+              <label>Hostel Name:</label>
             <select name="hostel_name" required onChange={handleChange}>
-              <option value="">Select Hostel</option>
+              <option value="" ></option>
               {hostels.map((h) => (
-                <option key={h.id} value={h.name}>
+                <option key={h.id} value={h.name} >
                   {h.name}
                 </option>
               ))}
@@ -137,8 +139,9 @@ export default function Register() {
             </div>
 
             <div className={styles.field}>
+              <label>Course Name</label>
             <select name="course" required onChange={handleChange}>
-              <option value="">Select Course</option>
+              <option value=""></option>
               {courses.map((c) => (
                 <option key={c.id} value={c.name}>
                   {c.name}
@@ -149,8 +152,9 @@ export default function Register() {
           </div>
 
             <div className={styles.field}>
+              <label>Gender</label>
               <select name="gender" onChange={handleChange}>
-  <option value="">Gender</option>
+  <option value=""></option>
   <option value="Male">Male</option>
   <option value="Female">Female</option>
   <option value="Other">Other</option>
@@ -159,8 +163,9 @@ export default function Register() {
 
             </div>
             <div className={styles.field}>
+              <label>Food Preference</label>
 <select name="food_preference" onChange={handleChange}>
-  <option value="">Food Preference</option>
+  <option value=""></option>
   <option value="veg">Veg</option>
   <option value="nonveg">Non-Veg</option>
 </select>

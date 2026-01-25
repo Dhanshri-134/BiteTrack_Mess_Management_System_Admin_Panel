@@ -229,13 +229,17 @@ export default function SpecialDish() {
           placeholder={t("enterDishName")}
           className={styles.input}
         />
+        </div>
+      <div className={styles.addSection}>
         <input
           type="file"
           accept="image/*"
           onChange={(e) => setDishImage(e.target.files[0])}
           className={styles.fileInput}
-        />
+          />
 
+          </div>
+      <div className={styles.addSection}>
 
         <label className={styles.checkbox}>
           <input

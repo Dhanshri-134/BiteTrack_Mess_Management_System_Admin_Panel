@@ -1,16 +1,16 @@
 import styles from "../styles/quickSettingsModal.module.css";
-
+import UpdateUser from "../pages/update-user";
 export default function QuickSettingsModal({ action, onClose }) {
   const getUrl = () => {
     switch (action) {
       case "register":
-        return "/register";
+        return "/register/";
       case "verify":
-        return "/verify";
+        return "/verify/";
       case "update":
-        return "/update-user";
+        return <UpdateUser />;
       case "change-email":
-        return "/change-email";
+        return "/change-email/";
       default:
         return "";
     }

@@ -10,7 +10,7 @@
   grid-template-rows: 20px 1fr 20px;
   align-items: center;
   justify-items: center;
-  min-height: 100svh;
+  min-height: 100ssvh;
   padding: 80px;
   gap: 64px;
   font-family: var(--font-geist-sans);
@@ -168,12 +168,12 @@ a.secondary {
 }
 .container {
   display: flex;
-  min-height: 100vh;
+  min-height: 100svh;
 }
 /* ===== Container ===== */
 .container {
   display: flex;
-  min-height: 100vh;
+  min-height: 100svh;
   font-family: 'Inter', sans-serif;
   background-color: #f5f5f7;
 }
@@ -184,7 +184,7 @@ a.secondary {
   top: 0;
   left: 0;
   width: 240px;
-  height: 100vh; /* Full height */
+  height: 100svh; /* Full height */
   background-color: #059669;
   color: #f9fafb;
   padding: 2rem 1rem;
@@ -230,7 +230,7 @@ a.secondary {
   flex: 1;
   padding: 2.5rem;
   overflow-y: auto; /* Scroll independently if content overflows */
-  min-height: 100vh;
+  min-height: 100svh;
   background-color: #f5f5f7;
 }
 

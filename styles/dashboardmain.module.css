@@ -1,7 +1,7 @@
 /* ===== Page Layout ===== */
 .container {
   display: flex;
-  min-height: 100vh;
+  min-height: 100svh;
   background: transparent; /* CRITICAL FIX */
   max-width: 100%;
   overflow-x: hidden;

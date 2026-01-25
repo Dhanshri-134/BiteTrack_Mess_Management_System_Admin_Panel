@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { getLocalDB } from "@/lib/localDB";
 import {
   BarChart3,
   Users,
@@ -83,8 +84,13 @@ useEffect(() => {
 }, []);
 
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.clear();
+    const db = await getLocalDB();
+  if (db) {
+    db.clear("cache");
+    db.clear("queue");
+  }
     router.replace("/login/");
   };
 

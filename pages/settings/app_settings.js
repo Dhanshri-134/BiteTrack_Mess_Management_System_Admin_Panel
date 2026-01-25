@@ -5,6 +5,7 @@ import useAuth from "../../hooks/useAuth";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { Eye, EyeClosedIcon } from "lucide-react";
+import { offlineFetch } from "../../lib/offlineFetch";
 
 
 function decodeToken(token) {
@@ -75,6 +76,7 @@ useEffect(() => {
 
     const loadProfile = async () => {
       try {
+        const data = await offlineFetch("profile", async () => {
         const res = await fetch(
           "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
           {
@@ -86,7 +88,9 @@ useEffect(() => {
         );
 
         if (!res.ok) throw new Error("Profile load failed");
-        setProfile(await res.json());
+        return res.json();
+      });
+        setProfile(data);
       } catch {
         toast.error(t("profile_load_failed"));
       }
@@ -101,6 +105,7 @@ useEffect(() => {
 
     const loadSettings = async () => {
       try {
+        const data = await offlineFetch("app_settings", async () => {
         const res = await fetch(
           "https://bite-track-mess-management-system-a.vercel.app/api/settings/app/",
           {
@@ -112,9 +117,9 @@ useEffect(() => {
         );
 
         if (!res.ok) throw new Error("Settings load failed");
-
-        const json = await res.json();
-        setSettings(json.data || {});
+        return res.json();
+      });
+        setSettings(data?.data || {});
       } catch {
         toast.error(t("settings_load_failed"));
       } finally {

@@ -435,7 +435,7 @@
 
 //               <div
 //                 style={{
-//                   maxHeight: "70vh",
+//                   maxHeight: "70svh",
 //                   overflowY: "auto",
 //                   paddingRight: "0.5rem",
 //                 }}
@@ -677,11 +677,28 @@ export default function Users() {
   // Update user
   const handleUpdate = async () => {
   try {
-    const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/update/", {
-      method: "PUT",
-      headers: authHeaders(),
-      body: JSON.stringify(form),
-    });
+    const res = await fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/update/",
+      {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          id: modalUser.id,                 // ✅ REQUIRED
+          first_name: form.first_name,
+          last_name: form.last_name,
+          phone: form.phone,
+          room_no: form.room_no,
+          hostel_name: form.hostel_name,
+          course: form.course,
+
+          // ✅ parents handled HERE
+          parent_name: form.parent_name,
+          parent_contact: form.parent_contact,
+          parent_address: form.parent_address,
+        }),
+      }
+    );
+
     const data = await res.json();
 
     if (!res.ok) {
@@ -689,25 +706,15 @@ export default function Users() {
       return;
     }
 
-    const parentData = {
-      user_id: modalUser.id,
-      name: form.parent_name,
-      contact: form.parent_contact,
-      address: form.parent_address,
-    };
-
-    await fetch("https://bite-track-mess-management-system-a.vercel.app/api/parents/update/", {
-      method: "PUT",
-      headers: authHeaders(),
-      body: JSON.stringify(parentData),
-    });
-
+    toast.success(t("userUpdatedSuccess"));
     fetchData();
     setModalUser(null);
   } catch (err) {
     console.error(err);
+    toast.error(t("somethingWentWrong"));
   }
 };
+
 
   const filterAndSort = (users) => {
     let filtered = users;
@@ -742,6 +749,8 @@ export default function Users() {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? " ▲" : " ▼";
   };
+ 
+
 
   const tableColumns = [
     { key: "name", label: t("name") },
@@ -852,6 +861,11 @@ const changeDOJ = async (user) => {
     toast.error(t("somethingWentWrong"));
   }
 };
+ const limitedColumns = tableColumns.filter(
+  (col) =>
+    col.key !== "parents" &&
+    col.key !== "first_attendance_date"
+);
 
 return (
   <Layout>
@@ -923,7 +937,7 @@ return (
               (unverified.length === 0 ? (
                 <div className={styles.empty}>{t("noUnverifiedUsers")}</div>
               ) : (
-                renderTable(unverified, tableColumns, {
+                renderTable(unverified, limitedColumns, {
                   label: t("verify"),
                   render: (u) => (
                     <Link
@@ -940,7 +954,7 @@ return (
               (unmailed.length === 0 ? (
                 <div className={styles.empty}>{t("noUsersToSendMail")}</div>
               ) : (
-                renderTable(unmailed, tableColumns, {
+                renderTable(unmailed, limitedColumns, {
                   label: t("sendMail"),
                   render: (u) => (
                     <button
@@ -960,7 +974,7 @@ return (
             <div className={styles.modal}>
               <h2>{t("updateUser")}</h2>
 
-              <div style={{ maxHeight: "70vh", overflowY: "auto", paddingRight: "0.5rem" }}>
+              <div style={{ maxHeight: "70svh", overflowY: "auto", paddingRight: "0.5rem" }}>
                 <label>
                   {t("firstName")}:
                   <input name="first_name" value={form.first_name} onChange={handleChange} />

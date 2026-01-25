@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import Layout from "../components/Layout"; // ✅ your existing layout
-import styles from "../styles/billingMess.module.css"; // optional, if exists
+import Layout from "../components/Layout";
+import styles from "../styles/billingMess.module.css";
 import { useRouter } from "next/router";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Billing() {
   const router = useRouter();
+  const { t } = useLanguage();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,11 +19,14 @@ export default function Billing() {
       return;
     }
 
-    fetch("https://bite-track-mess-management-system-a.vercel.app/api/billing/status/", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/billing/status/",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
       .then(async (res) => {
         const json = await res.json();
         if (!res.ok) throw new Error(json.error);
@@ -31,39 +37,43 @@ export default function Billing() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
-const startSubscription = async () => {
-  const token = localStorage.getItem("token");
+  }, [router]);
 
-  const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/billing/create-subscription/", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const startSubscription = async () => {
+    const token = localStorage.getItem("token");
 
-  const data = await res.json();
-  if (!res.ok) {
-    alert(data.error);
-    return;
-  }
+    const res = await fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/billing/create-subscription/",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  window.location.href = `https://checkout.razorpay.com/v1/subscription/${data.subscription_id}`;
-};
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error);
+      return;
+    }
+
+    window.location.href = `https://checkout.razorpay.com/v1/subscription/${data.subscription_id}`;
+  };
 
   return (
     <Layout>
       <div className={styles.container}>
-        <h2>Billing & Subscription</h2>
+        <h2>{t("billing_subscription")}</h2>
 
-        {loading && <p>Loading billing details...</p>}
+        {loading && <p>{t("loading_billing_details")}</p>}
         {error && <p className={styles.error}>{error}</p>}
 
         {data && (
           <>
             <div className={styles.card}>
               <p>
-                <strong>Status:</strong>{" "}
+                <strong>{t("status")}:</strong>{" "}
                 <span
                   className={
                     data.subscription_status === "expired"
@@ -77,29 +87,31 @@ const startSubscription = async () => {
 
               {data.trial_end_date && (
                 <p>
-                  <strong>Trial ends on:</strong>{" "}
+                  <strong>{t("trial_ends_on")}:</strong>{" "}
                   {new Date(data.trial_end_date).toDateString()}
                 </p>
               )}
 
               {data.days_remaining !== null && (
                 <p>
-                  <strong>Days remaining:</strong> {data.days_remaining}
+                  <strong>{t("days_remaining")}:</strong>{" "}
+                  {data.days_remaining}
                 </p>
               )}
             </div>
 
             {data.subscription_status === "expired" && (
               <div className={styles.warning}>
-                <p>Your trial has expired.</p>
-                <p>Please add a payment method to continue using the app.</p>
+                <p>{t("trial_expired")}</p>
+                <p>{t("contact_support_to_continue")}</p>
               </div>
             )}
 
+            {/* 
             <button onClick={startSubscription}>
-  Add Payment Method
-</button>
-
+              {t("add_payment_method")}
+            </button> 
+            */}
           </>
         )}
       </div>

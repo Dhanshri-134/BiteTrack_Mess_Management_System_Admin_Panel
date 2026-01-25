@@ -1,6 +1,6 @@
 .container {
   /* display: flex; */
-  min-height: 100vh;
+  min-height: 100svhh;
   background: transparent; /* CRITICAL FIX */
   max-width: 100%;
 }

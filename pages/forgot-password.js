@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "../styles/login.module.css";
+import styles from "../styles/forgotpassword.module.css";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -21,7 +21,7 @@ export default function ForgotPassword() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      setMsg("Password reset code sent to email");
+      setMsg("Sent mail to your registered email ID");
     } catch (err) {
       setError(err.message);
     }
@@ -45,7 +45,7 @@ export default function ForgotPassword() {
           {error && <p style={{ color: "red" }}>{error}</p>}
 
           <button type="submit" className={styles.loginBtn}>
-            Send Reset Code
+            Send Email
           </button>
         </form>
       </div>

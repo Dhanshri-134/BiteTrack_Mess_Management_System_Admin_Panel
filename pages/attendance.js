@@ -76,17 +76,17 @@ export default function AttendancePage() {
     try {
       const token = localStorage.getItem("token");
 
-const res = await fetch(
-  "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ qr }),
-  }
-);
+      const res = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ qr }),
+        }
+      );
 
 
       const data = await res.json();
@@ -127,7 +127,22 @@ const namesRes = await fetch(
       });
 
       setMessage(t("attendanceSavedOffline"));
-      setRecentUsers([]);
+      const parts = qr.split("-");
+  const userId = parts.length === 2 ? Number(parts[1]) : null;
+
+  if (userId) {
+    setRecords(prev => [
+      ...prev,
+      {
+        id: `offline-${Date.now()}`,
+        user_id: userId,
+        user_name: t("offlineUser"),
+        att_date: today,
+      },
+    ]);
+  }
+
+  setRecentUsers([]);
     }
   };
 

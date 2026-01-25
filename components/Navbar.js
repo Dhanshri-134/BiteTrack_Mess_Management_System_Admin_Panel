@@ -112,6 +112,8 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import styles from "../styles/navbar.module.css";
 import LanguageToggle from "./LanguageToggle";
+import { triggerRefresh } from "@/lib/refreshBus";
+import toast from "react-hot-toast";
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -145,13 +147,25 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
         {/* 🌐 LANGUAGE TOGGLE */}
         <LanguageToggle />
 
-        <button
+        {/* <button
           onClick={() => router.replace(router.asPath)}
           className={styles.refreshBtn}
           title="Refresh"
         >
           <RefreshCcw size={20} />
-        </button>
+        </button> */}
+
+
+<button
+  onClick={() => {
+    toast.success("Refreshing...");
+    triggerRefresh();
+  }}
+  className={styles.refreshBtn}
+  title="Refresh"
+>
+  <RefreshCcw size={20} />
+</button>
 
         <Link href="/notifications/" className={styles.iconBtn}>
           <Bell size={20} />

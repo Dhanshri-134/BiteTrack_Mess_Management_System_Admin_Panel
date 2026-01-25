@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/menu.module.css";
 import toast from "react-hot-toast";
+import { offlineFetch } from "@/lib/offlineFetch";
+import { queueAction } from "@/lib/queueAction";
 
 export default function MenuPage() {
   const [menu, setMenu] = useState({});
@@ -29,12 +31,16 @@ export default function MenuPage() {
   // useEffect(() => {
     const fetchMenu = async () => {
       try {
+        const data = await offlineFetch("menu-weekly", async () => {
         const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/");
-        const data = await res.json();
-        if (res.ok && data?.menu) setMenu(data.menu);
-        else setMenu(defaultMenu);
-      } catch (err) {
-        console.error("Error fetching menu:", err);
+        if (!res.ok) throw new Error("menu fetch failed");
+      return res.json();
+    });
+
+    if (data?.menu) setMenu(data.menu);
+    else setMenu(defaultMenu);
+  } catch (err) {
+        // console.error("Error fetching menu:", err);
         setMenu(defaultMenu);
       }
     };
@@ -44,9 +50,13 @@ export default function MenuPage() {
   
   const fetchRatings = async () => {
     try {
+       const data = await offlineFetch("menu-ratings", async () => {
       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/ratings/fetch/");
-      const data = await res.json();
-        if (res.ok) setRatings(data);
+       if (!res.ok) throw new Error("ratings fetch failed");
+      return res.json();
+    });
+
+    setRatings(data || {});
       } catch (err) {
         console.error("Error fetching ratings:", err);
       }
@@ -54,9 +64,13 @@ export default function MenuPage() {
     
     const fetchVotes = async () => {
       try {
+        const data = await offlineFetch("menu-votes", async () => {
         const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/votes/fetch/");
-        const data = await res.json();
-        if (res.ok) setVotes(data);
+        if (!res.ok) throw new Error("votes fetch failed");
+      return res.json();
+    });
+
+    setVotes(data || {});
       } catch (err) {
         console.error("Error fetching votes:", err);
       }

@@ -592,5 +592,48 @@
   "submitting": "सबमिट करत आहे...",
   "registrationFailed": "नोंदणी अयशस्वी झाली",
   "alreadyHaveAccount": "आधीच खाते आहे?",
-  "biteTrackLogoAlt": "बाईटट्रॅक लोगो"
+  "biteTrackLogoAlt": "बाईटट्रॅक लोगो",
+  "billing_subscription": "बिलिंग आणि सबस्क्रिप्शन",
+  "loading_billing_details": "बिलिंग तपशील लोड होत आहे...",
+  "status": "स्थिती",
+  "trial_ends_on": "ट्रायल समाप्ती तारीख",
+  "days_remaining": "उरलेले दिवस",
+  "trial_expired": "तुमचा ट्रायल कालावधी संपला आहे.",
+  "contact_support_to_continue": "ॲप वापरणे सुरू ठेवण्यासाठी Shris Tech शी संपर्क साधा.",
+  "add_payment_method": "पेमेंट पद्धत जोडा",
+  "loading": "लोड होत आहे...",
+  "unauthorized": "अनधिकृत प्रवेश",
+  "failed_to_load_settings": "सेटिंग्ज लोड करण्यात अयशस्वी",
+  "settings_updated": "सेटिंग्ज यशस्वीरित्या अपडेट झाली",
+  "update_failed": "सेटिंग्ज अपडेट अयशस्वी",
+
+  "mess_settings": "मेस सेटिंग्ज",
+  "staff_handling": "स्टाफ व्यवस्थापन",
+  "save_changes": "बदल जतन करा",
+
+  "mess_name": "मेसचे नाव",
+  "location": "ठिकाण",
+  "open_time": "उघडण्याची वेळ",
+  "description": "वर्णन",
+
+  "features_comma": "सुविधा (स्वल्पविरामाने वेगळ्या)",
+  "specialties_comma": "विशेषता (स्वल्पविरामाने वेगळ्या)",
+
+  "mess_logo": "मेस लोगो",
+  "owner_photo": "मालकाचा फोटो",
+  "stamp_image": "स्टॅम्प प्रतिमा",
+  "signature": "स्वाक्षरी",
+  "mess_images": "मेस प्रतिमा",
+
+  "hostels_and_courses": "वसतिगृहे आणि अभ्यासक्रम",
+  "hostels_comma": "वसतिगृहे (स्वल्पविरामाने वेगळ्या)",
+  "courses_comma": "अभ्यासक्रम (स्वल्पविरामाने वेगळ्या)",
+
+  "owner_contact_details": "मालक संपर्क माहिती",
+  "contact_name": "संपर्क नाव",
+  "phone_number": "फोन नंबर",
+  "email": "ई-मेल",
+  "address": "पत्ता",
+  "allStatus": "सर्व स्थिती",
+  "notePlaceholder": "येथे नोंद लिहा..."
 }

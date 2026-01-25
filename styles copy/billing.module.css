@@ -415,7 +415,7 @@
 .modalContent {
   background: #fff;
   width: min(1000px, 96%);
-  max-height: 90vh;
+  max-height: 90svhh;
   overflow-y: auto;
   border-radius: 10px;
   padding: 18px;
@@ -613,7 +613,7 @@
 .modalContent {
   background: #ffffff;
   width: min(600px, 95%);
-  max-height: 90vh;
+  max-height: 90svhh;
   overflow-y: auto;
   border-radius: 12px;
   padding: 20px;

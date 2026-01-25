@@ -5,16 +5,44 @@ import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 import StaffHandling from "./staff_setting";
 import { useLanguage } from "../../context/LanguageContext";
-
+import { offlineFetch } from "@/lib/offlineFetch";
 const SUPABASE_URL = "https://db.vhnhtypxvpwagghunnjr.supabase.co";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
+  const [errorShown, setErrorShown] = useState(false);
 
   const [loading, setLoading] = useState(true);
-  const [mess, setMess] = useState({});
+  const [mess, setMess] = useState({
+    name: "",
+    location: "",
+    open_time: "",
+    description: "",
+    per_day_rate: "",
+    monthly_price: "",
+    allowed_leave_days: "",
+    features: [],
+    specialties: [],
+    mess_images: [],
+    logo: "",
+    owner_photo: "",
+    stamp_image: "",
+    signature_image: "",
+  });
 
   const [activeTab, setActiveTab] = useState("mess");
+
+  const [hostels, setHostels] = useState([]);
+  const [courses, setCourses] = useState([]);
+
+  const [contact, setContact] = useState({
+    contact_name: "",
+    phone_number: "",
+    email: "",
+    address: "",
+  });
+
+
 
   // --------------------------------------------------
   // 🔵 Fetch settings
@@ -23,16 +51,18 @@ export default function SettingsPage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error(t("unauthorized"));
+      const data = await offlineFetch("settings-mess", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/settings/messInfo/",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-      const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/settings/messInfo/",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        return data;
+      });
 
       setMess({
         ...data,
@@ -40,9 +70,48 @@ export default function SettingsPage() {
         specialties: data.specialties || [],
         mess_images: data.mess_images || [],
       });
+
+      // fetch hostels & courses
+      const metaData = await offlineFetch("settings-meta", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/mess/meta/",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error("meta fetch failed");
+        return res.json();
+      });
+        setHostels(metaData.hostels || []);
+        setCourses(metaData.courses || []);
+      
+
+      // fetch owner contact
+      const contactData = await offlineFetch("settings-contact", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/mess/mess-contact/",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error("contact fetch failed");
+        return res.json();
+      });
+
+      setContact(
+        contactData || {
+          contact_name: "",
+          phone_number: "",
+          email: "",
+          address: "",
+        }
+      );
+
+
     } catch (err) {
-      toast.error(t("failed_to_load_settings"));
-    } finally {
+      console.error(err);
+      if (!errorShown) {
+        toast.error(t("failed_to_load_settings"));
+        setErrorShown(true);
+      }
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -103,17 +172,17 @@ export default function SettingsPage() {
   };
 
   const removeImage = (field, index) => {
-  setMess((p) => {
-    if (field === "mess_images") {
-      const copy = [...p.mess_images];
-      copy.splice(index, 1);
-      return { ...p, mess_images: copy };
-    }
+    setMess((p) => {
+      if (field === "mess_images") {
+        const copy = [...p.mess_images];
+        copy.splice(index, 1);
+        return { ...p, mess_images: copy };
+      }
 
-    // IMPORTANT: use empty string, NOT null
-    return { ...p, [field]: "" };
-  });
-};
+      // IMPORTANT: use empty string, NOT null
+      return { ...p, [field]: "" };
+    });
+  };
 
   // --------------------------------------------------
   // 🟢 Save
@@ -121,8 +190,10 @@ export default function SettingsPage() {
   const saveSettings = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) throw new Error("Unauthorized");
 
-      const payload = {
+      // 1️⃣ Save mess basic info
+      const messPayload = {
         name: mess.name,
         location: mess.location,
         open_time: mess.open_time,
@@ -139,7 +210,7 @@ export default function SettingsPage() {
         mess_images: mess.mess_images,
       };
 
-      const res = await fetch(
+      const messRes = await fetch(
         "https://bite-track-mess-management-system-a.vercel.app/api/settings/messInfo/",
         {
           method: "POST",
@@ -147,18 +218,56 @@ export default function SettingsPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(messPayload),
         }
       );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!messRes.ok) {
+        const err = await messRes.json();
+        throw new Error(err.message);
+      }
+
+      // 2️⃣ Save hostels & courses
+      const metaRes = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/mess/meta/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ hostels, courses }),
+        }
+      );
+
+      if (!metaRes.ok) {
+        throw new Error("Failed to save hostels/courses");
+      }
+
+      // 3️⃣ Save owner contact
+      const contactRes = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/mess/mess-contact/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(contact),
+        }
+      );
+
+      if (!contactRes.ok) {
+        throw new Error("Failed to save contact details");
+      }
 
       toast.success(t("settings_updated"));
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error(t("update_failed"));
     }
   };
+
 
   if (loading) return <Layout>{t("loading")}</Layout>;
 
@@ -170,177 +279,248 @@ export default function SettingsPage() {
       <div className={styles.container}>
         <h1>{t("mess_settings")}</h1>
 
-<div className={styles.tabs}>
-  {/* Sliding indicator */}
-  <div
-    className={`${styles.slider} ${
-      activeTab === "staff" ? styles.right : ""
-    }`}
-  />
-
-  <button
-    className={`${styles.tab} ${
-      activeTab === "mess" ? styles.active : ""
-    }`}
-    onClick={() => setActiveTab("mess")}
-  >
-    {t("mess_settings")}
-  </button>
-
-  <button
-    className={`${styles.tab} ${
-      activeTab === "staff" ? styles.active : ""
-    }`}
-    onClick={() => setActiveTab("staff")}
-  >
-    {t("staff_handling")}
-  </button>
-</div>
-
-{activeTab === "mess" && (
-  <>
-        <div className={styles.group}>
-          <label>{t("mess_name")}</label>
-          <input name="name" value={mess.name || ""} onChange={handleChange} />
-
-          <label>{t("location")}</label>
-          <input name="location" value={mess.location || ""} onChange={handleChange} />
-
-          <label>{t("open_time")}</label>
-          <input name="open_time" value={mess.open_time || ""} onChange={handleChange} />
-
-          <label>{t("description")}</label>
-          <textarea name="description" value={mess.description || ""} onChange={handleChange} />
-
-          <label>{t("features_comma")}</label>
-          <input
-            value={mess.features.join(", ")}
-            onChange={(e) =>
-              setMess({
-                ...mess,
-                features: e.target.value.split(",").map((v) => v.trim()),
-              })
-            }
+        <div className={styles.tabs}>
+          {/* Sliding indicator */}
+          <div
+            className={`${styles.slider} ${activeTab === "staff" ? styles.right : ""
+              }`}
           />
 
-          <label>{t("specialties_comma")}</label>
-          <input
-            value={mess.specialties.join(", ")}
-            onChange={(e) =>
-              setMess({
-                ...mess,
-                specialties: e.target.value.split(",").map((v) => v.trim()),
-              })
-            }
-          />
+          <button
+            className={`${styles.tab} ${activeTab === "mess" ? styles.active : ""
+              }`}
+            onClick={() => setActiveTab("mess")}
+          >
+            {t("mess_settings")}
+          </button>
+
+          <button
+            className={`${styles.tab} ${activeTab === "staff" ? styles.active : ""
+              }`}
+            onClick={() => setActiveTab("staff")}
+          >
+            {t("staff_handling")}
+          </button>
         </div>
 
-        <div className={styles.group}>
-          <label>{t("mess_logo")}</label>
-          <input
-            type="file"
-            onChange={(e) =>
-              handleSingleImage(e.target.files[0], "logo", "mess-logo")
-            }
-          />
-          {mess.logo && (
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <img src={mess.logo} className={styles.preview} />
-              <button onClick={() => removeImage("logo")} className={styles.remove}>
-                ✕
-              </button>
+        {activeTab === "mess" && (
+          <>
+            <div className={styles.group}>
+              <label>{t("mess_name")}</label>
+              <input name="name" value={mess.name || ""} onChange={handleChange} />
+
+              <label>{t("location")}</label>
+              <input name="location" value={mess.location || ""} onChange={handleChange} />
+
+              <label>{t("open_time")}</label>
+              <input name="open_time" value={mess.open_time || ""} onChange={handleChange} />
+
+              <label>{t("description")}</label>
+              <textarea name="description" value={mess.description || ""} onChange={handleChange} />
+
+              <label>{t("features_comma")}</label>
+              <input
+                value={(mess.features || []).join(", ")}
+                onChange={(e) =>
+                  setMess({
+                    ...mess,
+                    features: e.target.value.split(",").map((v) => v.trim()),
+                  })
+                }
+              />
+
+              <label>{t("specialties_comma")}</label>
+              <input
+                value={(mess.specialties || []).join(", ")}
+
+                onChange={(e) =>
+                  setMess({
+                    ...mess,
+                    specialties: e.target.value.split(",").map((v) => v.trim()),
+                  })
+                }
+              />
             </div>
-          )}
-        </div>
+            {/* ================= HOSTELS & COURSES ================= */}
+            <div className={styles.group}>
+              <h3>{t("hostels_and_courses")}</h3>
 
-        <div className={styles.group}>
-          <label>{t("owner_photo")}</label>
-          <input
-            type="file"
-            onChange={(e) =>
-              handleSingleImage(
-                e.target.files[0],
-                "owner_photo",
-                "mess-owner-photos"
-              )
-            }
-          />
-          {mess.owner_photo && (
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <img src={mess.owner_photo} className={styles.preview} />
-              <button onClick={() => removeImage("owner_photo")} className={styles.remove}>
-                ✕
-              </button>
+              <label>{t("hostels_comma")}</label>
+              <input
+                value={(hostels || []).map(h => h.name).join(", ")}
+
+                placeholder="Boys Hostel A, Girls Hostel B"
+                onChange={(e) =>
+                  setHostels(
+                    e.target.value
+                      .split(",")
+                      .map(v => v.trim())
+                      .filter(Boolean)
+                      .map((name, i) => ({ name, display_order: i }))
+                  )
+                }
+              />
+
+              <label>{t("courses_comma")}</label>
+              <input
+                value={(courses || []).map(c => c.name).join(", ")}
+                placeholder="B.Tech, MBA, MCA"
+                onChange={(e) =>
+                  setCourses(
+                    e.target.value
+                      .split(",")
+                      .map(v => v.trim())
+                      .filter(Boolean)
+                      .map((name, i) => ({ name, display_order: i }))
+                  )
+                }
+              />
             </div>
-          )}
-        </div>
+            {/* ================= OWNER CONTACT ================= */}
+            <div className={styles.group}>
+              <h3>{t("owner_contact_details")}</h3>
 
-        <div className={styles.group}>
-          <label>{t("stamp_image")}</label>
-          <input
-            type="file"
-            onChange={(e) =>
-              handleSingleImage(
-                e.target.files[0],
-                "stamp_image",
-                "mess-stamps"
-              )
-            }
-          />
-          {mess.stamp_image && (
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <img src={mess.stamp_image} className={styles.preview} />
-              <button onClick={() => removeImage("stamp_image")} className={styles.remove}>
-                ✕
-              </button>
+              <label>{t("contact_name")}</label>
+              <input
+                value={contact.contact_name}
+                onChange={(e) =>
+                  setContact({ ...contact, contact_name: e.target.value })
+                }
+              />
+
+              <label>{t("phone_number")}</label>
+              <input
+                value={contact.phone_number}
+                onChange={(e) =>
+                  setContact({ ...contact, phone_number: e.target.value })
+                }
+              />
+
+              <label>{t("email")}</label>
+              <input
+                type="email"
+                value={contact.email}
+                onChange={(e) =>
+                  setContact({ ...contact, email: e.target.value })
+                }
+              />
+
+              <label>{t("address")}</label>
+              <textarea
+                value={contact.address}
+                onChange={(e) =>
+                  setContact({ ...contact, address: e.target.value })
+                }
+              />
             </div>
-          )}
-        </div>
 
-        <div className={styles.group}>
-          <label>{t("signature")}</label>
-          <input
-            type="file"
-            onChange={(e) =>
-              handleSingleImage(
-                e.target.files[0],
-                "signature_image",
-                "mess-signature"
-              )
-            }
-          />
-          {mess.signature_image && (
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <img src={mess.signature_image} className={styles.preview} />
-              <button onClick={() => removeImage("signature_image")} className={styles.remove}>
-                ✕
-              </button>
+
+            <div className={styles.group}>
+              <label>{t("mess_logo")}</label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  handleSingleImage(e.target.files[0], "logo", "mess-logo")
+                }
+              />
+              {mess.logo && (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <img src={mess.logo} className={styles.preview} />
+                  <button onClick={() => removeImage("logo")} className={styles.remove}>
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className={styles.group}>
-          <label>{t("mess_images")}</label>
-          <input type="file" multiple onChange={(e) => handleMultipleImages(e.target.files)} />
-          <div className={styles.grid}>
-            {mess.mess_images?.map((img, i) => (
-              <div key={i} style={{ position: "relative" }}>
-                <img src={img} className={styles.preview} />
-                <button
-                  onClick={() => removeImage("mess_images", i)}
-                  className={styles.remove}
-                >
-                  ✕
-                </button>
+            <div className={styles.group}>
+              <label>{t("owner_photo")}</label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  handleSingleImage(
+                    e.target.files[0],
+                    "owner_photo",
+                    "mess-owner-photos"
+                  )
+                }
+              />
+              {mess.owner_photo && (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <img src={mess.owner_photo} className={styles.preview} />
+                  <button onClick={() => removeImage("owner_photo")} className={styles.remove}>
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.group}>
+              <label>{t("stamp_image")}</label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  handleSingleImage(
+                    e.target.files[0],
+                    "stamp_image",
+                    "mess-stamps"
+                  )
+                }
+              />
+              {mess.stamp_image && (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <img src={mess.stamp_image} className={styles.preview} />
+                  <button onClick={() => removeImage("stamp_image")} className={styles.remove}>
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.group}>
+              <label>{t("signature")}</label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  handleSingleImage(
+                    e.target.files[0],
+                    "signature_image",
+                    "mess-signature"
+                  )
+                }
+              />
+              {mess.signature_image && (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <img src={mess.signature_image} className={styles.preview} />
+                  <button onClick={() => removeImage("signature_image")} className={styles.remove}>
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.group}>
+              <label>{t("mess_images")}</label>
+              <input type="file" multiple onChange={(e) => handleMultipleImages(e.target.files)} />
+              <div className={styles.grid}>
+                {mess.mess_images?.map((img, i) => (
+                  <div key={i} style={{ position: "relative" }}>
+                    <img src={img} className={styles.preview} />
+                    <button
+                      onClick={() => removeImage("mess_images", i)}
+                      className={styles.remove}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <button onClick={saveSettings}>{t("save_changes")}</button>
+            <button onClick={saveSettings}>{t("save_changes")}</button>
           </>
-)}
-{activeTab === "staff" && <StaffHandling />}
+        )}
+        {activeTab === "staff" && <StaffHandling />}
 
       </div>
     </Layout>
@@ -349,84 +529,3 @@ export default function SettingsPage() {
 
 
 
-
-
-
-// function StaffHandling() {
-//   const { t } = useLanguage();
-//   const [form, setForm] = useState({
-//     oldPassword: "",
-//     newPassword: "",
-//     newEmail: "",
-//   });
-//   const [loading, setLoading] = useState(false);
-
-//   const handleChange = (e) => {
-//     setForm({ ...form, [e.target.name]: e.target.value });
-//   };
-
-//   const updateCredentials = async () => {
-//     try {
-//       if (!form.oldPassword || !form.newPassword) {
-//         return toast.error(t("old_and_new_password_required"));
-//       }
-
-//       setLoading(true);
-//       const token = localStorage.getItem("token");
-
-//       const res = await fetch(
-//         "https://bite-track-mess-management-system-a.vercel.app/api/settings/update-credentials/",
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
-//           body: JSON.stringify(form),
-//         }
-//       );
-
-//       const data = await res.json();
-//       if (!res.ok) throw new Error(data.message);
-
-//       toast.success(t("credentials_updated_successfully"));
-//       setForm({ oldPassword: "", newPassword: "", newEmail: "" });
-//     } catch (e) {
-//       toast.error(e.message || t("update_failed"));
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className={styles.group}>
-//       <label>{t("old_password")}</label>
-//       <input
-//         type="password"
-//         name="oldPassword"
-//         value={form.oldPassword}
-//         onChange={handleChange}
-//       />
-
-//       <label>{t("new_email_optional")}</label>
-//       <input
-//         type="email"
-//         name="newEmail"
-//         value={form.newEmail}
-//         onChange={handleChange}
-//       />
-
-//       <label>{t("new_password")}</label>
-//       <input
-//         type="password"
-//         name="newPassword"
-//         value={form.newPassword}
-//         onChange={handleChange}
-//       />
-
-//       <button onClick={updateCredentials} disabled={loading}>
-//         {loading ? t("updating") : t("update_credentials")}
-//       </button>
-//     </div>
-//   );
-// }

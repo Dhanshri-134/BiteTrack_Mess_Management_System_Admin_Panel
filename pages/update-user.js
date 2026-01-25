@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import styles from "../styles/updatuser.module.css";
 import { offlineFetch } from "../lib/offlineFetch";
 import toast from "react-hot-toast";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function UpdateUser() {
+   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -60,7 +62,6 @@ export default function UpdateUser() {
       first_name: u.first_name || "",
       last_name: u.last_name || "",
       phone: u.phone || "",
-      mobile: u.mobile || "",
       room_no: u.room_no || "",
       hostel_name: u.hostel_name || "",
       course: u.course || "",
@@ -77,48 +78,120 @@ export default function UpdateUser() {
   };
 
   /* ---------------- Update ---------------- */
-  const handleUpdate = async () => {
-    if (!selectedUser) return;
-    setUpdating(true);
+  // const handleUpdate = async () => {
+  //   if (!selectedUser) return;
+  //   setUpdating(true);
 
-    try {
-      const resUser = await fetch("/api/users/update", {
+  //   try {
+  //     const resUser = await fetch("/api/users/update", {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ id: selectedUser.id, ...form }),
+  //     });
+
+  //     const userData = await resUser.json();
+  //     if (!resUser.ok)
+  //       return toast.error(userData.error || "Failed to update user");
+
+  //     const resParent = await fetch("/api/parents/update", {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         user_id: selectedUser.id,
+  //         name: form.parent_name,
+  //         contact: form.parent_contact,
+  //         address: form.parent_address,
+  //       }),
+  //     });
+
+  //     const parentData = await resParent.json();
+  //     if (!resParent.ok)
+  //       return toast.error(parentData.error || "Failed to update parent");
+
+  //     toast.success("User updated successfully!");
+  //     setSelectedUser(null);
+  //     setForm({});
+  //     setSearchTerm("");
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Something went wrong. Please try again.");
+  //   } finally {
+  //     setUpdating(false);
+  //   }
+  // };
+ const handleUpdate = async () => {
+  if (!selectedUser) return;
+
+  setUpdating(true);
+
+  try {
+    // 🔹 Update user
+    const res = await fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/update/",
+      {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: selectedUser.id, ...form }),
-      });
-
-      const userData = await resUser.json();
-      if (!resUser.ok)
-        return toast.error(userData.error || "Failed to update user");
-
-      const resParent = await fetch("/api/parents/update", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({
-          user_id: selectedUser.id,
-          name: form.parent_name,
-          contact: form.parent_contact,
-          address: form.parent_address,
+          id: selectedUser.id, // ✅ REQUIRED
+          first_name: form.first_name,
+          last_name: form.last_name,
+          phone: form.phone,
+          room_no: form.room_no,
+          hostel_name: form.hostel_name,
+          course: form.course,
+           parent_name: form.parent_name,
+  parent_contact: form.parent_contact,
+  parent_address: form.parent_address,
         }),
-      });
+      }
+    );
 
-      const parentData = await resParent.json();
-      if (!resParent.ok)
-        return toast.error(parentData.error || "Failed to update parent");
-
-      toast.success("User updated successfully!");
-      setSelectedUser(null);
-      setForm({});
-      setSearchTerm("");
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setUpdating(false);
+    const data = await res.json();
+    if (!res.ok) {
+      toast.error(data?.message || t("somethingWentWrong"));
+      return;
     }
-  };
 
+    // 🔹 Update parent
+    // await fetch(
+    //   "https://bite-track-mess-management-system-a.vercel.app/api/parents/update/",
+    //   {
+    //     method: "PUT",
+    //     headers: authHeaders(),
+    //     body: JSON.stringify({
+    //       user_id: selectedUser.id, // ✅ FIXED
+    //       name: form.parent_name,
+    //       contact: form.parent_contact,
+    //       address: form.parent_address,
+    //     }),
+    //   }
+    // );
+
+    toast.success(t("updatedSuccessfully"));
+
+    // 🔹 Refresh list (cache + UI)
+    fetchData();
+
+    // 🔹 Reset UI
+    setSelectedUser(null);
+    setForm({});
+    setSearchTerm("");
+  } catch (err) {
+    console.error(err);
+    toast.error(t("somethingWentWrong"));
+  } finally {
+    setUpdating(false);
+  }
+};
+
+
+  const authHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+};
   /* ---------------- UI ---------------- */
   return (
     <div className={styles.container}>
@@ -152,95 +225,65 @@ export default function UpdateUser() {
             ))}
           </ul>
         )}
-
-        {/* Update Form */}
-        {selectedUser && (
+ {selectedUser && (
           <div className={styles.formWrapper}>
-            <h2>
-              {selectedUser.first_name} {selectedUser.last_name} (
-              {selectedUser.email || selectedUser.phone})
-            </h2>
+              <h2>{t("updateUser")}</h2>
 
-            <div className={styles.formGrid}>
-              <label>
-                First Name
-                <input
-                  name="first_name"
-                  value={form.first_name}
-                  onChange={handleChange}
-                />
-              </label>
+              <div style={{ maxHeight: "70svh", overflowY: "auto", paddingRight: "0.5rem" }}>
+                <label>
+                  {t("firstName")}:
+                  <input name="first_name" value={form.first_name} onChange={handleChange} />
+                </label>
 
-              <label>
-                Last Name
-                <input
-                  name="last_name"
-                  value={form.last_name}
-                  onChange={handleChange}
-                />
-              </label>
+                <label>
+                  {t("lastName")}:
+                  <input name="last_name" value={form.last_name} onChange={handleChange} />
+                </label>
 
-              <label>
-                Phone
-                <input name="phone" value={form.phone} onChange={handleChange} />
-              </label>
+                <label>
+                  {t("phone")}:
+                  <input name="phone" value={form.phone} onChange={handleChange} />
+                </label>
+{/* 
+                <label>
+                  Mobile:
+                  <input name="mobile" value={form.mobile} onChange={handleChange} />
+                </label> */}
 
-              <label>
-                Mobile
-                <input name="mobile" value={form.mobile} onChange={handleChange} />
-              </label>
+                <label>
+                  {t("roomNo")}:
+                  <input name="room_no" value={form.room_no} onChange={handleChange} />
+                </label>
 
-              <label>
-                Room No
-                <input name="room_no" value={form.room_no} onChange={handleChange} />
-              </label>
+                <label>
+                  {t("hostel")}:
+                  <input name="hostel_name" value={form.hostel_name} onChange={handleChange} />
+                </label>
 
-              <label>
-                Hostel
-                <input
-                  name="hostel_name"
-                  value={form.hostel_name}
-                  onChange={handleChange}
-                />
-              </label>
+                <label>
+                  {t("course")}:
+                  <input name="course" value={form.course} onChange={handleChange} />
+                </label>
 
-              <label>
-                Course
-                <input name="course" value={form.course} onChange={handleChange} />
-              </label>
-            </div>
+                <h3 style={{ marginTop: "1rem" }}>{t("parentDetails")}</h3>
 
-            <h3>Parent Details</h3>
-            <div className={styles.formGrid}>
-              <label>
-                Name
-                <input
-                  name="parent_name"
-                  value={form.parent_name}
-                  onChange={handleChange}
-                />
-              </label>
+                <label>
+                  {t("parentName")}:
+                  <input name="parent_name" value={form.parent_name || ""} onChange={handleChange} />
+                </label>
 
-              <label>
-                Contact
-                <input
-                  name="parent_contact"
-                  value={form.parent_contact}
-                  onChange={handleChange}
-                />
-              </label>
+                <label>
+                  {t("parentContact")}:
+                  <input name="parent_contact" value={form.parent_contact || ""} onChange={handleChange} />
+                </label>
 
-              <label>
-                Address
-                <input
-                  name="parent_address"
-                  value={form.parent_address}
-                  onChange={handleChange}
-                />
-              </label>
-            </div>
+                <label>
+                  {t("parentAddress")}:
+                  <input name="parent_address" value={form.parent_address || ""} onChange={handleChange} />
+                </label>
+              </div>
 
-            <button
+              <button
               className={styles.saveButton}
               onClick={handleUpdate}
               disabled={updating}
@@ -249,6 +292,7 @@ export default function UpdateUser() {
             </button>
           </div>
         )}
+        
       </main>
     </div>
   );

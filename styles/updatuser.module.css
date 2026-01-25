@@ -1,18 +1,27 @@
 .container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svhhh;
+  background-color: #f0fdf4; /* light green background */
   padding: 2rem;
-  background-color: #efefef;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .main {
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
   background-color: #fff;
   padding: 1rem;
   border-radius: 18px;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
 }
 
 .main h1 {
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .main h2 {

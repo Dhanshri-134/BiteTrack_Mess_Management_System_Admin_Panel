@@ -2,7 +2,7 @@
   position: fixed;
   top: 60px;
   left: 0;
-  height: calc(100vh - 60px);
+  height: calc(100svh - 60px);
   width: 220px;
   background: #111827;
   color: white;
@@ -346,8 +346,8 @@
   position: fixed;
   top: 90px;
   left: 0;
-  /* height: calc(100vh - 60px);
-  min-height: calc(100vh - 60px); */
+  /* height: calc(100svh - 60px);
+  min-height: calc(100svh - 60px); */
   width: 220px;
   background:#007171;
   color: white;
@@ -443,8 +443,8 @@
 @media (max-width: 768px) {
   .sidebar {
     top: 0;
-    height: 100vh;
-    min-height: 100vh;
+    height: 100svh;
+    min-height: 100svh;
     width: 80%;
     max-width: 260px;
   }

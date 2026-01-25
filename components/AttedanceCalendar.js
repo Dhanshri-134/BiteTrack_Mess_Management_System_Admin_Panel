@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo,useEffect } from "react";
 import styles from "../styles/AttendanceCalendar.module.css";
 import { useLanguage } from "../context/LanguageContext";
 import { Camera } from "@capacitor/camera";
@@ -8,9 +8,9 @@ export default function AttendanceCalendar({ attendanceMap }) {
   const today = new Date();
   const { t } = useLanguage();
 
-useEffect(() => {
-  Camera.requestPermissions();
-}, []);
+// useEffect(() => {
+//   Camera.requestPermissions();
+// }, []);
 
   // Default to current month/year
   const [currentYear, setCurrentYear] = useState(today.getFullYear());

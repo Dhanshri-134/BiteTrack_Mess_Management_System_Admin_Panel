@@ -9,7 +9,7 @@
   "payments": "Payments",
   "suggestions": "Suggestions",
   "bookingRequests": "Booking Request",
-  "billingMess": "Billing Mess",
+  "billingMess": "Mess Billing",
   "deleteAccount": "Delete Account",
   "logout": "Logout",
   "dashboardOverview": "Dashboard Overview",
@@ -574,6 +574,23 @@
   "submitting": "Submitting...",
   "registrationFailed": "Registration failed",
   "alreadyHaveAccount": "Already have an account?",
-  "biteTrackLogoAlt": "BiteTrack Logo"
+  "biteTrackLogoAlt": "BiteTrack Logo",
+  "billing_subscription": "Billing & Subscription",
+  "loading_billing_details": "Loading billing details...",
+  "status": "Status",
+  "trial_ends_on": "Trial ends on",
+  "days_remaining": "Days remaining",
+  "trial_expired": "Your trial has expired.",
+  "contact_support_to_continue": "Please contact Shris Tech to continue using the app.",
+  "add_payment_method": "Add Payment Method",
 
+  "hostels_and_courses": "Hostels & Courses",
+  "hostels_comma": "Hostels (comma separated)",
+  "courses_comma": "Courses (comma separated)",
+
+  "owner_contact_details": "Owner Contact Details",
+  "contact_name": "Contact Name",
+  "allStatus": "All Status",
+  "notePlaceholder": "Enter note here...",
+  "phone_number": "Phone Number"
 }

@@ -1,7 +1,7 @@
 /* ===== Page Layout ===== */
 .container {
   display: flex;
-  min-height: 100vh;
+  min-height: 100svh;
   font-family: 'Inter', 'Roboto', sans-serif;
   background-color: #F8FAFC;
 }
@@ -11,7 +11,7 @@
   flex: 1;
   padding: clamp(1rem, 4vw, 2rem);
   overflow-x: auto;
-  min-height: 100vh;
+  min-height: 100svh;
   background-color: #F8FAFC;
 }
 
@@ -123,7 +123,7 @@
 .scannerTitle {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #0F172A;
+  color: #015050;
   text-align: center;
 }
 
@@ -145,6 +145,24 @@
   justify-content: center;
   align-items: center;
 }
+
+.scannerWrapper button{
+  background-color: #017171;
+  color: #FFF;
+  padding: 0.5rem;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.scannerWrapper span{
+  /* background-color: #017171; */
+  /* color: #FFF; */
+  padding: 0.5rem;
+  margin-top: 50px !important;
+  border-radius: 10px;
+}
+
+
 .tableScroll {
   width: 100%;
   overflow-x: auto;
@@ -153,7 +171,7 @@
 
 
 .messageBanner {
-  background-color: #14B8A6;
+  background-color: #fff;
   color: #ffffff;
   padding: 12px;
   border-radius: 10px;

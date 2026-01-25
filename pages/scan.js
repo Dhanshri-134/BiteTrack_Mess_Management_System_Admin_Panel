@@ -82,7 +82,7 @@ export default function Scanner({ onAttendanceMarked }) {
       <h2>QR Scanner</h2>
       <div
         ref={scannerRef}
-        style={{ width: "100%", maxWidth: "400px", margin: "auto" }}
+        style={{ width: "100%", maxWidth: "400px", margin: "10px", padding:"10px",display:"flex", flexDirection:"column", gap:"0.8rem" }}
       />
     </div>
   );

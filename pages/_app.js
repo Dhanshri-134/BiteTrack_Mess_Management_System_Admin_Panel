@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import GlobalLoader from "../components/GlobalLoader";
 import { LanguageProvider } from "../context/LanguageContext";
 import Head from "next/head";
+import { triggerRefresh } from "@/lib/refreshBus";
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
@@ -44,8 +45,9 @@ export default function App({ Component, pageProps }) {
 
     if (startY < 80 && endY - startY > 120) {
       
-      router.replace(router.asPath);
+      // router.replace(router.asPath);
       toast.success("Refreshing...");
+  triggerRefresh();
     }
   };
 
@@ -104,32 +106,42 @@ export default function App({ Component, pageProps }) {
 }, []);
 
 
-
-  useEffect(() => {
-  let handle;
-  let cancelled = false;
+useEffect(() => {
+  let removeListener;
 
   (async () => {
-    const h = await CapApp.addListener("resume", () => {
-      if (navigator.onLine) {
-        syncQueue();
+    const listener = await CapApp.addListener("backButton", () => {
+      if (window.__SIDEBAR_OPEN__) {
+        window.__CLOSE_SIDEBAR__?.();
+        return;
+      }
+
+      if (window.history.length > 1 && router.pathname !== "/dashboard") {
+        router.back();
+        return;
+      }
+
+      const now = Date.now();
+      if (now - lastBack.current < 2000) {
+        CapApp.exitApp();
+      } else {
+        lastBack.current = now;
+        toast.error("Press back again to exit");
       }
     });
 
-    if (!cancelled) {
-      handle = h;
-    } else if (h && typeof h.remove === "function") {
-      h.remove();
+    if (listener?.remove) {
+      removeListener = listener.remove;
     }
   })();
 
   return () => {
-    cancelled = true;
-    if (handle && typeof handle.remove === "function") {
-      handle.remove();
+    if (typeof removeListener === "function") {
+      removeListener();
     }
   };
-}, []);
+}, [router]);
+
 
 
   return (
@@ -149,6 +161,10 @@ export default function App({ Component, pageProps }) {
         {/* App icon for iOS */}
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1"
+/>
         {/* Theme color */}
         <meta name="theme-color" content="#007171" />
       </Head>

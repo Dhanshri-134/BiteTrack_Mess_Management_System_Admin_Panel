@@ -2,7 +2,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100svh;
   background-color: #f0fdf4; /* light green background */
   padding: 2rem;
   box-sizing: border-box;
@@ -21,7 +21,7 @@
 .title {
   font-size: 2rem;
   font-weight: bold;
-  color: #166534; /* dark green */
+  color: #015e5e; /* dark green */
   text-align: center;
 }
 
@@ -30,7 +30,7 @@
   font-size: 1.2rem;
   font-weight: 600;
   margin: 1.5rem 0 0.8rem;
-  color: #14532d; /* darker green */
+  color: #025959; /* darker green */
   text-align: left;
 }
 
@@ -62,7 +62,7 @@
 /* Label */
 .field label {
   font-weight: 600;
-  color: #065f46; /* green */
+  color: #007171; /* green */
   margin-bottom: 0.4rem;
   font-size: 0.95rem;
 }
@@ -74,7 +74,7 @@
   border-radius: 0.5rem;
   font-size: 0.95rem;
   background-color: #ffffff;
-  color: #111827;
+  color: #017170;
   width: 100%;
   box-sizing: border-box;
   transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
@@ -85,10 +85,10 @@
 }
 
 .input:focus {
-  border-color: #10b981;
+  border-color: #015151;
   outline: none;
   background-color: #f0fdf4;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 0 2px rgba(0, 113, 113, 0.3);
 }
 
 /* Submit button */
@@ -144,4 +144,10 @@
     font-size: 1rem;
     padding: 0.8rem;
   }
+}
+.field option{
+  color: #7b7c7d;
+}
+.field select{
+  color: #7b7c7d;
 }

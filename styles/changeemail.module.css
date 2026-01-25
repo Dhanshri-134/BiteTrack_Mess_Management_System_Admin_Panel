@@ -1,20 +1,20 @@
 .container {
   display: flex;
   width: 100%;
-  min-height: 100vh;
-  background-color: #fff;
+  min-height: 100svh;
+  background-color: #f0fdf4;
   padding: 2rem;
 }
 
 .main {
   flex: 1;
   padding: 0.8rem;
-  max-width: 900px;
+  /* max-width: 900px; */
   background-color: #fff;
   border-radius: 0.75rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   font-size: 0.8rem;
-  margin: 0 auto;
+  margin: auto;
 }
 
 .searchInput {
@@ -30,6 +30,7 @@
 
 .main h1{
   margin-bottom: 20px;
+  text-align: center;
 }
 .userList {
   list-style: none;
@@ -59,14 +60,15 @@
 }
 
 .selectedUser {
-  background-color: #3b82f6;
-  color: #fff;
+  background-color: #0071712f !important;
+  color: #007171;
   font-weight: 600;
 }
 
 .changeEmailForm {
   margin-top: 1.5rem;
-  max-width: 500px;
+  /* max-width: 500px; */
+  width: 100%;
   display: flex;
   flex-direction: column;
   background: #f1f5f9;
@@ -88,17 +90,18 @@
   border-radius: 0.5rem;
   font-size: 1rem;
   outline: none;
+  width: 100%;
   transition: border 0.2s;
 }
 
 .changeEmailForm input:focus {
-  border-color: #3b82f6;
+  border-color: #005151;
   box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
 }
 
 .changeEmailForm button {
   padding: 0.75rem 1rem;
-  background-color: #3b82f6;
+  background-color: #007171;
   color: #fff;
   border: none;
   border-radius: 0.5rem;
