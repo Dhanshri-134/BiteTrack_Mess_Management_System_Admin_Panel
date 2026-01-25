@@ -147,8 +147,9 @@ export default async function handler(req, res) {
     } = req.body;
 
     // ✅ Validate required fields
-    if (!user_id ||month === undefined || year === undefined ||   
-  amount === undefined || !payment_type || !payment_method || !payment_date) {
+    if (!user_id ||month == null ||
+  year == null ||
+  amount == null || !payment_type || !payment_method || !payment_date) {
       return res.status(400).json({ error: "Missing required fields" });
     }
     
