@@ -98,7 +98,6 @@ export default async function handler(req, res) {
     first_name,
     last_name,
     phone,
-    mobile,
     room_no,
     hostel_name,
     course,
