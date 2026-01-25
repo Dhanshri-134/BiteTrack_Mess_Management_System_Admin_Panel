@@ -145,13 +145,12 @@ if (token) {
        SET first_name  = COALESCE($2, first_name),
            last_name   = COALESCE($3, last_name),
            phone       = COALESCE($4, phone),
-           mobile      = COALESCE($5, mobile),
            room_no     = COALESCE($6, room_no),
            hostel_name = COALESCE($7, hostel_name),
            course      = COALESCE($8, course)
        WHERE id = $1
        RETURNING *`,
-      [id, first_name, last_name, phone, mobile, room_no, hostel_name, course]
+      [id, first_name, last_name, phone, room_no, hostel_name, course]
     );
 
     if (!userResult.rows.length)
