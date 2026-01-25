@@ -153,8 +153,8 @@ export default async function handler(req, res) {
           payment_method,
           upi_id || null,
           transaction_id || null,
-          note,
           mess_id,
+          note || null,
         ]
       );
 
