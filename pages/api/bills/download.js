@@ -207,7 +207,6 @@ if (headerAuth && headerAuth.startsWith("Bearer ")) {
 
   let messId;
   try {
-    const token = auth.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     messId = decoded.messId;
