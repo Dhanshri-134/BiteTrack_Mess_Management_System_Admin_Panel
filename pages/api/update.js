@@ -144,9 +144,9 @@ if (token) {
        SET first_name  = COALESCE($2, first_name),
            last_name   = COALESCE($3, last_name),
            phone       = COALESCE($4, phone),
-           room_no     = COALESCE($6, room_no),
-           hostel_name = COALESCE($7, hostel_name),
-           course      = COALESCE($8, course)
+           room_no     = COALESCE($5, room_no),
+           hostel_name = COALESCE($6, hostel_name),
+           course      = COALESCE($7, course)
        WHERE id = $1
        RETURNING *`,
       [id, first_name, last_name, phone, room_no, hostel_name, course]
