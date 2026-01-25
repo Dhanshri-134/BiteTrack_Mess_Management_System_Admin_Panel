@@ -89,7 +89,7 @@ export default async function handler(req, res) {
 
     // 💰 Payment history (ALL months)
     const paymentsQuery = `
-      SELECT user_id, payment_date, status, note
+      SELECT user_id, payment_date, status, note,
         CASE
           WHEN month ~ '^[0-9]+$' THEN CAST(month AS INTEGER)
           ELSE EXTRACT(MONTH FROM TO_DATE(month, 'Month'))
