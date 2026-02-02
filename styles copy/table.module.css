@@ -1,7 +1,7 @@
 .container {
   padding: 2rem;
   background: #f9fafb;
-  min-height: 100svh;
+  min-height: 100vh;
 }
 
 .title {
@@ -168,7 +168,7 @@
   top: 0;
   left: 40vw;
   width: 20vw;
-  height: 95svh;
+  height: 95vh;
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;

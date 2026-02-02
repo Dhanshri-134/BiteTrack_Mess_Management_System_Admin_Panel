@@ -5,7 +5,16 @@
 .container {
   /* padding: 2rem; */
   background: #f9fafb;
-  min-height: 100svhh;
+  min-height: 100vh;
+}
+
+
+.main {
+  flex: 1;
+  padding-top: clamp(1rem, 4vw, 2rem);
+  background-color: #F8FAFC;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .title {
@@ -14,6 +23,7 @@
   font-weight: 700;
   margin-bottom: 1.5rem;
   color: #007170;
+  text-align: center;
 }
 
 /* ===============================
@@ -58,7 +68,7 @@
   padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
-  max-height: 70svhh;
+  max-height: 70vh;
   overflow-y: auto;
 }
 

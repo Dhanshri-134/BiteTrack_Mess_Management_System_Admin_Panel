@@ -635,5 +635,6 @@
   "email": "ई-मेल",
   "address": "पत्ता",
   "allStatus": "सर्व स्थिती",
-  "notePlaceholder": "येथे नोंद लिहा..."
+  "notePlaceholder": "येथे नोंद लिहा...",
+  "leave_days":"सुट्टीचे दिवस"
 }

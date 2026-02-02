@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  min-height: 100vh;
   font-family: 'Inter', sans-serif;
   background: linear-gradient(135deg, #ffefba, #ffffff);
   color: #111827;

@@ -1,7 +1,7 @@
 .container {
   max-width: 900px;
   margin: auto;
-  padding: 0.8rem;
+  padding-top: clamp(1.3rem, 4vw, 2.5rem);
 }
 .profileHeader h2{
   font-size: 1.1rem;
@@ -109,7 +109,7 @@
   background: #fff;
   width: 90%;
   max-width: 600px;
-  max-height: 80svh;
+  max-height: 80vh;
   border-radius: 12px;
   padding: 20px;
   position: relative;
@@ -119,7 +119,7 @@
 .modalBody {
   margin-top: 12px;
   overflow-y: auto;
-  max-height: 60svh;
+  max-height: 60vh;
   text-align: justify;
   padding: 10px !important;
 }

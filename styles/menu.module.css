@@ -1,14 +1,14 @@
 /* Layout */
 .container {
   display: flex;
-  min-height: 100svhh;
+  min-height: 100vh;
   background-color: #F8FAFC;
   overflow-x: hidden;
 }
 
 .main {
   flex: 1;
-  padding: 0.5rem;
+  padding-top: clamp(1.3rem, 4vw, 2.5rem);
   overflow-x: hidden;
 }
 

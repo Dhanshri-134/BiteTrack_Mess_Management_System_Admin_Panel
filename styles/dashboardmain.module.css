@@ -1,15 +1,15 @@
 /* ===== Page Layout ===== */
 .container {
   display: flex;
-  min-height: 100svh;
+  min-height: 100vh;
   background: transparent; /* CRITICAL FIX */
   max-width: 100%;
   overflow-x: hidden;
+  padding-top: clamp(1.3rem, 4vw, 2.5rem) !important;
 }
 
 .main {
   flex: 1;
-  padding: clamp(1rem, 4vw, 2rem);
   background-color: #F8FAFC;
   max-width: 100%;
   overflow-x: hidden;
@@ -17,7 +17,7 @@
 
 /* ===== Headers ===== */
 .main h1 {
-  font-size: 1.75rem;
+  font-size: 1.7rem;
   margin-bottom: 1.5rem;
   font-weight: 700;
   color: #007170;
@@ -120,11 +120,7 @@
 }
 
 /* ===== Mobile ===== */
-@media (max-width: 768px) {
-  .main {
-    padding: 1rem;
-  }
-  }
+
 
 /* 
 @media (min-width: 768px) {

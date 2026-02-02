@@ -34,44 +34,98 @@ export default function Scanner({ onAttendanceMarked }) {
     };
   }, []);
 
-  const handleScanSuccess = async (decodedText) => {
-    if (decodedText === lastScan) return; // Avoid duplicates
-    setLastScan(decodedText);
+const isCoolingDown = useRef(false);
 
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Unauthorized. Please login again.");
-        return;
-      }
+const handleScanSuccess = async (decodedText) => {
+  // 🚫 Ignore scans during cooldown
+  if (isCoolingDown.current) return;
 
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/", {
+  // 🚫 Ignore duplicate immediately
+  if (decodedText === lastScan) return;
+
+  isCoolingDown.current = true;
+  setLastScan(decodedText);
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Unauthorized. Please login again.");
+      return;
+    }
+
+    const res = await fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json",
+        headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ qr: decodedText }),
-      });
-      const data = await res.json();
+      }
+    );
 
-      if (res.ok) {
-  toast(data.message);
-  onAttendanceMarked?.(decodedText);
-} else {
-  toast(data.error || data.message || "Failed to mark attendance");
-}
+    const data = await res.json();
 
-    } catch (err) {
-      // console.error(err);
-      // alert("Error marking attendance");
-      await queueAction({
-        type: "ATTENDANCE_SCAN",
-        payload: { qr: decodedText },
-      });
-
-      toast("Attendance saved offline");
+    if (res.ok) {
+      toast.success(data.message);
+      onAttendanceMarked?.(decodedText);
+    } else {
+      toast.error(data.error || data.message || "Failed to mark attendance");
     }
-  };
+  } catch {
+    await queueAction({
+      type: "ATTENDANCE_SCAN",
+      payload: { qr: decodedText },
+    });
+    toast("Attendance saved offline");
+  } finally {
+    // ⏳ Cooldown ONLY resets the flag
+    setTimeout(() => {
+      isCoolingDown.current = false;
+    }, 2000);
+  }
+};
+
+
+//   const handleScanSuccess = async (decodedText) => {
+//     if (decodedText === lastScan) return; // Avoid duplicates
+//     setLastScan(decodedText);
+
+//     try {
+//       const token = localStorage.getItem("token");
+//       if (!token) {
+//         toast.error("Unauthorized. Please login again.");
+//         return;
+//       }
+
+//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify({ qr: decodedText }),
+//       });
+//       const data = await res.json();
+
+//       if (res.ok) {
+//   toast(data.message);
+//   onAttendanceMarked?.(decodedText);
+// } else {
+//   toast(data.error || data.message || "Failed to mark attendance");
+// }
+
+//     } catch (err) {
+//       // console.error(err);
+//       // alert("Error marking attendance");
+//       await queueAction({
+//         type: "ATTENDANCE_SCAN",
+//         payload: { qr: decodedText },
+//       });
+
+//       toast("Attendance saved offline");
+//     }
+//   };
 
   const handleScanError = (err) => {
     console.warn("QR scan error", err);

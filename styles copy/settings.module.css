@@ -3,7 +3,7 @@
 /* Container & main layout */
 .container {
   display: flex;
-  min-height: 100svh;
+  min-height: 100vh;
   background-color: #f0fdf4; /* light green background */
 }
 
@@ -262,7 +262,7 @@
   flex: 1;
   padding: 2rem;
   background: #f9f9f9;
-  min-height: 100svh;
+  min-height: 100vh;
 }
 
 .cardsContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }

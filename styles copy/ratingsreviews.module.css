@@ -1,7 +1,7 @@
 .container {
   padding: 1.5rem 2rem;
   background-color: #f9fafb;
-  min-height: calc(100svhh - 70px);
+  min-height: calc(100vh - 70px);
 }
 
 .header {

@@ -258,7 +258,8 @@ useEffect(() => {
             {role !== "STAFF" && <HardwareScanner />}
 
             <p className={styles.messageBanner}>
-              BiteTrack – Powered By Shris Tech
+              BiteTrack 
+              <br></br> Powered By Shris Tech
             </p>
           </div>
         </nav>

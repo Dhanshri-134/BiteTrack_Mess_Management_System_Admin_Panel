@@ -592,5 +592,6 @@
   "contact_name": "Contact Name",
   "allStatus": "All Status",
   "notePlaceholder": "Enter note here...",
-  "phone_number": "Phone Number"
+  "phone_number": "Phone Number",
+  "leave_days": "Leave Days"
 }

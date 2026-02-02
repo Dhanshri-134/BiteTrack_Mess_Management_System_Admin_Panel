@@ -46,6 +46,8 @@ export default function Suggestions() {
   return (
     <Layout>
       <div className={styles.container}>
+        <main className={styles.main}>
+
         <h2 className={styles.title}>{t("suggestionsAndFeedback")}</h2>
 
         {feedbacks.length === 0 ? (
@@ -61,7 +63,7 @@ export default function Suggestions() {
     `feedbackType_${String(fb.feedback_type)
       .toLowerCase()
       .replace(/\s+/g, "_")}`
-  ) || fb.feedback_type}
+    ) || fb.feedback_type}
 </span>
 
 
@@ -79,6 +81,7 @@ export default function Suggestions() {
             ))}
           </div>
         )}
+    </main>
       </div>
     </Layout>
   );

@@ -229,7 +229,7 @@ export default function UpdateUser() {
           <div className={styles.formWrapper}>
               <h2>{t("updateUser")}</h2>
 
-              <div style={{ maxHeight: "70svh", overflowY: "auto", paddingRight: "0.5rem" }}>
+              <div style={{ maxHeight: "70vh", overflowY: "auto", paddingRight: "0.5rem" }}>
                 <label>
                   {t("firstName")}:
                   <input name="first_name" value={form.first_name} onChange={handleChange} />

@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  min-height: 100svhhh;
+  min-height: 100vh;
   background-color: #f0fdf4; /* light green background */
   padding: 2rem;
   box-sizing: border-box;

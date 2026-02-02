@@ -4,9 +4,10 @@
   flex-direction: column;
   gap: 20px;
   background-color: #F8FAFC;
-  min-height: 100svhhhh;
+  min-height: 100vh;
   box-sizing: border-box;
   max-width: 100%;
+  padding-top: clamp(1.3rem, 4vw, 2.5rem);
 }
 
 /* ===== Headers ===== */

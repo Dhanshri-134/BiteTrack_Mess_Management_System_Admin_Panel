@@ -412,18 +412,21 @@ const [statusFilter, setStatusFilter] = useState("all");
 </td>
 
 
-                    <td>₹{Number(p.amount).toFixed(2)}</td>
+                    <td data-col="right">₹{Number(p.amount).toFixed(2)}</td>
 
                     {activeTab === "cash" && <td>{p.month}</td>}
-                    {activeTab === "cash" && <td>{p.year}</td>}
+                    {activeTab === "cash" && <td data-col="right">{p.year}</td>}
 
                     {activeTab === "verify" && <td>{p.payment_type}</td>}
-                    {activeTab === "verify" && <td>{p.billing_start_date || "-"}</td>}
+                    {activeTab === "verify" && <td data-col="right">{p.billing_start_date || "-"}</td>}
                     {activeTab === "verify" && <td>{p.billing_end_date || "-"}</td>}
 
-                    <td>{p.leave_days || 0}</td>
-                    <td>{statusBadge(p.request_status || p.verification_status)}</td>
-                    <td> At:{new Date(p.submitted_at || p.requested_at).toLocaleDateString()}</td>
+                    <td>{p.leave_days || 0} { t("leave_days")}</td>
+                    <td data-col="right">{statusBadge(p.request_status || p.verification_status)}</td>
+                    <td> <span>
+                      At:{new Date(p.submitted_at || p.requested_at).toLocaleDateString()}
+                      </span>
+                      </td>
 
                     {activeTab === "verify" && (
                       <td>
@@ -438,7 +441,7 @@ const [statusFilter, setStatusFilter] = useState("all");
                       </td>
                     )}
 
-                    <td>
+                    <td data-col="right"> 
                       {/* VERIFY TAB */}
                       {activeTab === "verify" &&
                         (p.verification_status === "pending" ? (
@@ -478,7 +481,7 @@ const [statusFilter, setStatusFilter] = useState("all");
                             </button>
                           </div>
                         ) : (
-                          <span className={styles.processed}>{t("processed")}</span>
+                          <span  className={styles.processed}>{t("processed")}</span>
                         ))}
                     </td>
                   </tr>

@@ -3,10 +3,11 @@
 ================================ */
 .container {
    /* display: flex; */
-  min-height: 100svh;
+  min-height: 100vh;
   background: transparent; /* CRITICAL FIX */
   max-width: 100%;
   overflow-x: hidden;
+  padding-top: clamp(1.3rem, 4vw, 2.5rem);
 }
 
 .container h1 {

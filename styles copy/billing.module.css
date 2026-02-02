@@ -415,7 +415,7 @@
 .modalContent {
   background: #fff;
   width: min(1000px, 96%);
-  max-height: 90svhh;
+  max-height: 90vh;
   overflow-y: auto;
   border-radius: 10px;
   padding: 18px;
@@ -465,7 +465,7 @@
 .main h1 {
   font-size: 1.6rem;
   margin-bottom: 20px;
-  color: ##0F172A;
+  color: #0F172A;
 }
 
 /* ===========================
@@ -558,7 +558,7 @@
 }
 
 .table thead {
-  background: ##0F172A;
+  background: #0F172A;
   color: #ffffff;
 }
 
@@ -613,7 +613,7 @@
 .modalContent {
   background: #ffffff;
   width: min(600px, 95%);
-  max-height: 90svhh;
+  max-height: 90vh;
   overflow-y: auto;
   border-radius: 12px;
   padding: 20px;

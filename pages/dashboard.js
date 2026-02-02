@@ -975,7 +975,7 @@ setRevenueTrend(buildRevenueTrend(billsAllData));
             />
           </Link>
 
-         <Card
+          <Card
   title={
     <span className={styles.cardTitleWithIcon}>
        {t("monthlyRevenue")}
@@ -1000,7 +1000,7 @@ setRevenueTrend(buildRevenueTrend(billsAllData));
   }
 />
 
-
+{/*
 
          <Card
   title={
@@ -1025,7 +1025,7 @@ setRevenueTrend(buildRevenueTrend(billsAllData));
       </span>
     )
   }
-/>
+/> */}
 
 
         </div>

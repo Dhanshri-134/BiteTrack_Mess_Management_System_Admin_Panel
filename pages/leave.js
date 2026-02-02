@@ -91,6 +91,8 @@ export default function LeaveManagement() {
   return (
     <Layout>
       <div className={styles.container}>
+         <main className={styles.main}>
+          
         <h1 className={styles.title}>{t("leaveManagement")}</h1>
 
         {/* Tabs */}
@@ -134,7 +136,9 @@ export default function LeaveManagement() {
             <LeaveMembers data={leaveMembers} />
           )}
         </div>
+         </main>
       </div>
+      
     </Layout>
   );
 }

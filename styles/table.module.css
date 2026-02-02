@@ -1,7 +1,8 @@
 /* ---------- PAGE ---------- */
 .container {
-  min-height: 100svhh;
+  min-height: 100vh;
   background: #F8FAFC;
+  padding-top: clamp(1.3rem, 4vw, 2.5rem);
 }
 
 .title {
@@ -9,6 +10,7 @@
   font-weight: 700;
   margin-bottom: 16px;
   color: #007170;
+  text-align: center;
 }
 
 /* ---------- TABS ---------- */
@@ -181,8 +183,6 @@
   }
 
   .table td {
-    display: flex;
-    justify-content: space-between;
     border: none;
     padding: 6px 0;
   }
@@ -261,3 +261,26 @@
   }
 }
 
+@media (max-width: 768px) {
+  .table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 12px;
+  }
+
+  .table td[data-col="left"] {
+    text-align: left;
+    justify-self: start;
+  }
+
+  .table td[data-col="right"] {
+    text-align: right;
+    justify-self: end;
+  }
+
+  /* Full-width rows */
+  .table td[data-col="full"] {
+    grid-column: span 2;
+    text-align: left;
+  }
+}

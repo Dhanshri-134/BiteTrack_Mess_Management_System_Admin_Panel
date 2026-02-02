@@ -329,6 +329,7 @@ useEffect(() => {
               {settings?.contact_support?.email && (
                 <p>
                   📧 {t("email")}:{" "}
+                  
                   <a
                     href={`mailto:${settings.contact_support.email}`}
                     className={styles.link}

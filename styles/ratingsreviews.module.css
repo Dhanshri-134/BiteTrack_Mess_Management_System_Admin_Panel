@@ -3,7 +3,7 @@
 ================================ */
 .container {
   background-color: #f9fafb;
-  min-height: calc(100svh - 70px);
+  min-height: calc(100vh- 70px);
 }
 
 /* ================================
