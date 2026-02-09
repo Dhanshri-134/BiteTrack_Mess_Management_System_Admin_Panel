@@ -240,10 +240,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: #f9fafb;
+
+  padding: 16px 18px;
+  border-radius: 14px;
+
+  background: #ffffff;
   border: 1px solid #e5e7eb;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.staffCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
 }
 
 .staffCard strong {
@@ -269,16 +279,28 @@
   font-size: 18px;
   cursor: pointer;
   color: #007170;
+  background: #f1f5f9 !important;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.actions button:hover {
+  background: #e0f2f1 !important;
+  transform: scale(1.05);
 }
 
 /* Modal / form group */
 .group {
-  margin-top: 20px;
-  padding: 16px;
-  border-radius: 12px;
+  position: relative;
   background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+
   border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  animation: fadeSlide 0.3s ease;
 }
+
 
 .group h3 {
   margin-bottom: 12px;
@@ -318,16 +340,27 @@
   position: fixed;
   right: 20px;
   bottom: 80px;
+
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #007170;
+
+  background: linear-gradient(135deg, #007170, #009191);
   color: #fff;
   font-size: 28px;
+
   border: none;
   cursor: pointer;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
 
 .closeBtn {
   position: absolute;

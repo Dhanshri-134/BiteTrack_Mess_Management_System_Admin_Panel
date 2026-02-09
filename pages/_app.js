@@ -10,6 +10,7 @@ import GlobalLoader from "../components/GlobalLoader";
 import { LanguageProvider } from "../context/LanguageContext";
 import Head from "next/head";
 import { triggerRefresh } from "@/lib/refreshBus";
+import { StatusBar } from "@capacitor/status-bar";
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function App({ Component, pageProps }) {
    const [loading, setLoading] = useState(false);
 
    useEffect(() => {
-    const start = () => setLoading(true);
+    const start = () => setLoading(false);
     const end = () => setLoading(false);
 
     router.events.on("routeChangeStart", start);
@@ -31,7 +32,10 @@ export default function App({ Component, pageProps }) {
     };
   }, [router]);
 
-
+useEffect(() => {
+    // 🔥 ANDROID FIX: prevent system UI overlap
+    StatusBar.setOverlaysWebView({ overlay: false });
+  }, []);
 
   useEffect(() => {
   let startY = 0;

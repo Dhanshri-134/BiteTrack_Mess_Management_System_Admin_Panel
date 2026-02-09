@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import Layout from "../components/Layout";
-import Sidebar from "../components/Sidebar";
-import styles from "../styles/changeemail.module.css";
+import Layout from "../../components/Layout";
+import Sidebar from "../../components/Sidebar";
+import styles from "../../styles/changeemail.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 

@@ -1,7 +1,7 @@
 /* ===== Page Layout ===== */
-.container {
-  display: flex;
-  min-height: 100vh;
+.dashboard {
+  /* display: flex; */
+  /* min-height: 100vh; */
   background: transparent; /* CRITICAL FIX */
   max-width: 100%;
   overflow-x: hidden;
@@ -15,6 +15,10 @@
   overflow-x: hidden;
 }
 
+
+.pageHeader {
+  margin-bottom: 1.5rem;
+}
 /* ===== Headers ===== */
 .main h1 {
   font-size: 1.7rem;
@@ -22,6 +26,19 @@
   font-weight: 700;
   color: #007170;
 }
+
+.card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+}
+
 
 .sectionTitle {
   font-size: 1.25rem;
@@ -90,6 +107,7 @@
   font-weight: 600;
   position: relative;
   z-index: 2; /* FIX invisible tab */
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .trendTabActive {
@@ -231,12 +249,15 @@
     font-size: 2rem;
   }
   .trendCharts{
-    height:200;
+    height:200px;
     width: 100%;
   }
 }
 
 .profileCard p{
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
   color: #0f766e;
 }
 
@@ -248,3 +269,113 @@
   color: #006161 !important;
 }
 
+
+.trendTab {
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.trendTabActive {
+  transform: scale(1.03);
+}
+
+
+.animateSection {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.animateVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+.section {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: sectionFadeUp 0.6s ease forwards;
+}
+
+.section:nth-of-type(1) { animation-delay: 0.05s; }
+.section:nth-of-type(2) { animation-delay: 0.12s; }
+.section:nth-of-type(3) { animation-delay: 0.18s; }
+.section:nth-of-type(4) { animation-delay: 0.24s; }
+.section:nth-of-type(5) { animation-delay: 0.3s; }
+.section:nth-of-type(6) { animation-delay: 0.36s; }
+
+@keyframes sectionFadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+.cards > * {
+  opacity: 0;
+  transform: scale(0.96);
+  animation: cardPop 0.45s ease forwards;
+}
+
+.cards > *:nth-child(1) { animation-delay: 0.2s; }
+.cards > *:nth-child(2) { animation-delay: 0.3s; }
+.cards > *:nth-child(3) { animation-delay: 0.4s; }
+.cards > *:nth-child(4) { animation-delay: 0.5s; }
+
+@keyframes cardPop {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+} 
+
+/* Initial hidden state */
+.section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* When visible */
+.section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .section {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .profileCard {
+    padding: 0.75rem;
+  }
+
+  .profileCard p {
+    font-size: 0.85rem;
+  }
+}
+
+
+.section {
+  opacity: 1; /* default */
+}
+.section:not(.is-visible) {
+  opacity: 0;
+}

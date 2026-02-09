@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import styles from "../styles/verify.module.css";
-import Layout from "../components/Layout";
+import styles from "../../styles/verify.module.css";
+import Layout from "../../components/Layout";
 
 export default function Verify() {
   const router = useRouter();

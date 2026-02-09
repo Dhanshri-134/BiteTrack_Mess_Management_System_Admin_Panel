@@ -1,7 +1,7 @@
 import { useState,useEffect } from "react";
-import Sidebar from "../components/Sidebar";
-import styles from "../styles/register.module.css";
-import Layout from "../components/Layout";
+import Sidebar from "../../components/Sidebar";
+import styles from "../../styles/register.module.css";
+import Layout from "../../components/Layout";
 
 export default function Register() {
   const [form, setForm] = useState({

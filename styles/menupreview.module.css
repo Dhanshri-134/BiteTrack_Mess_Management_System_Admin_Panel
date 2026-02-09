@@ -1,6 +1,6 @@
 .container {
   width: 100%;
-  padding: 0.5rem;
+  /* padding: 0.5rem; */
 }
 
 /* Header */
@@ -8,10 +8,10 @@
   margin-bottom: 1rem;
 }
 
-.header h1 {
-  font-size: 1.4rem;
+.header h2 {
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #006161;
+  color: #007171;
 }
 
 .header p {

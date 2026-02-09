@@ -284,3 +284,134 @@
     text-align: left;
   }
 }
+ .modalOverlay {
+  animation: fadeIn 0.25s ease forwards;
+}
+
+.modalContent {
+  animation: zoomIn 0.3s ease forwards;
+}
+
+.closing.modalOverlay {
+  animation: fadeOut 0.25s ease forwards;
+}
+
+.closing.modalContent {
+  animation: zoomOut 0.25s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1 }
+  to { opacity: 0 }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.95); opacity: 0 }
+  to { transform: scale(1); opacity: 1 }
+}
+
+@keyframes zoomOut {
+  from { transform: scale(1); opacity: 1 }
+  to { transform: scale(0.95); opacity: 0 }
+}
+.table tr {
+  transition: background-color 0.3s ease, transform 0.15s ease;
+}
+
+.table tr:has(.approved),
+.table tr:has(.rejected) {
+  background-color: #f8fafc;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1) }
+  50% { transform: scale(1.01) }
+  100% { transform: scale(1) }
+}
+
+.updatedRow {
+  animation: pulse 0.3s ease;
+}
+.approveBtn,
+.rejectBtn {
+  cursor: pointer;
+}
+
+.approveBtn:disabled,
+.rejectBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mobileCard {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  color: #016161;
+}
+
+.subText {
+  font-size: 0.75rem;
+  color: #64748b;
+  word-break: break-all;
+}
+
+.expandBtn {
+  background: none;
+  border: none;
+  color: #005151;
+  cursor: pointer;
+}
+
+.dropdown {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+
+.dropdown.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+
+.grid span {
+  display: block;
+  font-weight: 600;
+  color: #047857;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: 10px;
+}

@@ -89,13 +89,12 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import styles from "../../styles/fasting.module.css";
-import useAuth from "../../hooks/useAuth";
+
 import { offlineFetch } from "../../lib/offlineFetch";
 import { useLanguage } from "../../context/LanguageContext";
 
 function FastingRequests() {
-  useAuth();
-
+  
   const [fastingRequests, setFastingRequests] = useState([]);
   const [totalRequests, setTotalRequests] = useState(0);
   const [token, setToken] = useState(null);

@@ -45,6 +45,24 @@
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
+/* initial state */
+.actionCard {
+  opacity: 1;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(14px) scale(0.98);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+}
+.animateIn {
+  animation: cardFadeUp 0.35s ease-out;
+}
+
+/* when visible */
+.actionCardVisible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 
 .actionCard h2 {
   font-size: 1.05rem;
@@ -86,4 +104,17 @@
   .main {
     padding: 2rem;
   }
+}
+@keyframes cardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.actionCard:active {
+  transform: scale(0.97);
 }

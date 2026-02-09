@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getLocalDB } from "@/lib/localDB";
@@ -37,6 +37,8 @@ function decodeToken(token) {
 export default function Sidebar({ closeSidebar }) {
   const router = useRouter();
   const { t } = useLanguage();
+  const sectionRefs = useRef({});
+
 
   const [role, setRole] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -95,32 +97,93 @@ useEffect(() => {
   };
 
   // ✅ UPDATED SECTION (ACCORDION)
-  const Section = ({ title, icon, openKey, children }) => {
-    const isOpen = openSection === openKey;
+//   const Section = ({ title, icon, openKey, children }) => {
+//     const isOpen = openSection === openKey;
 
-    return (
-      <>
-        <button
-          className={styles.sectionHeader}
-          aria-expanded={isOpen}
-          onClick={() => toggle(openKey)}
-        >
-          <span className={styles.sectionTitle}>
-            {icon} {title}
-          </span>
-          {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-        </button>
+//      useEffect(() => {
+//     if (isOpen && sectionRefs.current[openKey]) {
+//       sectionRefs.current[openKey].scrollIntoView({
+//         behavior: "smooth",
+//         block: "nearest",
+//       });
+//     }
+//   }, [isOpen, openKey]);
+//     return (
+//       <>
+//         <button
+//           className={`${styles.sectionHeader} ${
+//     isOpen ? styles.sectionHeaderActive : ""
+//   }`}
+//           aria-expanded={isOpen}
+//           onClick={() => toggle(openKey)}
+//         >
+//           <span className={styles.sectionTitle}>
+//             {icon} {title}
+//           </span>
+//           <ChevronDown
+//   size={18}
+//   className={isOpen ? styles.arrowOpen : styles.arrow}
+// />
 
-        <div
-          className={`${styles.sectionBody} ${
-            isOpen ? styles.sectionOpen : styles.sectionClosed
-          }`}
-        >
-          {children}
-        </div>
-      </>
-    );
-  };
+//           {/* {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />} */}
+//         </button>
+
+//         <div
+//           className={`${styles.sectionBody} ${
+//             isOpen ? styles.sectionOpen : styles.sectionClosed
+//           }`}
+//         >
+//           {children}
+//         </div>
+//       </>
+//     );
+//   };
+
+
+const Section = ({ title, icon, openKey, children }) => {
+  const isOpen = openSection === openKey;
+
+  useEffect(() => {
+    if (isOpen && sectionRefs.current[openKey]) {
+      sectionRefs.current[openKey].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [isOpen, openKey]);
+
+  return (
+    <>
+      <button
+        ref={(el) => (sectionRefs.current[openKey] = el)}
+        className={`${styles.sectionHeader} ${
+          isOpen ? styles.sectionHeaderActive : ""
+        }`}
+        onClick={() => toggle(openKey)}
+      >
+        <span className={styles.sectionTitle}>
+          {icon} {title}
+        </span>
+        <ChevronDown
+          size={18}
+          className={isOpen ? styles.arrowOpen : styles.arrow}
+        />
+      </button>
+
+     <div
+  className={`${styles.sectionBody} ${
+    isOpen ? styles.sectionOpen : styles.sectionClosed
+  }`}
+>
+  <div className={styles.sectionInner}>
+    {children}
+  </div>
+</div>
+
+    </>
+  );
+};
+
 
   return (
     <div className={styles.overlay} onClick={closeSidebar}>
@@ -201,7 +264,7 @@ useEffect(() => {
                 <Link href="/menu/" onClick={closeSidebar}>
                   {t("menu")}
                 </Link>
-                <Link href="/leave/" onClick={closeSidebar}>
+                <Link href="/requests/leave/" onClick={closeSidebar}>
                   {t("leaves")}
                 </Link>
               </Section>
@@ -224,13 +287,13 @@ useEffect(() => {
                 icon={<BookImageIcon size={22} />}
                 openKey="requests"
               >
-                <Link href="/cash-payments/" onClick={closeSidebar}>
+                <Link href="/requests/cash-payments/" onClick={closeSidebar}>
                   {t("payments")}
                 </Link>
-                <Link href="/bookingRequests/" onClick={closeSidebar}>
+                <Link href="/requests/bookingRequests/" onClick={closeSidebar}>
                   {t("bookingRequests")}
                 </Link>
-                <Link href="/DeleteAccRequest/" onClick={closeSidebar}>
+                <Link href="/requests/DeleteAccRequest/" onClick={closeSidebar}>
                   {t("deleteAccount")}
                 </Link>
               </Section>

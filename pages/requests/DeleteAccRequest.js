@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import Layout from "../components/Layout";
-import styles from "../styles/deleteRequests.module.css";
+import Layout from "../../components/Layout";
+import styles from "../../styles/deleteRequests.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
-import { useLanguage } from "../context/LanguageContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function DeleteRequests() {
   const [requests, setRequests] = useState([]);

@@ -271,7 +271,7 @@
   "failedToFetchInactiveUsers": "Failed to fetch inactive users",
   "fetchAllError": "Fetch error",
 
-  "confirmMarkRequest": "Mark this request as {{status}}?",
+  "confirmMarkRequest": "Mark this request?",
   "somethingWentWrong": "Something went wrong. Please try again.",
 
   "reason": "Reason",
@@ -363,7 +363,7 @@
   "failedToLoadSuper": "Failed to load superadmin notifications",
 
   "titleMessageRequired": "Title and message required",
-  "deleteGroupConfirm": "Delete {{count}} notifications in this group?",
+  "deleteGroupConfirm": "Delete notifications in this group?",
   "markSeenConfirm": "Mark as seen? This will delete the notification.",
   "somethingWentWrong": "Something went wrong. Please try again.",
   "quickActions": "Quick Actions",
@@ -431,10 +431,58 @@
 
   "save": "Save",
   "cancel": "Cancel",
+   "bookingConfirmed": "Booking confirmed successfully",
+  "bookingRejected": "Booking rejected",
+  "bookingCompleted": "Booking marked as completed",
+  
+  "approvedSuccessfully": "Payment approved successfully",
+  "rejectedSuccessfully": "Payment rejected successfully",
+  "somethingWentWrong": "Something went wrong. Please try again.",
 
+  "paymentRequests": "Payment Requests",
+  "cashPaymentRequests": "Cash Payment Requests",
+  "dailyPaymentRequests": "Daily Payment Requests",
+  "verifyPayments": "Verify Payments",
+
+  "search": "Search",
+  "allStatus": "All Status",
+  "pending": "Pending",
+  "approved": "Approved",
+  "rejected": "Rejected",
+
+  "user": "User",
+  "amount": "Amount",
+  "month": "Month",
+  "year": "Year",
+  "paymentType": "Payment Type",
+  "billingStart": "Billing Start",
+  "billingEnd": "Billing End",
+  "leaveDays": "Leave Days",
+  "leave_days": "leave days",
+  "status": "Status",
+  "requestedAt": "Requested At",
+  "action": "Action",
+  "screenshot": "Screenshot",
+
+  "approve": "Approve",
+  "reject": "Reject",
+  "processed": "Processed",
+
+  "paymentProof": "Payment Proof",
+
+  "noRequestsFound": "No requests found",
+  "cash": "cash",
+  "daily": "daily",
+  "verification": "verification",
+
+  "failedToFetchPayments": "Failed to fetch payments",
+  "paymentsFetchError": "Error while fetching payments",
+  "invalidResponse": "Invalid server response",
+"emailSentSuccess": "Verification email sent successfully",
   "confirmDeleteUser": "Are you sure you want to delete",
   "enterNewDOJ": "Enter new Date of Joining (YYYY-MM-DD):",
 
+  "confirmDelete": "Confirm Delete",
   "userDeletedSuccess": "User deleted successfully",
   "userUpdatedSuccess": "User updated successfully",
   "somethingWentWrong": "Something went wrong. Please try again.",

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import styles from "../styles/updatuser.module.css";
-import { offlineFetch } from "../lib/offlineFetch";
+import styles from "../../styles/updatuser.module.css";
+import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
-import { useLanguage } from "../context/LanguageContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function UpdateUser() {
    const { t } = useLanguage();

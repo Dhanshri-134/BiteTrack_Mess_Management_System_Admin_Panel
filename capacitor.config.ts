@@ -1,5 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+
 const config: CapacitorConfig = {
   appId: 'com.shristech.bitetrackadmin',
   appName: 'mess-management-frontend',
@@ -15,6 +16,9 @@ const config: CapacitorConfig = {
   Camera: {
     permissions: ["camera"],
   },
+   StatusBar: {
+      "overlaysWebView": false
+    }
 }
 
 };

@@ -269,7 +269,7 @@ export default function SettingsPage() {
   };
 
 
-  if (loading) return <Layout>{t("loading")}</Layout>;
+  // if (loading) return <Layout>{t("loading")}</Layout>;
 
   // --------------------------------------------------
   // 🧩 UI

@@ -1,49 +1,14 @@
 
-// import { useState,useEffect } from "react";
-
-// import Navbar from "./Navbar";
-// import Sidebar from "./Sidebar";
-// import BottomNav from "./Footer";
-// import styles from "../styles/layout.module.css";
-
-// export default function Layout({ children }) {
-//   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-//    useEffect(() => {
-//     if (typeof window !== "undefined") {
-//       const isMobile = window.innerWidth <= 768;
-//       setSidebarOpen(!isMobile);
-//     }
-//   }, []);
-
-//   return (
-//     <div className={styles.container}>
-//       <Navbar
-//         sidebarOpen={sidebarOpen}
-//         setSidebarOpen={setSidebarOpen}
-//       />
-
-//       <div className={styles.body}>
-//         {sidebarOpen && (
-//           <Sidebar closeSidebar={() => setSidebarOpen(false)} />
-//         )}
-
-//         <main className={styles.main}>
-//           {children}
-//         </main>
-//          <BottomNav />
-//       </div>
-//     </div>
-//   );
-// }
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import BottomNav from "./Footer";
+import useAuth from "../hooks/useAuth";
 import styles from "../styles/layout.module.css";
 
 export default function Layout({ children }) {
+  useAuth(); 
   const router = useRouter();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -89,16 +54,18 @@ export default function Layout({ children }) {
     checkSubscription();
   }, [router.pathname]);
 
-  // ✅ Sidebar responsive logic
   useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    setSidebarOpen(!isMobile);
-  }, []);
+  const handleResize = () => {
+    setSidebarOpen(window.innerWidth > 768);
+  };
 
-  // ⏳ While checking subscription
-  if (checking) {
-    return null; // or loader
-  }
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+
+ 
 
   // 🚫 Subscription expired
   if (expired) {
@@ -123,8 +90,8 @@ export default function Layout({ children }) {
 
         <main className={styles.main}>{children}</main>
 
-        <BottomNav />
       </div>
+        <BottomNav />
     </div>
   );
 }

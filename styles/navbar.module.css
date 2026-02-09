@@ -4,9 +4,12 @@
   left: 0;
   right: 0;
 
-  padding-top: env(safe-area-inset-top);
+  height: 55px;
 
-  /* height: calc(60px + env(safe-area-inset-top)); */
+  padding-top: env(safe-area-inset-top);
+  padding-left: 1rem;
+  padding-right: 1rem;
+
   background:#007171;
   color: #f9fafb;
 
@@ -14,12 +17,14 @@
   align-items: center;
   justify-content: space-between;
 
-  padding-left: 1rem;
-  padding-right: 1rem;
 
   box-shadow: 0 2px 5px rgba(0,0,0,0.15);
   z-index: 1800;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
+}
+
+.navbar {
+  box-sizing: border-box;
 }
 
 
@@ -30,12 +35,28 @@
   gap: 0.75rem;
 }
 
+/* .menuBtn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+} */
+
+
 .menuBtn {
   background: none;
   border: none;
   color: inherit;
   cursor: pointer;
+
+  min-width: 48px;
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 
 .logo {
   font-size: 1.1rem;
@@ -51,7 +72,7 @@
   gap: 0.75rem;
 }
 
-.iconBtn {
+/* .iconBtn {
   min-width: 40px;
   min-height: 40px;
   color: inherit;
@@ -72,7 +93,25 @@
   margin: 0;
   justify-content: center;
   background: #007171;
+} */
+
+
+.iconBtn,
+.refreshBtn {
+  min-width: 48px;
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  margin: 0;
+
+  background: transparent;
+  color: inherit;
 }
+
 
 .loginBtn,
 .logoutBtn {

@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import AttendanceCalendar from "../components/AttedanceCalendar";
 import styles from "../styles/billing.module.css";
-import useAuth from "../hooks/useAuth";
+
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../context/LanguageContext";
 
 export default function BillsPage() {
-  useAuth(); // keeps login redirect behavior
+ 
 
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);

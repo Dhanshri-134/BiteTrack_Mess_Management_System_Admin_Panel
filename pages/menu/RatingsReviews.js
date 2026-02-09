@@ -42,7 +42,7 @@ export default function RatingsReviews() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>{t("ratingsReviews")}</h1>
+        <h2>{t("ratingsReviews")}</h2>
         <p>{t("ratingsSubtitle")}</p>
       </div>
 

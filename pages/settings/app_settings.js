@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/AppSettings.module.css";
-import useAuth from "../../hooks/useAuth";
+
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { Eye, EyeClosedIcon } from "lucide-react";
@@ -20,7 +20,7 @@ function decodeToken(token) {
 
 
 export default function AppSettingsPage() {
-  useAuth(); // 🔐 TOKEN REQUIRED
+ 
   const { t } = useLanguage();
 
   const [loading, setLoading] = useState(true);
@@ -130,13 +130,6 @@ useEffect(() => {
     loadSettings();
   }, [token, t]);
 
-  if (loading) {
-    return (
-      <Layout title={t("app_settings")}>
-        <div className={styles.loading}>{t("loading_settings")}</div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout title={t("app_settings")}>

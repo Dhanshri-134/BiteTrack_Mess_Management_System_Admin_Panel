@@ -8,25 +8,6 @@ export default function Calendar({ userId, year, month }) {
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
 
-  // useEffect(() => {
-  //   async function fetchAttendance() {
-  //     setLoading(true);
-  //     try {
-  //       const res = await fetch(
-  //         `https://bite-track-mess-management-system-a.vercel.app/api/attendance/monthly?userId=${userId}&year=${year}&month=${month}/`
-  //       );
-  //       if (!res.ok) throw new Error("Failed to fetch attendance");
-  //       const data = await res.json();
-  //       setAttendanceMap(data.attendance_map || {});
-  //     } catch (err) {
-  //       console.error(err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-
-  //   if (userId && year && month) fetchAttendance();
-  // }, [userId, year, month]);
 
   useEffect(() => {
     async function fetchAttendance() {
@@ -70,7 +51,7 @@ export default function Calendar({ userId, year, month }) {
     if (userId && year && month) fetchAttendance();
   }, [userId, year, month]);
 
-  if (loading) return <div>{t("loadingCalendar")}</div>;
+  // if (loading) return <div>{t("loadingCalendar")}</div>;
 
   // Create an array of days for the given month
   const daysInMonth = new Date(year, month, 0).getDate();
