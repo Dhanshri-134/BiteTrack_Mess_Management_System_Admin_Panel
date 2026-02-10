@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import AttendanceCalendar from "../components/AttedanceCalendar";
 import styles from "../styles/billing.module.css";
+import PaymentHistory from "./paymentHistory";
+
 
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
@@ -12,6 +14,7 @@ import { useLanguage } from "../context/LanguageContext";
 
 export default function BillsPage() {
  
+const [activeTab, setActiveTab] = useState("bills"); 
 
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +48,70 @@ export default function BillsPage() {
     payment_date: new Date().toISOString().slice(0, 10),
     note: "",
   });
+
+
+
+  const TooltipText = ({ value }) => {
+    const [pos, setPos] = useState({ x: 0, y: 0, show: false });
+  
+    useEffect(() => {
+      if (!pos.show) return;
+  
+      const hide = () => setPos(p => ({ ...p, show: false }));
+  
+      window.addEventListener("scroll", hide, { passive: true });
+      window.addEventListener("resize", hide);
+      window.addEventListener("touchstart", hide);
+  
+      return () => {
+        window.removeEventListener("scroll", hide);
+        window.removeEventListener("resize", hide);
+        window.removeEventListener("touchstart", hide);
+      };
+    }, [pos.show]);
+  
+    const showTooltip = (e) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      const tooltipWidth = 220;
+      const padding = 8;
+  
+      let x = r.left + r.width / 2 - tooltipWidth / 2;
+      let y = r.top - 10;
+  
+      if (x < padding) x = padding;
+      if (x + tooltipWidth > window.innerWidth - padding) {
+        x = window.innerWidth - tooltipWidth - padding;
+      }
+      if (y < padding) y = r.bottom + 10;
+  
+      setPos({ x, y, show: true });
+    };
+  
+    return (
+      <span
+        className={styles.truncate}
+        tabIndex={0}
+        onMouseEnter={showTooltip}
+        onFocus={showTooltip}
+        onMouseLeave={() => setPos(p => ({ ...p, show: false }))}
+        onBlur={() => setPos(p => ({ ...p, show: false }))}
+      >
+        {value}
+  
+        {pos.show && (
+          <span
+            className={styles.tooltip}
+            style={{ left: pos.x, top: pos.y, width: 220 }}
+          >
+            {value}
+          </span>
+        )}
+      </span>
+    );
+  };
+  
+
+
 
   const openPaymentModal = (bill) => {
     setPaymentData({
@@ -172,6 +239,7 @@ export default function BillsPage() {
     const url = isFiltered
       ? `https://bite-track-mess-management-system-a.vercel.app/api/bills/fetch/?month=${month}&year=${year}`
       : `https://bite-track-mess-management-system-a.vercel.app/api/bills/all/`;
+
 
     const data = await offlineFetch(cacheKey, async () => {
       const res = await fetch(url, { headers: authHeaders() });
@@ -385,6 +453,30 @@ export default function BillsPage() {
         }
       `}</style>
 
+<div className={styles.tabs}>
+  <button
+    className={`${styles.tabBtn} ${activeTab === "bills" ? styles.activeTab : ""}`}
+    onClick={() => setActiveTab("bills")}
+  >
+    {t("allBills")}
+  </button>
+
+  <button
+    className={`${styles.tabBtn} ${activeTab === "payments" ? styles.activeTab : ""}`}
+    onClick={() => setActiveTab("payments")}
+  >
+    {t("paymentHistory")}
+  </button>
+
+  <div
+    className={styles.tabIndicator}
+    style={{
+      transform: activeTab === "bills" ? "translateX(0%)" : "translateX(100%)",
+    }}
+  />
+</div>
+              {activeTab === "bills" && (
+                <>
           {/* Filters */}
           <div className={styles.controls}>
             <div className={styles.controlItem}>
@@ -521,8 +613,8 @@ export default function BillsPage() {
                   {filtered.map((b, idx) => (
                     <div key={b.id || idx} className={styles.mobileCard}>
                       <div className={styles.cardRow}><span>{t("srNo")}</span><strong>{idx + 1}</strong></div>
-                      <div className={styles.cardRow}><span>{t("user")}</span><strong>{b.name || "-"}</strong></div>
-                      <div className={styles.cardRow}><span>{t("email")}</span><strong>{b.email || "-"}</strong></div>
+                      <div className={styles.cardRow}><span>{t("user")}</span><strong><TooltipText value={`${b.name || "-"}`} /></strong></div>
+                      <div className={styles.cardRow}><span>{t("email")}</span><strong><TooltipText value={`${b.email || "-"}`} /></strong></div>
                       <div className={styles.cardRow}><span>{t("status")}</span><strong>{b.status}</strong></div>
                       <div className={styles.cardRow}><span>{t("startDate")}</span><strong>{b.start_date || "-"}</strong></div>
                       <div className={styles.cardRow}><span>{t("endDate")}</span><strong>{b.end_date || "-"}</strong></div>
@@ -787,6 +879,16 @@ export default function BillsPage() {
               </div>
             </div>
           )}
+
+          </>
+        )}
+
+        {activeTab === "payments" && (
+  <PaymentHistory
+    token={token}
+  />
+)}
+
         </main>
       </div>
     </Layout>

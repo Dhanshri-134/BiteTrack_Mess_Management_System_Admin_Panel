@@ -10,30 +10,6 @@ export default async function handler(req, res) {
   if (req.method !== "GET")
     return res.status(405).json({ error: "Method not allowed" });
 
-  /* ---------------- HELPERS ---------------- */
-
-  function countAllowedLeaveDays(attendanceMapObj) {
-    if (!attendanceMapObj) return 0;
-
-    const entries = Object.entries(attendanceMapObj)
-      .map(([date, val]) => ({ date, val }))
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    let allowed = 0;
-    let streak = 0;
-
-    for (const e of entries) {
-      if (e.val === false) {
-        streak++;
-      } else {
-        if (streak >= 2) allowed += streak;
-        streak = 0;
-      }
-    }
-
-    if (streak >= 2) allowed += streak;
-    return allowed;
-  }
 
   function toISTDate(dateVal) {
     if (!dateVal) return null;
@@ -83,9 +59,17 @@ export default async function handler(req, res) {
     /* ---------------- ATTENDANCE (ALL MONTHS) ---------------- */
 
     const attendanceQuery = `
-      SELECT user_id, year, month, attendance_map
-      FROM monthly_attendance
-      WHERE mess_id = $1
+      SELECT
+  user_id,
+  year,
+  month,
+  present_days,
+  attendance_map,
+  allowed_leave_days,
+  days_billed
+FROM monthly_attendance_billing
+WHERE mess_id = $1
+
     `;
     const { rows: attendanceRows } = await pgPool.query(attendanceQuery, [
       messId,
@@ -125,15 +109,8 @@ export default async function handler(req, res) {
       const paymentKey = `${a.user_id}-${a.year}-${a.month}`;
       const payment = paymentMap[paymentKey];
 
-      // ---- MONTH-WISE DAY COUNT ----
-      const attendanceDates = Object.keys(a.attendance_map ?? {});
-      const totalDaysInMonth = attendanceDates.length;
 
-      // ---- LEAVE CALCULATION ----
-      const allowedLeave = countAllowedLeaveDays(a.attendance_map);
-
-      // ---- FINAL BILLABLE DAYS ----
-      const daysBilled = Math.max(totalDaysInMonth - allowedLeave, 0);
+      const daysBilled = a.days_billed;
 
       const perDay = Number(u.per_day_rate ?? 0);
       const totalAmount = Number((daysBilled * perDay).toFixed(2));
@@ -161,6 +138,7 @@ export default async function handler(req, res) {
         attendance_map: a.attendance_map ?? null,
       });
     }
+
 
     return res.status(200).json(bills);
 

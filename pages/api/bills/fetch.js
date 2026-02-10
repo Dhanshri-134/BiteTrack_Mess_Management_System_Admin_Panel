@@ -22,29 +22,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  function countAllowedLeaveDays(attendanceMapObj) {
-  if (!attendanceMapObj) return 0;
+  const monthParam = req.query.month;
 
-  const entries = Object.entries(attendanceMapObj)
-    .map(([date, val]) => ({ date, val }))
-    .sort((a, b) => new Date(a.date) - new Date(b.date)); // sort by date
+// convert "11" or "November" → 11
+const numericMonth = isNaN(monthParam)
+  ? new Date(`${monthParam} 1, 2000`).getMonth() + 1
+  : Number(monthParam);
 
-  let allowed = 0;
-  let streak = 0;
-
-  for (const e of entries) {
-    if (e.val === false) {
-      streak++;
-    } else {
-      if (streak >= 2) allowed += streak;  // only count streak >= 2
-      streak = 0;
-    }
-  }
-
-  if (streak >= 2) allowed += streak;
-
-  return allowed;
-}
 
   try {
     const auth = req.headers.authorization;
@@ -93,9 +77,19 @@ ORDER BY u.name;
 
     // Fetch monthly_attendance for the selected month/year
     const attendanceQuery = `
-      SELECT user_id, days_present, attendance_map, first_attendance_date
-      FROM monthly_attendance
-      WHERE mess_id = $1 AND month = $2 AND year = $3
+      SELECT
+  user_id,
+  year,
+  month,
+  days_billed,
+  present_days,
+  allowed_leave_days,
+  attendance_map
+FROM monthly_attendance_billing
+WHERE mess_id = $1
+  AND month = $2
+  AND year = $3
+
     `;
     const { rows: attendanceRows } = await pgPool.query(attendanceQuery, [messId, Number(month), Number(year)]);
     const attendanceMap = {};
@@ -120,101 +114,52 @@ ORDER BY u.name;
     AND year = $3
 `;
 
-    const { rows: paymentRows } = await pgPool.query(paymentsQuery, [messId, month, Number(year)]);
+    const { rows: paymentRows } = await pgPool.query(paymentsQuery, [messId, numericMonth, Number(year)]);
     const paymentMap = {};
-    paymentRows.forEach(p => {
-      paymentMap[p.user_id] = p;
-    });
+paymentRows.forEach(p => {
+  paymentMap[`${p.user_id}-${year}-${Number(month)}`] = p;
+});
 
-    // Map all users to bills
-  //   const bills = users.map(u => {
-  //     const attendance = attendanceMap[u.id];
-  //     const payment = paymentMap[u.id];
 
-  //     const start_date = attendance?.first_attendance_date
-  // ? toISTDate(attendance.first_attendance_date)
-  // : toISTDate(new Date());
 
-  //     const endDate = payment?.payment_date
-  //   ? new Date(payment.payment_date)
-  //   : new Date();
+ const bills = [];
 
-  // // total days between start and end
-  // const totalDays =
-  //   Math.floor((endDate - start_date) / (1000 * 60 * 60 * 24)) + 1;
+for (const a of attendanceRows) {
+  const u = users.find(x => x.id === a.user_id);
+  if (!u) continue;
 
-  // // allowed leave = consecutive FALSE streaks only
-  // const allowedLeave = countAllowedLeaveDays(attendance?.attendance_map);
-
-  // // final billed days
-  // const days = Math.max(totalDays - allowedLeave, 0);
-  //     const perDay = Number(u.per_day_rate ?? 0);
-  //     const total = Number((days * perDay).toFixed(2));
-
-  //     return {
-  //       user_id: u.id,
-  //       name: u.name,
-  //       email: u.email,
-  //       status: u.status ?? "Active",
-  //       start_date,
-  //       // end_date: payment?.payment_date ? new Date(payment.payment_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
-  //       end_date: payment?.payment_date 
-  // ? toISTDate(payment.payment_date)
-  // : toISTDate(new Date()),
-
-  //       days_billed: days,
-  //       chosen_per_day_rate: perDay,
-  //       total_amount: total,
-  //       paid: payment?.status === "paid",
-  //       attendance_map: attendance?.attendance_map ?? null,
-  //     };
-  //   });
-const bills = users.map(u => {
-  const attendance = attendanceMap[u.id];
-  const payment = paymentMap[u.id];
-
-  // ----------- FIX: Always use Date objects for math -----------
-  const startDate = attendance?.first_attendance_date
-    ? new Date(attendance.first_attendance_date)
-    : new Date();
-
-  const endDate = payment?.payment_date
-    ? new Date(payment.payment_date)
-    : new Date();
-
-  // ----------- FIX: This will never be NaN now -----------
-  const totalDays =
-    Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-  // Allowed leave
-  const allowedLeave = countAllowedLeaveDays(attendance?.attendance_map);
-
-  // Final days billed
-  const days = Math.max(totalDays - allowedLeave, 0);
+  const paymentKey = `${a.user_id}-${a.year}-${a.month}`;
+  const payment = paymentMap[paymentKey];
 
   const perDay = Number(u.per_day_rate ?? 0);
-  const total = Number((days * perDay).toFixed(2));
+  const totalAmount = Number((a.days_billed * perDay).toFixed(2));
 
-  return {
+  const start = new Date(a.year, a.month - 1, 1);
+  const end = new Date(a.year, a.month, 0);
+
+    bills.push({
     user_id: u.id,
     name: u.name,
     email: u.email,
     status: u.status ?? "Active",
 
-    // Convert to IST only for display
-    start_date: toISTDate(startDate),
-    end_date: toISTDate(endDate),
+    year: a.year,
+    month: a.month,
 
-    days_billed: days,
+    start_date: toISTDate(start),
+    end_date: toISTDate(end),
+
+    days_billed: a.days_billed,
     chosen_per_day_rate: perDay,
-    total_amount: total,
+    total_amount: totalAmount,
+
     paid: payment?.status === "paid",
     note: payment?.note || null,
-    attendance_map: attendance?.attendance_map ?? null,
-  };
-});
+    attendance_map: a.attendance_map ?? null,
+  });
+}
 
-    console.log(bills[70]);
+
     return res.status(200).json(bills);
 
   } catch (err) {

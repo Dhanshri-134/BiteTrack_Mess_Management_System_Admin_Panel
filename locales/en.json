@@ -147,8 +147,11 @@
   "amount": "Amount",
 
   "paymentType": "Payment Type",
+  "type":"Type",
   "monthly": "Monthly",
   "daily": "Daily",
+  "method": "Method",
+  "allBills": "All Bills",
 
   "paymentMethod": "Payment Method",
   "selectMethod": "Select Method",
@@ -369,6 +372,15 @@
   "quickActions": "Quick Actions",
   "quickActionsDescription": "Perform common actions quickly without navigating through menus.",
 
+  "viewHistory": "View history",
+  "failedToLoad": "Failed to load data",
+
+
+
+
+  "paymentHistory": "Payment History",
+  "noPayments": "No payments",
+  "transactionId": "Transaction ID",
   "register": "Register",
   "registerDescription": "Add a new user to the system quickly.",
 
@@ -463,7 +475,7 @@
   "requestedAt": "Requested At",
   "action": "Action",
   "screenshot": "Screenshot",
-
+  "billingPeriod":"Billing Period",
   "approve": "Approve",
   "reject": "Reject",
   "processed": "Processed",

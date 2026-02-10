@@ -433,6 +433,33 @@
   "quickActions": "जलद क्रिया",
   "quickActionsDescription": "मेनू मध्ये न जाता सामान्य क्रिया पटकन करा.",
 
+  "paymentHistory": "पेमेंट इतिहास",
+  "viewHistory": "इतिहास पहा",
+  "hideHistory": "इतिहास लपवा",
+
+  "paid": "भरलेले",
+  "unpaid": "बाकी",
+
+  "date": "तारीख",
+  "method": "पद्धत",
+  "type": "तारीख",
+  "amount": "प्रकार",
+  "paymentType": "पेमेंट प्रकार",
+  "paymentMethod": "पेमेंट पद्धत",
+  "transactionId": "व्यवहार आयडी",
+  "billingPeriod": "बिलिंग कालावधी",
+  "leaveDays": "रजा दिवस",
+  "note": "नोंद",
+  "allBills": "सर्व बिल",
+
+  "noPayments": "पेमेंट उपलब्ध नाही",
+  "failedToLoad": "माहिती लोड करता आली नाही",
+
+  "search": "शोधा",
+  "searchPlaceholder": "नाव किंवा ईमेलने शोधा",
+  "paymentHistory": "पेमेंट इतिहास",
+  "noPayments": "कोणतीही पेमेंट नाही",
+  "transactionId": "व्यवहार आयडी",
   "register": "नोंदणी",
   "registerDescription": "नवीन वापरकर्ता पटकन प्रणालीमध्ये जोडा.",
 
