@@ -245,7 +245,6 @@
   "pending": "Pending",
 
   "cash": "cash",
-  "daily": "daily",
   "verification": "verification",
 
   "noRequestsFound": "No requests found",
@@ -484,7 +483,6 @@
 
   "noRequestsFound": "No requests found",
   "cash": "cash",
-  "daily": "daily",
   "verification": "verification",
 
   "failedToFetchPayments": "Failed to fetch payments",

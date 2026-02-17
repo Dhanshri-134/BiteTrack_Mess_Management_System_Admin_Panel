@@ -16,6 +16,42 @@ export default function AttendancePage() {
   const [isMobile, setIsMobile] = useState(false);
   const { t } = useLanguage();
 
+
+  const [markModalOpen, setMarkModalOpen] = useState(false);
+const [allUsers, setAllUsers] = useState([]);
+const [userSearch, setUserSearch] = useState("");
+const [loadingUsers, setLoadingUsers] = useState(false);
+
+
+const filteredUsers = allUsers.filter((u) =>
+  u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+  u.phone?.toLowerCase().includes(userSearch.toLowerCase())
+);
+
+
+
+const fetchUsersForAttendance = async () => {
+  try {
+    setLoadingUsers(true);
+
+    const res = await fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
+      // "/api/users/verified/",
+      { headers: authHeaders() }
+    );
+
+    if (!res.ok) throw new Error();
+
+    const data = await res.json();
+    setAllUsers(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoadingUsers(false);
+  }
+};
+
+
   /* ------------------ RESPONSIVE ------------------ */
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -36,6 +72,7 @@ export default function AttendancePage() {
     try {
       const data = await offlineFetch("attendance-fetch", async () => {
         const res = await fetch(
+          // "/api/attendance/fetch/",
           "https://bite-track-mess-management-system-a.vercel.app/api/attendance/fetch/",
           { headers: authHeaders() }
         );
@@ -50,6 +87,7 @@ export default function AttendancePage() {
 
       const membersData = await offlineFetch("users-count", async () => {
         const membersRes = await fetch(
+          // "/api/users/count/",
           "https://bite-track-mess-management-system-a.vercel.app/api/users/count/",
           { headers: authHeaders() }
         );
@@ -72,81 +110,202 @@ export default function AttendancePage() {
     fetchAttendance();
   }, []);
 
-  const handleScan = async (qr) => {
-    const today = new Date().toISOString().slice(0, 10);
+const handleManualMark = async (user) => {
+  const messId = getMessIdFromToken();
+  if (!messId) {
+    toast.error("Invalid session");
+    return;
+  }
 
-    try {
-      const token = localStorage.getItem("token");
+console.log("QR messId:", messId);
 
-      const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
+  const qrValue = `${messId}-${user.id}`;
+
+  await handleScan(qrValue);
+
+  setMarkModalOpen(false);
+};
+
+
+const getMessIdFromToken = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.messId;
+
+  } catch {
+    return null;
+  }
+};
+
+
+//   const handleScan = async (qr) => {
+//     const today = new Date().toISOString().slice(0, 10);
+
+//     try {
+//       const token = localStorage.getItem("token");
+
+//       const res = await fetch(
+//         "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//           body: JSON.stringify({ qr }),
+//         }
+//       );
+
+
+//       const data = await res.json();
+
+      
+// if (!res.ok) {
+//   throw new Error(data.error || "Failed");
+// }
+
+//       if (res.ok) {
+//         setMessage(data.message || t("attendanceMarked"));
+
+//         const parts = qr.split("-");
+//         const userId = parts.length === 2 ? Number(parts[1]) : null;
+
+//         if (userId) {
+//           const token = localStorage.getItem("token");
+
+// const namesRes = await fetch(
+//   "https://bite-track-mess-management-system-a.vercel.app/api/users/names/",
+//   {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer ${token}`,
+//     },
+//     body: JSON.stringify({ userIds: [userId] }),
+//   }
+// );
+
+//           const namesData = await namesRes.json();
+//           setRecentUsers(namesData.names || []);
+//         } else {
+//           setRecentUsers([]);
+//         }
+
+//         fetchAttendance();
+//       }
+//     } catch (err) {
+//       await queueAction({
+//         type: "ATTENDANCE_SCAN",
+//         payload: { qr },
+//       });
+
+//       setMessage(t("attendanceSavedOffline"));
+//       const parts = qr.split("-");
+//   const userId = parts.length === 2 ? Number(parts[1]) : null;
+
+//   if (userId) {
+//     setRecords(prev => [
+//       ...prev,
+//       {
+//         id: `offline-${Date.now()}`,
+//         user_id: userId,
+//         user_name: t("offlineUser"),
+//         att_date: today,
+//       },
+//     ]);
+//   }
+
+//   setRecentUsers([]);
+//     }
+//   };
+
+
+
+const handleScan = async (qr) => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      // "/api/attendance/mark/",
+      "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ qr }),
+      }
+    );
+
+    const data = await res.json();
+
+    // ❗ Backend error — NOT offline
+    if (!res.ok) {
+      setMessage(data.error || "Failed");
+      return;
+    }
+
+    // ✅ Success
+    setMessage(data.message || t("attendanceMarked"));
+
+    const parts = qr.split("-");
+    const userId = parts.length === 2 ? Number(parts[1]) : null;
+
+    if (userId) {
+      const namesRes = await fetch(
+        // "/api/users/names/",
+        "https://bite-track-mess-management-system-a.vercel.app/api/users/names/",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ qr }),
+          body: JSON.stringify({ userIds: [userId] }),
         }
       );
 
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setMessage(data.message || t("attendanceMarked"));
-
-        const parts = qr.split("-");
-        const userId = parts.length === 2 ? Number(parts[1]) : null;
-
-        if (userId) {
-          const token = localStorage.getItem("token");
-
-const namesRes = await fetch(
-  "https://bite-track-mess-management-system-a.vercel.app/api/users/names/",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ userIds: [userId] }),
-  }
-);
-
-          const namesData = await namesRes.json();
-          setRecentUsers(namesData.names || []);
-        } else {
-          setRecentUsers([]);
-        }
-
-        fetchAttendance();
-      }
-    } catch (err) {
-      await queueAction({
-        type: "ATTENDANCE_SCAN",
-        payload: { qr },
-      });
-
-      setMessage(t("attendanceSavedOffline"));
-      const parts = qr.split("-");
-  const userId = parts.length === 2 ? Number(parts[1]) : null;
-
-  if (userId) {
-    setRecords(prev => [
-      ...prev,
-      {
-        id: `offline-${Date.now()}`,
-        user_id: userId,
-        user_name: t("offlineUser"),
-        att_date: today,
-      },
-    ]);
-  }
-
-  setRecentUsers([]);
+      const namesData = await namesRes.json();
+      setRecentUsers(namesData.names || []);
     }
-  };
+
+    fetchAttendance();
+
+  } catch (err) {
+    // 🚨 ONLY NETWORK FAILURE COMES HERE
+    console.log("CATCH ERROR:", err);
+
+    await queueAction({
+      type: "ATTENDANCE_SCAN",
+      payload: { qr },
+    });
+
+    setMessage(t("attendanceSavedOffline"));
+
+    const parts = qr.split("-");
+    const userId = parts.length === 2 ? Number(parts[1]) : null;
+
+    if (userId) {
+      setRecords(prev => [
+        ...prev,
+        {
+          id: `offline-${Date.now()}`,
+          user_id: userId,
+          user_name: t("offlineUser"),
+          att_date: today,
+        },
+      ]);
+    }
+
+    setRecentUsers([]);
+  }
+};
 
   function splitRecords(records, columns = 3) {
     const result = Array.from({ length: columns }, () => []);
@@ -192,9 +351,21 @@ const namesRes = await fetch(
 
           {/* Scanner */}
           <section className={styles.scannerSection}>
-            <h3 className={styles.scannerTitle}>
+            {/* <h3 className={styles.scannerTitle}>
               {t("markAttendance")}
-            </h3>
+            </h3> */}
+
+
+            <button
+  className={styles.markBtn}
+  onClick={() => {
+    setMarkModalOpen(true);
+    fetchUsersForAttendance();
+  }}
+>
+  {t("markAttendance")}
+</button>
+
             <p className={styles.scannerInstructions}>
               {t("scannerInstructions")}
             </p>
@@ -270,6 +441,50 @@ const namesRes = await fetch(
           </section>
         </main>
       </div>
+
+      {markModalOpen && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.attendanceModal}>
+      <div className={styles.modalHeader}>
+        <h3>{t("markAttendance")}</h3>
+        <button onClick={() => setMarkModalOpen(false)}>✕</button>
+      </div>
+
+      <input
+        type="text"
+        placeholder={t("searchByNameOrPhone")}
+        value={userSearch}
+        onChange={(e) => setUserSearch(e.target.value)}
+        className={styles.searchInput}
+      />
+
+      {loadingUsers ? (
+        <div className={styles.loading}>{t("loading")}</div>
+      ) : (
+        <div className={styles.userList}>
+          {filteredUsers.map((u) => (
+            <div key={u.id} className={styles.userRow}>
+              <div>
+                <strong>{u.name}</strong>
+                <div className={styles.subText}>
+                  {u.phone || "-"}
+                </div>
+              </div>
+
+              <button
+                className={styles.markUserBtn}
+                onClick={() => handleManualMark(u)}
+              >
+                {t("mark")}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
     </Layout>
   );
 }

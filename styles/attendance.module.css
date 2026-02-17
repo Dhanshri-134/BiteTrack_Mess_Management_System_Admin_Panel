@@ -322,3 +322,54 @@
     margin-top: 0; 
   }
 }
+
+
+.markBtn {
+  background: #2563EB;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  margin-bottom: 16px;
+}
+
+.attendanceModal {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.userRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.markUserBtn {
+  background: #16A34A;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+}

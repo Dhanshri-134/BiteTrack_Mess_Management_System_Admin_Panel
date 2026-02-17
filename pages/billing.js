@@ -736,6 +736,16 @@ Thank you.
 
   <div className={styles.cardBody}>
   <div className={styles.cardRow}>
+      <span>{t("mobile")}</span>
+      <strong>{Number(b.mobile)}</strong>
+    </div>
+
+    <div className={styles.cardRow}>
+      <span>{t("parentContact")}</span>
+      <strong>{b.parent_mobile}</strong>
+    </div>
+    </div>
+  <div className={styles.cardRow}>
       <span>{t("total")}</span>
       <strong>₹{Number(b.total_amount).toFixed(2)}</strong>
     </div>
@@ -743,7 +753,6 @@ Thank you.
     <div className={styles.cardRow}>
       <span>{t("paymentStatus")}</span>
       <strong>{b.paid ? t("paid") : t("unpaid")}</strong>
-    </div>
     </div>
 
 </div>

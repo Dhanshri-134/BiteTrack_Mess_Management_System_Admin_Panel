@@ -147,7 +147,6 @@ parent_mobile: u.parent_mobile,
       });
     }
 
-
     return res.status(200).json(bills);
 
   } catch (err) {
