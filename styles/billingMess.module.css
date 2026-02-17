@@ -2,6 +2,10 @@
   padding-top: clamp(1.3rem, 4vw, 2.5rem);
 }
 
+.container h2{
+  text-align: center;
+
+}
 .card {
   background: #1f1f1f;
   padding: 16px;

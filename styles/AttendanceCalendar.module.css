@@ -2,15 +2,11 @@
 .calendar {
   background: #ffffff;
   border-radius: 16px;
-  padding: 20px;
+  padding-top: 1rem;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
   text-align: center;
   width: 100%;
 }
-.day.present { background-color: green; }
-.day.absent { background-color: red; }
-.day.noData { background-color: lightgray; }
-.day.today { border: 2px solid blue; }
 
 .header {
   font-size: 1.25rem;
@@ -24,13 +20,13 @@
 
 /* ==== Month Navigation Buttons ==== */
 .navButton {
-  background: #1e293b;
+  background: #007171;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 3px 12px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.5rem;
   transition: all 0.25s ease;
 }
 
@@ -42,9 +38,10 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 5px;
   justify-items: center;
   margin-top: 8px;
+  padding: 0.75rem;
 }
 
 .weekday {
@@ -54,8 +51,8 @@
 }
 
 .day {
-  width: 38px;
-  height: 38px;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -73,12 +70,12 @@
 
 /* ==== Status Colors ==== */
 .present {
-  background-color: #22c55e; /* green */
+  background-color: green; /* green */
   color: white;
 }
 
 .absent {
-  background-color: #ef4444; /* red */
+  background-color: red; /* red */
   color: white;
 }
 
@@ -88,6 +85,7 @@
 }
 
 .today {
+  background-color: rgb(96, 205, 242);
   border: 2px solid #0ea5e9; /* blue border */
 }
 

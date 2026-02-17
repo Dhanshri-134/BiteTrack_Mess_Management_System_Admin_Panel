@@ -44,15 +44,21 @@ export default async function handler(req, res) {
 
     const usersQuery = `
       SELECT 
-        u.id,
-        u.name,
-        u.email,
-        u.status,
-        m.per_day_rate
-      FROM users u
-      JOIN messes m ON u.mess_id = m.id
-      WHERE u.mess_id = $1
-      ORDER BY u.name
+  u.id,
+  u.name,
+  u.email,
+  u.status,
+  u.phone,
+  p.contact AS parent_mobile,
+  m.per_day_rate
+FROM users u
+JOIN messes m ON u.mess_id = m.id
+LEFT JOIN parents p 
+  ON p.user_id = u.id 
+  AND p.mess_id = u.mess_id
+WHERE u.mess_id = $1
+ORDER BY u.name
+
     `;
     const { rows: users } = await pgPool.query(usersQuery, [messId]);
 
@@ -122,6 +128,8 @@ WHERE mess_id = $1
         name: u.name,
         email: u.email,
         status: u.status ?? "Active",
+mobile: u.phone,
+parent_mobile: u.parent_mobile,
 
         year: a.year,
         month: a.month,

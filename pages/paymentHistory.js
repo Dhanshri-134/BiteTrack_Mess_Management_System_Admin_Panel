@@ -3,6 +3,8 @@ import styles from "../styles/billing.module.css";
 import toast from "react-hot-toast";
 import { useLanguage } from "../context/LanguageContext";
 import { ChevronDown } from "lucide-react";
+import { offlineFetch } from "@/lib/offlineFetch";
+
 import GlobalLoader from "../components/GlobalLoader";
 
 export default function PaymentHistory({ token }) {
@@ -19,39 +21,65 @@ export default function PaymentHistory({ token }) {
     };
 
     /* ================= LOAD USERS (PAID ONLY) ================= */
-    useEffect(() => {
-        fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/history", { headers: authHeaders })
-            .then(res => res.json())
-            .then(data => setUsers(data.users || []))
-            .catch(() => toast.error(t("failedToLoad")));
-    }, []);
+  useEffect(() => {
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+
+      const data =
+        (await offlineFetch("payment-history-users", async () => {
+          const res = await fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/bills/history/",
+            { headers: authHeaders }
+          );
+          if (!res.ok) throw new Error("history users fetch failed");
+          return res.json();
+        })) ?? { users: [] };
+
+      setUsers(data.users || []);
+    } catch (err) {
+      console.error(err);
+      toast.error(t("failedToLoad"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUsers();
+}, []);
 
 
-    const splitDate = (date) => {
-        if (!date) return ["—", ""];
-        const [y, m, d] = date.split("-");
-        return [`${y}-${m}`, d];
-    };
 
 
     /* ================= LOAD HISTORY (LAZY) ================= */
-    const loadHistory = async (userId) => {
-        if (historyMap[userId]) return;
+  const loadHistory = async (userId) => {
+  if (historyMap[userId]) return;
 
-        try {
-            const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/bills/history?user_id=${userId}`, {
-                headers: authHeaders,
-            });
-            const data = await res.json();
+  try {
+    // setLoading(true);
 
-            setHistoryMap(prev => ({
-                ...prev,
-                [userId]: data.history || [],
-            }));
-        } catch {
-            toast.error(t("failedToLoad"));
-        }
-    };
+    const data =
+      (await offlineFetch(`payment-history-${userId}`, async () => {
+        const res = await fetch(
+          `https://bite-track-mess-management-system-a.vercel.app/api/bills/history/?user_id=${userId}`,
+          { headers: authHeaders }
+        );
+        if (!res.ok) throw new Error("history fetch failed");
+        return res.json();
+      })) ?? { history: [] };
+
+    setHistoryMap(prev => ({
+      ...prev,
+      [userId]: data.history || [],
+    }));
+  } catch (err) {
+    console.error(err);
+    toast.error(t("failedToLoad"));
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
    const TooltipText = ({ value }) => {

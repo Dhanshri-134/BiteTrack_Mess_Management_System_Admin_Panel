@@ -13,6 +13,7 @@
   background-color: #F8FAFC;
   max-width: 100%;
   overflow-x: hidden;
+  text-align: center ;
 }
 
 
@@ -252,6 +253,12 @@
     height:200px;
     width: 100%;
   }
+}
+
+
+.profileCard{
+text-align: justify !important;
+justify-content: space-between;
 }
 
 .profileCard p{

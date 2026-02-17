@@ -24,26 +24,39 @@ export default function BottomNav() {
   return (
     <nav className={styles.footer}>
       <Link href="/dashboard" className={styles.item}>
-        <Home size={20} />
+      <span>
+        
+        <Home size={22}/>
+      </span>
       </Link>
 
       <Link href="/attendance" className={styles.item}>
-        <CalendarCheck size={20} />
+      <span>
+        
+        <CalendarCheck size={22} />
+      </span>
       </Link>
 
       {/* ✅ USERS — OWNER ONLY */}
       {role !== "STAFF" && (
         <Link href="/users/" className={styles.item}>
-          <Users size={20} />
+      <span>
+          <Users size={22} />
+      </span>
         </Link>
       )}
 
       <Link href="/quickSettings" className={styles.item}>
-        <Sliders size={20} />
+      <span>
+        <Sliders size={22} />
+      </span>
       </Link>
 
       <Link href="/settings/app_settings" className={styles.item}>
-        <Settings size={20} />
+        
+      <span>
+        <Settings size={22} />
+      </span>
       </Link>
     </nav>
   );

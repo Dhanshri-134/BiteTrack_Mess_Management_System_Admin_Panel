@@ -1,20 +1,21 @@
 import React, { useState, useMemo,useEffect } from "react";
 import styles from "../styles/AttendanceCalendar.module.css";
 import { useLanguage } from "../context/LanguageContext";
-import { Camera } from "@capacitor/camera";
+import { ArrowLeft, ArrowRight } from "lucide-react"
 
-export default function AttendanceCalendar({ attendanceMap }) {
+export default function AttendanceCalendar({ attendanceMap,  year,  month }) {
   const safeAttendanceMap = attendanceMap ?? {};
   const today = new Date();
   const { t } = useLanguage();
 
-// useEffect(() => {
-//   Camera.requestPermissions();
-// }, []);
-
   // Default to current month/year
-  const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState( year ? Number(year) : today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(  month ? Number(month) : today.getMonth() + 1);
+
+   useEffect(() => {
+    if (year) setCurrentYear(Number(year));
+    if (month) setCurrentMonth(Number(month));
+  }, [year, month]);
 
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();
@@ -47,9 +48,8 @@ export default function AttendanceCalendar({ attendanceMap }) {
 
     // Each day cell
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = new Date(currentYear, currentMonth - 1, day)
-        .toISOString()
-        .slice(0, 10);
+      const dateStr = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
       const currentDate = new Date(currentYear, currentMonth - 1, day);
 
       let status;
@@ -89,13 +89,13 @@ export default function AttendanceCalendar({ attendanceMap }) {
     <div className={styles.calendar}>
       <div className={styles.header}>
         <button onClick={handlePrevMonth} className={styles.navButton}>
-          ← {t("prev")}
+          <ArrowLeft size={20} />
         </button>
         <span>
           {monthLabels[currentMonth - 1]} {currentYear}
         </span>
         <button onClick={handleNextMonth} className={styles.navButton}>
-          {t("next")} →
+           <ArrowRight size={20}/>
         </button>
       </div>
 
