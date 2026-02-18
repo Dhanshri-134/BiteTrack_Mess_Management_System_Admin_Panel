@@ -397,13 +397,24 @@ const handleScan = async (qr) => {
                     <tr className={styles.tableHeader}>
                       <th>{t("srNo")}</th>
                       <th>{t("name")}</th>
+
                     </tr>
                   </thead>
                   <tbody>
                     {todayRecords.map((r, idx) => (
                       <tr key={r.id}>
                         <td>{idx + 1}</td>
-                        <td>{r.user_name}</td>
+                        <td>{r.user_name}
+                          <span
+    className={
+      r.paid
+        ? styles.badgePaid
+        : styles.badgeUnpaid
+    }
+  >
+    {r.paid ? "Paid" : "Unpaid"}
+  </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -417,6 +428,7 @@ const handleScan = async (qr) => {
                       <thead>
                         <tr className={styles.tableHeader}>
                           <th>{t("srNo")}</th>
+                      <th>{t("status")}</th>
                           <th>{t("name")}</th>
                         </tr>
                       </thead>
@@ -429,7 +441,15 @@ const handleScan = async (qr) => {
                                   Math.ceil(todayRecords.length / 3) +
                                 1}
                             </td>
-                            <td>{r.user_name}</td>
+                            <td>
+  {r.user_name}
+  </td>
+  <td>
+  <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
+    {r.paid ? "Paid" : "Unpaid"}
+  </span>
+</td>
+
                           </tr>
                         ))}
                       </tbody>
