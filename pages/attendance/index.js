@@ -32,7 +32,7 @@ const filteredUsers = allUsers.filter((u) =>
 
 const fetchUsersForAttendance = async () => {
   try {
-    setLoadingUsers(true);
+    // setLoadingUsers(true);
 
     const res = await fetch(
       "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
@@ -99,6 +99,7 @@ const fetchUsersForAttendance = async () => {
         totalMembers: membersData.count,
         todayAttendance: todayCount,
       });
+      console.log(data)
     } catch (err) {
       console.error(err);
     } finally {
