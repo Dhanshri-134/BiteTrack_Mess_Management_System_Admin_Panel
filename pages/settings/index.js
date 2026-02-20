@@ -12,6 +12,10 @@ export default function SettingsPage() {
   const { t } = useLanguage();
   const [errorShown, setErrorShown] = useState(false);
 
+  const [hostelText, setHostelText] = useState("");
+  const [courseText, setCourseText] = useState("");
+
+
   const [loading, setLoading] = useState(true);
   const [mess, setMess] = useState({
     name: "",
@@ -41,6 +45,14 @@ export default function SettingsPage() {
     email: "",
     address: "",
   });
+
+
+  const [paymentConfig, setPaymentConfig] = useState({
+  upi_id: "",
+  receiver_name: "",
+  is_active: true,
+});
+
 
 
 
@@ -80,9 +92,12 @@ export default function SettingsPage() {
         if (!res.ok) throw new Error("meta fetch failed");
         return res.json();
       });
-        setHostels(metaData.hostels || []);
-        setCourses(metaData.courses || []);
-      
+      setHostels(metaData.hostels || []);
+      setCourses(metaData.courses || []);
+      setHostelText((metaData.hostels || []).map(h => h.name).join(", "));
+      setCourseText((metaData.courses || []).map(c => c.name).join(", "));
+
+
 
       // fetch owner contact
       const contactData = await offlineFetch("settings-contact", async () => {
@@ -102,6 +117,20 @@ export default function SettingsPage() {
           address: "",
         }
       );
+
+
+      const paymentData = await offlineFetch("settings-payment-config", async () => {
+  const res = await fetch(
+    "https://bite-track-mess-management-system-a.vercel.app/api/payment/config/",
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) throw new Error("payment config fetch failed");
+  return res.json();
+});
+
+if (paymentData) {
+  setPaymentConfig(paymentData);
+}
 
 
     } catch (err) {
@@ -128,6 +157,7 @@ export default function SettingsPage() {
     setMess((p) => ({ ...p, [name]: value }));
   };
 
+  
   // --------------------------------------------------
   // 🟣 Upload with debug
   // --------------------------------------------------
@@ -261,6 +291,25 @@ export default function SettingsPage() {
         throw new Error("Failed to save contact details");
       }
 
+
+      // 4️⃣ Save payment config
+const paymentRes = await fetch(
+  "https://bite-track-mess-management-system-a.vercel.app/api/payment/config/",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(paymentConfig),
+  }
+);
+
+if (!paymentRes.ok) {
+  throw new Error("Failed to save payment config");
+}
+
+
       toast.success(t("settings_updated"));
     } catch (err) {
       console.error(err);
@@ -347,34 +396,43 @@ export default function SettingsPage() {
 
               <label>{t("hostels_comma")}</label>
               <input
-                value={(hostels || []).map(h => h.name).join(", ")}
-
+                type="text"
+                value={hostelText}
                 placeholder="Boys Hostel A, Girls Hostel B"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const text = e.target.value;
+                  setHostelText(text);     // ← raw typing
+
                   setHostels(
-                    e.target.value
+                    text
                       .split(",")
                       .map(v => v.trim())
                       .filter(Boolean)
                       .map((name, i) => ({ name, display_order: i }))
-                  )
-                }
+                  );
+                }}
               />
+
 
               <label>{t("courses_comma")}</label>
               <input
-                value={(courses || []).map(c => c.name).join(", ")}
+                type="text"
+                value={courseText}
                 placeholder="B.Tech, MBA, MCA"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const text = e.target.value;
+                  setCourseText(text);
+
                   setCourses(
-                    e.target.value
+                    text
                       .split(",")
                       .map(v => v.trim())
                       .filter(Boolean)
                       .map((name, i) => ({ name, display_order: i }))
-                  )
-                }
+                  );
+                }}
               />
+
             </div>
             {/* ================= OWNER CONTACT ================= */}
             <div className={styles.group}>
@@ -413,6 +471,63 @@ export default function SettingsPage() {
                 }
               />
             </div>
+
+
+            {/* ================= UPI PAYMENT CONFIG ================= */}
+<div className={styles.group}>
+  <h3>UPI Payment Settings</h3>
+
+  <label>UPI ID</label>
+  <input
+    value={paymentConfig.upi_id}
+    placeholder="example@upi"
+    onChange={(e) =>
+      setPaymentConfig({ ...paymentConfig, upi_id: e.target.value })
+    }
+  />
+
+  <label>Receiver Name</label>
+  <input
+    value={paymentConfig.receiver_name}
+    placeholder="Mess Owner Name"
+    onChange={(e) =>
+      setPaymentConfig({ ...paymentConfig, receiver_name: e.target.value })
+    }
+  />
+
+
+  {paymentConfig.qr_code_url && (
+    <div style={{ position: "relative", display: "inline-block" }}>
+      <img
+        src={paymentConfig.qr_code_url}
+        className={styles.preview}
+      />
+      <button
+        onClick={() =>
+          setPaymentConfig((p) => ({ ...p, qr_code_url: "" }))
+        }
+        className={styles.remove}
+      >
+        ✕
+      </button>
+    </div>
+  )}
+
+  <label>
+    <input
+      type="checkbox"
+      checked={paymentConfig.is_active}
+      onChange={(e) =>
+        setPaymentConfig({
+          ...paymentConfig,
+          is_active: e.target.checked,
+        })
+      }
+    />
+    Enable UPI Payments
+  </label>
+</div>
+
 
 
             <div className={styles.group}>

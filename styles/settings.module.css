@@ -381,3 +381,13 @@
 .group {
   position: relative;
 }
+
+
+
+/* ==== FIX INPUT TYPING ISSUE ==== */
+.group inpu [type="text"],
+.group textarea {
+  white-space: normal !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}

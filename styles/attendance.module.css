@@ -325,7 +325,7 @@
 
 
 .markBtn {
-  background: #2563EB;
+  background: #007170;
   color: white;
   padding: 10px 16px;
   border-radius: 8px;
@@ -363,6 +363,7 @@
   align-items: center;
   padding: 10px;
   border: 1px solid #eee;
+  box-shadow: -2px 8px 10px rgb(215, 215, 215);
   border-radius: 8px;
 }
 
@@ -393,4 +394,28 @@
   border-radius: 999px;
   margin-left: 8px;
   font-weight: 600;
+}
+
+.modalHeader{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.modalHeader h3{
+  font-size: 1.5rem;
+  margin-left:0px !important
+}
+
+
+.ownerBadge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 12px;
+  background-color: #ffbf91;
+  color: #ff6a00;
 }

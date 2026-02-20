@@ -6,6 +6,8 @@ import Layout from "../../components/Layout";
 import { offlineFetch } from "@/lib/offlineFetch";
 import { queueAction } from "@/lib/queueAction";
 import { useLanguage } from "../../context/LanguageContext";
+import { useRouter } from "next/router";
+
 
 export default function AttendancePage() {
   const [records, setRecords] = useState([]);
@@ -28,6 +30,8 @@ const filteredUsers = allUsers.filter((u) =>
   u.phone?.toLowerCase().includes(userSearch.toLowerCase())
 );
 
+
+const router = useRouter();
 
 
 const fetchUsersForAttendance = async () => {
@@ -72,8 +76,8 @@ const fetchUsersForAttendance = async () => {
     try {
       const data = await offlineFetch("attendance-fetch", async () => {
         const res = await fetch(
-          // "/api/attendance/fetch/",
-          "https://bite-track-mess-management-system-a.vercel.app/api/attendance/fetch/",
+          "/api/attendance/fetch/",
+          // "https://bite-track-mess-management-system-a.vercel.app/api/attendance/fetch/",
           { headers: authHeaders() }
         );
         if (!res.ok) throw new Error("Failed to fetch records");
@@ -112,20 +116,50 @@ const fetchUsersForAttendance = async () => {
   }, []);
 
 const handleManualMark = async (user) => {
-  const messId = getMessIdFromToken();
-  if (!messId) {
-    toast.error("Invalid session");
-    return;
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setMessage("Invalid session");
+      return;
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const res = await fetch(
+      "/api/attendance/owner-mark/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          att_date: today,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.message || "Failed");
+      return;
+    }
+
+    setMessage(data.message || t("attendanceMarked"));
+
+    setRecentUsers([user.name]);
+
+    fetchAttendance();
+    setMarkModalOpen(false);
+
+  } catch (err) {
+    console.error(err);
+    setMessage("Network error");
   }
-
-console.log("QR messId:", messId);
-
-  const qrValue = `${messId}-${user.id}`;
-
-  await handleScan(qrValue);
-
-  setMarkModalOpen(false);
 };
+
 
 
 const getMessIdFromToken = () => {
@@ -405,7 +439,21 @@ const handleScan = async (qr) => {
                     {todayRecords.map((r, idx) => (
                       <tr key={r.id}>
                         <td>{idx + 1}</td>
-                        <td>{r.user_name}
+                        <td
+  style={{ cursor: "pointer", color: "#2563EB" }}
+  onClick={() => {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+
+    router.push(
+      `/billing?userId=${r.user_id}&month=${month}&year=${year}`
+    );
+  }}
+>{r.user_name}
+{r.source_type === "owner" && (
+  <span className={styles.ownerBadge}>Owner</span>
+)}
                           <span
     className={
       r.paid
@@ -442,10 +490,24 @@ const handleScan = async (qr) => {
                                   Math.ceil(todayRecords.length / 3) +
                                 1}
                             </td>
-                            <td>
+                            <td
+  style={{ cursor: "pointer", color: "#2563EB" }}
+  onClick={() => {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+
+    router.push(
+      `/billing?userId=${r.user_id}&month=${month}&year=${year}`
+    );
+  }}
+>
   {r.user_name}
   </td>
   <td>
+    {r.source_type === "owner" && (
+  <span className={styles.ownerBadge}>Owner</span>
+)}
   <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
     {r.paid ? "Paid" : "Unpaid"}
   </span>
@@ -467,7 +529,9 @@ const handleScan = async (qr) => {
   <div className={styles.modalOverlay}>
     <div className={styles.attendanceModal}>
       <div className={styles.modalHeader}>
-        <h3>{t("markAttendance")}</h3>
+        <h3>{t("markAttendance")}
+
+        </h3>
         <button onClick={() => setMarkModalOpen(false)}>✕</button>
       </div>
 

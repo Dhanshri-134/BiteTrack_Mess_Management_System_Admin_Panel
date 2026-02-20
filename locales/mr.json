@@ -5,6 +5,7 @@
   "quickActions": "त्वरित क्रिया",
   "users": "वापरकर्ते",
   "leaves": "रजा",
+  "mark":"नोंदवा",
   "billing": "बिलिंग",
   "payments": "पेमेंट्स",
   "suggestions": "सूचना",
@@ -500,6 +501,7 @@
   "feedbackType_other": "इतर",
   "userManagement": "वापरकर्ता व्यवस्थापन",
   "searchByNameOrEmail": "नाव किंवा ईमेलने शोधा",
+  "searchByNameOrPhone": "नाव किंवा फोन शोधा",
 
   "verifiedUsers": "सत्यापित वापरकर्ते",
   "pendingVerification": "प्रलंबित सत्यापन",

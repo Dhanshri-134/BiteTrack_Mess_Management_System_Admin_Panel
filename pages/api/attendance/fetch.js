@@ -31,31 +31,86 @@ export default async function handler(req, res) {
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
 
+    // const query = `
+    //   SELECT 
+    //     a.id,
+    //     TO_CHAR(a.att_date, 'YYYY-MM-DD') AS att_date,
+    //     a.user_id,
+    //     u.name AS user_name,
+    //     CASE 
+    //       WHEN p.status = 'paid' THEN true 
+    //       ELSE false 
+    //     END AS paid
+    //   FROM attendance a
+    //   JOIN users u ON u.id = a.user_id
+    //   LEFT JOIN payment_history p 
+    //     ON p.user_id = a.user_id
+    //     AND (
+    //       CASE
+    //         WHEN p.month ~ '^[0-9]+$' THEN CAST(p.month AS INTEGER)
+    //         ELSE EXTRACT(MONTH FROM TO_DATE(p.month, 'Month'))
+    //       END
+    //     ) = $2
+    //     AND p.year = $3
+    //     AND p.mess_id = $1
+    //   WHERE a.mess_id = $1
+    //   ORDER BY a.att_date DESC
+    // `;
+
+
     const query = `
-      SELECT 
-        a.id,
-        TO_CHAR(a.att_date, 'YYYY-MM-DD') AS att_date,
-        a.user_id,
-        u.name AS user_name,
-        CASE 
-          WHEN p.status = 'paid' THEN true 
-          ELSE false 
-        END AS paid
-      FROM attendance a
-      JOIN users u ON u.id = a.user_id
-      LEFT JOIN payment_history p 
-        ON p.user_id = a.user_id
-        AND (
-          CASE
-            WHEN p.month ~ '^[0-9]+$' THEN CAST(p.month AS INTEGER)
-            ELSE EXTRACT(MONTH FROM TO_DATE(p.month, 'Month'))
-          END
-        ) = $2
-        AND p.year = $3
-        AND p.mess_id = $1
-      WHERE a.mess_id = $1
-      ORDER BY a.att_date DESC
-    `;
+  SELECT 
+    a.id,
+    TO_CHAR(a.att_date, 'YYYY-MM-DD') AS att_date,
+    a.user_id,
+    u.name AS user_name,
+    CASE 
+      WHEN p.status = 'paid' THEN true 
+      ELSE false 
+    END AS paid,
+    'scan' AS source_type
+  FROM attendance a
+  JOIN users u ON u.id = a.user_id
+  LEFT JOIN payment_history p 
+    ON p.user_id = a.user_id
+    AND (
+      CASE
+        WHEN p.month ~ '^[0-9]+$' THEN CAST(p.month AS INTEGER)
+        ELSE EXTRACT(MONTH FROM TO_DATE(p.month, 'Month'))
+      END
+    ) = $2
+    AND p.year = $3
+    AND p.mess_id = $1
+  WHERE a.mess_id = $1
+
+  UNION ALL
+
+  SELECT 
+    o.id,
+    TO_CHAR(o.att_date, 'YYYY-MM-DD') AS att_date,
+    o.user_id,
+    u.name AS user_name,
+    CASE 
+      WHEN p.status = 'paid' THEN true 
+      ELSE false 
+    END AS paid,
+    'owner' AS source_type
+  FROM "Owner_Marked_attendance" o
+  JOIN users u ON u.id = o.user_id
+  LEFT JOIN payment_history p 
+    ON p.user_id = o.user_id
+    AND (
+      CASE
+        WHEN p.month ~ '^[0-9]+$' THEN CAST(p.month AS INTEGER)
+        ELSE EXTRACT(MONTH FROM TO_DATE(p.month, 'Month'))
+      END
+    ) = $2
+    AND p.year = $3
+    AND p.mess_id = $1
+  WHERE o.mess_id = $1
+
+  ORDER BY att_date DESC
+`;
 
     const { rows } = await pgPool.query(query, [
       messId,

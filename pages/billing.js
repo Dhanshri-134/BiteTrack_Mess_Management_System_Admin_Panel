@@ -10,6 +10,8 @@ import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../context/LanguageContext";
 import { FaWhatsapp } from "react-icons/fa";
+import { useRouter } from "next/router";
+
 
 
 export default function BillsPage() {
@@ -39,6 +41,8 @@ export default function BillsPage() {
     bill: null,
   });
 
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
   const [expandedCard, setExpandedCard] = useState(null);
 
   const [paymentModal, setPaymentModal] = useState(null); // { bill } or null
@@ -62,6 +66,19 @@ export default function BillsPage() {
 const closeWhatsAppDrawer = () => {
   setWaDrawer(null);
 };
+
+const router = useRouter();
+
+useEffect(() => {
+  if (!router.isReady) return;
+
+  const { userId, month: m, year: y } = router.query;
+
+  if (m) setMonth(m);
+  if (y) setYear(y);
+  if (userId) setSelectedUserId(userId);
+
+}, [router.isReady]);
 
 
 
@@ -169,6 +186,8 @@ Thank you.
     });
   };
 
+
+  const isMonthYearSelected = month && year && year.length === 4;
 
 
   const [pdfBase64, setPdfBase64] = useState(null);
@@ -405,10 +424,10 @@ Thank you.
 
 
   const downloadMonthlyPDF = () => {
-    if (!month || !year) {
-      toast("Please select month and year.");
-      return;
-    }
+     if (!isMonthYearSelected) {
+    toast("Please select month and year.");
+    return;
+  }
 
     const token = localStorage.getItem("token");
 
@@ -422,6 +441,10 @@ Thank you.
 
   // Filtered for UI
   const filtered = bills.filter((b) => {
+
+     if (selectedUserId && String(b.user_id) !== String(selectedUserId)) {
+    return false;
+  }
     if (statusFilter !== "all") {
       if (statusFilter === "paid" && !b.paid) return false;
       if (statusFilter === "unpaid" && b.paid) return false;
@@ -560,8 +583,26 @@ Thank you.
 
                 <div className={styles.controlItemActions}>
                   <button className={styles.btnPrimary} onClick={fetchBills}>{t("refresh")}</button>
-                  <button className={styles.btnSecondary} onClick={downloadMonthlyPDF} disabled={!month || !year}>{t("downloadMonthlyPdf")}</button>
-                  <button className={styles.btnSecondary} onClick={downloadExcel} disabled={!month || !year}>{t("downloadExcel")}</button>
+                  <button
+  className={`${styles.btnSecondary} ${
+    !isMonthYearSelected ? styles.btnDisabledDownload : ""
+  }`}
+  onClick={downloadMonthlyPDF}
+  disabled={!isMonthYearSelected}
+>
+  {t("downloadMonthlyPdf")}
+</button>
+
+                  <button
+  className={`${styles.btnSecondary} ${
+    !isMonthYearSelected ? styles.btnDisabledDownload : ""
+  }`}
+  onClick={downloadExcel}
+  disabled={!isMonthYearSelected}
+>
+  {t("downloadExcel")}
+</button>
+
                 </div>
               </div>
 

@@ -13,6 +13,12 @@ import { triggerRefresh } from "@/lib/refreshBus";
 import { StatusBar } from "@capacitor/status-bar";
 
 export default function App({ Component, pageProps }) {
+
+
+
+
+
+  
   const router = useRouter();
   const lastBack = useRef(0);
    const [loading, setLoading] = useState(false);

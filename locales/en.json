@@ -421,6 +421,7 @@
   "feedbackType_other": "Other",
   "userManagement": "User Management",
   "searchByNameOrEmail": "Search by name or email",
+  "searchByNameOrPhone": "Search by name or Phone",
 
   "verifiedUsers": "Verified Users",
   "pendingVerification": "Pending Verification",
@@ -478,7 +479,7 @@
   "approve": "Approve",
   "reject": "Reject",
   "processed": "Processed",
-
+  "mark":"Mark",
   "paymentProof": "Payment Proof",
 
   "noRequestsFound": "No requests found",
