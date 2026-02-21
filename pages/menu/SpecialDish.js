@@ -22,11 +22,7 @@ export default function SpecialDish() {
     fetchCravings();
   }, []);
 
-
-useAppRefresh(fetchSpecials);
-useAppRefresh(fetchCravings);
-
-
+  
   const fetchSpecials = async () => {
     setLoading(true);
     try {
@@ -67,7 +63,7 @@ useAppRefresh(fetchCravings);
         if (!res.ok) throw new Error("Failed to fetch cravings");
         return res.json();
       });
-
+      
       setCravings(normalizeCravings(data || []));
     } catch (err) {
       console.error("fetchCravings error:", err);
@@ -81,12 +77,12 @@ useAppRefresh(fetchCravings);
     const simplified = data.map((c) => ({
       ...c,
       text: c.craving_text
-        .toLowerCase()
+      .toLowerCase()
         .trim()
         .replace(/[^a-z0-9\s]/g, ""),
     }));
 
-
+    
     const groups = {};
     for (const item of simplified) {
       const key = Object.keys(groups).find(
@@ -95,7 +91,7 @@ useAppRefresh(fetchCravings);
       if (key) groups[key].push(item);
       else groups[item.text] = [item];
     }
-
+    
     return Object.entries(groups).map(([text, list]) => ({
       craving: text,
       count: list.length,
@@ -145,17 +141,17 @@ useAppRefresh(fetchCravings);
     .from("dish-images")
     .getPublicUrl(fileName);
 
-  return data.publicUrl;
-};
+    return data.publicUrl;
+  };
 
-
+  
  const addDish = async () => {
   if (!newDish.trim()) return;
 
   try {
     const token = localStorage.getItem("token");
     let imageUrl = null;
-
+    
     if (dishImage) {
       imageUrl = await uploadDishImage(dishImage);
     }
@@ -188,8 +184,8 @@ useAppRefresh(fetchCravings);
 };
 
 
-  const deleteDish = async (id) => {
-    if (!confirm(t("confirmDeleteDish"))) return;
+const deleteDish = async (id) => {
+  if (!confirm(t("confirmDeleteDish"))) return;
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error(t("sessionExpired"));
@@ -208,12 +204,12 @@ useAppRefresh(fetchCravings);
           body: JSON.stringify({ id }),
         }
       );
-
+      
       if (res.status === 401) {
         toast.error(t("sessionExpired"));
         return (window.location.href = "/login");
       }
-
+      
       if (res.ok) {
         setSpecials((prev) => prev.filter((dish) => dish.id !== id));
       }
@@ -221,7 +217,11 @@ useAppRefresh(fetchCravings);
       console.error("Error deleting dish:", err);
     }
   };
-
+  
+  useAppRefresh(fetchSpecials);
+  useAppRefresh(fetchCravings);
+  
+  
   return (
     <div className={styles.container}>
       <h2 className={styles.heading}>{t("sundaySpecialDishes")}</h2>

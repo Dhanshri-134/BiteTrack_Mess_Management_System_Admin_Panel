@@ -27,8 +27,7 @@ export default function MenuPreview() {
   
   const mealTypes = ["Breakfast", "Lunch", "Dinner"];
   
-  useEffect(() => {
-    async function fetchMenu() {
+     const fetchMenu = async () =>{
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
@@ -52,11 +51,15 @@ export default function MenuPreview() {
         setLoading(false);
       }
     }
+    fetchMenu();
     
+  
+  useEffect(() =>{
     fetchMenu();
   }, []);
-  
+   
   useAppRefresh(fetchMenu);
+  
   // if (loading) {
   //   return <p className={styles.loading}>{t("loadingMenu")}</p>;
   // }

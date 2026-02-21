@@ -34,9 +34,8 @@ export default function StaffHandling() {
     loadStaffs();
   }, []);
 
-useAppRefresh(loadStaffs);
-
-
+  
+  
   const loadStaffs = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -58,7 +57,7 @@ useAppRefresh(loadStaffs);
       setLoading(false);
     }
   };
-
+  
   /* ----------------------------------
      Add Staff
   ---------------------------------- */
@@ -81,10 +80,10 @@ useAppRefresh(loadStaffs);
           body: JSON.stringify(addForm),
         }
       );
-
+      
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-
+      
       toast.success(t("staff_added"));
       setAddForm({ name: "", email: "", password: "" });
       setShowAddModal(false);
@@ -108,9 +107,9 @@ useAppRefresh(loadStaffs);
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/settings/staffs/${editStaff.id}/`,
         {
-           method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
@@ -134,10 +133,10 @@ useAppRefresh(loadStaffs);
 
   /* ----------------------------------
      Delete Staff
-  ---------------------------------- */
+     ---------------------------------- */
   const handleDeleteStaff = async (staffId) => {
     if (!confirm(t("confirm_delete_staff"))) return;
-
+    
     try {
       const token = localStorage.getItem("token");
 
@@ -158,7 +157,8 @@ useAppRefresh(loadStaffs);
       toast.error(e.message || t("update_failed"));
     }
   };
-
+  
+  useAppRefresh(loadStaffs);
   /* ----------------------------------
      UI
   ---------------------------------- */

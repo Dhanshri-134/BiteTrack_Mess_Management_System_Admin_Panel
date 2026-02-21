@@ -30,7 +30,6 @@ export default function MenuManagement() {
   
   const mealTypes = ["Breakfast", "Lunch", "Dinner"];
   
-  useEffect(() => {
     async function fetchMenu() {
       setLoading(true);
       try {
@@ -54,12 +53,15 @@ export default function MenuManagement() {
       } finally {
         setLoading(false);
       }
+      fetchMenu();
     }
     
+  
+  useEffect(() =>{
     fetchMenu();
-    useAppRefresh(fetchMenu);
   }, []);
   
+  useAppRefresh(fetchMenu);
   
   const handleAddDish = (day, mealType) => {
     setMenuData({
