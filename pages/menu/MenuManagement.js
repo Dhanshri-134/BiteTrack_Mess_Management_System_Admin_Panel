@@ -57,9 +57,9 @@ export default function MenuManagement() {
     }
     
     fetchMenu();
+    useAppRefresh(fetchMenu);
   }, []);
   
-  useAppRefresh(fetchMenu);
   
   const handleAddDish = (day, mealType) => {
     setMenuData({
