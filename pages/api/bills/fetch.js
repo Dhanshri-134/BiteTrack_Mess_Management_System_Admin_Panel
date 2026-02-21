@@ -104,18 +104,25 @@ WHERE mess_id = $1
       attendanceMap[a.user_id] = a;
     });
 
-    const ownerQuery = `
+// Compute start and end date of selected month
+const startDate = new Date(Number(year), numericMonth - 1, 1);
+const endDate = new Date(Number(year), numericMonth, 0);
+
+// Format to YYYY-MM-DD for Postgres DATE comparison
+const startStr = startDate.toISOString().slice(0, 10);
+const endStr = endDate.toISOString().slice(0, 10);
+
+const ownerQuery = `
   SELECT user_id, att_date
   FROM "Owner_Marked_attendance"
   WHERE mess_id = $1
-    AND EXTRACT(MONTH FROM att_date) = $2
-    AND EXTRACT(YEAR FROM att_date) = $3
+    AND att_date BETWEEN $2 AND $3
 `;
 
 const { rows: ownerRows } = await pgPool.query(ownerQuery, [
   messId,
-  numericMonth,
-  Number(year),
+  startStr,
+  endStr,
 ]);
 
 const ownerMap = {};

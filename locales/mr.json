@@ -506,12 +506,12 @@
   "verifiedUsers": "सत्यापित वापरकर्ते",
   "pendingVerification": "प्रलंबित सत्यापन",
   "sendMail": "मेल पाठवा",
-
+"UPI_Payment_Settings":"UPI पेमेंट सेटिंग्ज",
   "loading": "लोड होत आहे...",
   "noVerifiedUsers": "कोणतेही सत्यापित वापरकर्ते नाहीत",
   "noUnverifiedUsers": "कोणतेही असत्यापित वापरकर्ते नाहीत",
   "noUsersToSendMail": "मेल पाठवण्यासाठी वापरकर्ते नाहीत",
-
+"Receiver_Name":"नाव",
   "update": "अद्ययावत करा",
   "delete": "हटवा",
   "verify": "सत्यापित करा",
@@ -520,7 +520,7 @@
 
   "updateUser": "वापरकर्ता अद्ययावत करा",
   "parentDetails": "पालकांची माहिती",
-
+"ownerMarked":"नोंदवलेले",
   "save": "जतन करा",
   "cancel": "रद्द करा",
 

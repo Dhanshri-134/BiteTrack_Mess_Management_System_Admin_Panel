@@ -297,6 +297,7 @@ Thank you.
 
       const url = isFiltered
         ? `https://bite-track-mess-management-system-a.vercel.app/api/bills/fetch/?month=${month}&year=${year}`
+        // ? `/api/bills/fetch/?month=${month}&year=${year}`
         : `https://bite-track-mess-management-system-a.vercel.app/api/bills/all/`;
 
 
@@ -887,6 +888,7 @@ Thank you.
                                       year: b.year,
                                       month: b.month,
                                       attendanceMap: b.attendance_map || {},
+                                      ownerMarkedDates: b.owner_marked_dates || [],
                                       name: b.name,
                                     })
                                   }
@@ -1098,7 +1100,7 @@ Thank you.
                       <h3>{selectedAttendance.name}{t("attendanceSuffix")}</h3>
                       <button className={styles.closeX} onClick={() => setSelectedAttendance(null)}>✕</button>
                     </div>
-                    <AttendanceCalendar year={selectedAttendance.year} month={selectedAttendance.month} attendanceMap={selectedAttendance.attendanceMap} />
+                    <AttendanceCalendar year={selectedAttendance.year} month={selectedAttendance.month} attendanceMap={selectedAttendance.attendanceMap} ownerMarkedDates={selectedAttendance.ownerMarkedDates} />
                     <div style={{ textAlign: "right", marginTop: 12 }}>
                       <button className={styles.btnSecondary} onClick={() => setSelectedAttendance(null)}>{t("close")}</button>
                     </div>

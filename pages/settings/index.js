@@ -486,7 +486,7 @@ if (!paymentRes.ok) {
 
             {/* ================= UPI PAYMENT CONFIG ================= */}
 <div className={styles.group}>
-  <h3>UPI Payment Settings</h3>
+  <h3>{t("UPI_Payment_Settings")}</h3>
 
   <label>UPI ID</label>
   <input
@@ -497,7 +497,7 @@ if (!paymentRes.ok) {
     }
   />
 
-  <label>Receiver Name</label>
+  <label>{t("Receiver_Name")}</label>
   <input
     value={paymentConfig.receiver_name}
     placeholder="Mess Owner Name"

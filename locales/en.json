@@ -431,15 +431,16 @@
   "noVerifiedUsers": "No verified users",
   "noUnverifiedUsers": "No unverified users",
   "noUsersToSendMail": "No users to send mail",
-
+"UPI_Payment_Settings":"UPI Payment Settings",
   "update": "Update",
   "delete": "Delete",
   "verify": "Verify",
   "sendEmail": "Send Email",
   "changeDOJ": "Change DOJ",
-
+  "Receiver_Name":"Receiver Name",
   "updateUser": "Update User",
   "parentDetails": "Parent Details",
+  "ownerMarked":"Owner Marked",
 
   "save": "Save",
   "cancel": "Cancel",
