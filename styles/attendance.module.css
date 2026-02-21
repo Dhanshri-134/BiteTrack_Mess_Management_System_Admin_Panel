@@ -419,3 +419,9 @@
   background-color: #ffbf91;
   color: #ff6a00;
 }
+
+
+.deleteBtn{
+  fill:#005151;
+  /* padding: 0; */
+}

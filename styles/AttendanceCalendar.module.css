@@ -62,6 +62,10 @@
   transition: all 0.25s ease;
 }
 
+.ownerPresent {
+  background-color: #FACC15; /* yellow */
+  color: #000;
+}
 
 .empty {
   width: 38px;

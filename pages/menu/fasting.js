@@ -1,90 +1,3 @@
-// import { useEffect, useState } from "react";
-// import dynamic from "next/dynamic";
-// import Layout from "../../components/Layout";
-// import styles from "../../styles/fasting.module.css";
-// import useAuth from "../../hooks/useAuth";
-
-// function FastingRequests() {
-//   useAuth(); 
-//   const [fastingRequests, setFastingRequests] = useState([]);
-//   const [totalRequests, setTotalRequests] = useState(0);
-
-//   const [token, setToken] = useState(null);
-
-//   useEffect(() => {
-//     const t = localStorage.getItem("token");
-//     setToken(t);
-//   }, []);
-
-//   const fetchData = async () => {
-//     if (!token) return;
-
-//     try {
-//       const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/menu/fasting/fetch/`, {
-//         method: "GET",
-//         headers: {
-//           "Authorization": `Bearer ${token}`,
-//         },
-//       });
-
-//       if (!res.ok) throw new Error("Failed to fetch fasting requests");
-
-//       const data = await res.json();
-
-//       setFastingRequests(data.fastingRequests || []);
-//       setTotalRequests(data.totalRequests || 0);
-//     } catch (err) {
-//       console.error("Error fetching fasting requests:", err);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchData();
-//   }, [token]);
-
-//   return (
-//     <Layout>
-//       <div className={styles.container}>
-//         <h2 className="font-bold text-lg mb-4">Fasting Requests Summary</h2>
-
-//         <div className={styles.summarySection}>
-//           <div className={`${styles.card} ${styles.approved}`}>
-//             Total Fasting Requests: <b>{totalRequests}</b>
-//           </div>
-//         </div>
-
-//         <table className={styles.table}>
-//           <thead>
-//             <tr>
-//               <th>Name</th>
-//               <th>Contact No</th>
-//               <th>Fasting Date</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {fastingRequests.length > 0 ? (
-//               fastingRequests.map((req, idx) => (
-//                 <tr key={idx}>
-//                   <td>{req.name || "Unknown"}</td>
-//                   <td>{req.phone || "N/A"}</td>
-//                   <td>{req.fasting_date}</td>
-//                 </tr>
-//               ))
-//             ) : (
-//               <tr>
-//                 <td colSpan="3">No fasting requests found.</td>
-//               </tr>
-//             )}
-//           </tbody>
-//         </table>
-//       </div>
-//     </Layout>
-//   );
-// }
-
-// export default dynamic(() => Promise.resolve(FastingRequests), {
-//   ssr: false,
-// });
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
@@ -92,6 +5,8 @@ import styles from "../../styles/fasting.module.css";
 
 import { offlineFetch } from "../../lib/offlineFetch";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 function FastingRequests() {
   
@@ -99,15 +14,15 @@ function FastingRequests() {
   const [totalRequests, setTotalRequests] = useState(0);
   const [token, setToken] = useState(null);
   const { t } = useLanguage();
-
+  
   useEffect(() => {
     const tkn = localStorage.getItem("token");
     setToken(tkn);
   }, []);
-
+  
   useEffect(() => {
     if (!token) return;
-
+    
     async function fetchData() {
       try {
         const data = await offlineFetch("fasting-requests", async () => {
@@ -115,9 +30,9 @@ function FastingRequests() {
             "https://bite-track-mess-management-system-a.vercel.app/api/menu/fasting/fetch/",
             { headers: { Authorization: `Bearer ${token}` } }
           );
-
+          
           if (!res.ok) throw new Error("Failed to fetch fasting requests");
-
+          
           return await res.json();
         });
 
@@ -132,7 +47,8 @@ function FastingRequests() {
 
     fetchData();
   }, [token]);
-
+  useAppRefresh(fetchData());
+  
   return (
     <div className={styles.container}>
       {/* Header */}

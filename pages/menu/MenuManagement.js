@@ -7,12 +7,14 @@ import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import DayDropdown from "../../components/DayDropdown";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 export default function MenuManagement() {
   const [menuData, setMenuData] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState("All");
-
+  
   const daysOfWeek = [
     "Monday",
     "Tuesday",
@@ -22,19 +24,19 @@ export default function MenuManagement() {
     "Saturday",
     "Sunday",
   ];
-
+  
   const dayOptions = ["All", ...daysOfWeek];
-const { t } = useLanguage();
-
+  const { t } = useLanguage();
+  
   const mealTypes = ["Breakfast", "Lunch", "Dinner"];
-
+  
   useEffect(() => {
     async function fetchMenu() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("Unauthorized — login required");
-
+        
         const data = await offlineFetch("menuData", async () => {
           const res = await fetch(
             "https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/",
@@ -43,7 +45,7 @@ const { t } = useLanguage();
           if (!res.ok) throw new Error("Failed to fetch menu");
           return await res.json();
         });
-
+        
         setMenuData(data || {});
       } catch (err) {
         console.error("fetchMenu error:", err);
@@ -53,10 +55,12 @@ const { t } = useLanguage();
         setLoading(false);
       }
     }
-
+    
     fetchMenu();
   }, []);
-
+  
+  useAppRefresh(fetchMenu);
+  
   const handleAddDish = (day, mealType) => {
     setMenuData({
       ...menuData,

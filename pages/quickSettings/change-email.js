@@ -4,6 +4,8 @@ import Sidebar from "../../components/Sidebar";
 import styles from "../../styles/changeemail.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 export default function ChangeEmail() {
   const [users, setUsers] = useState([]);
@@ -11,10 +13,10 @@ export default function ChangeEmail() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [newEmail, setNewEmail] = useState("");
   const [loading, setLoading] = useState(false);
-
+  
 
   const getToken = () =>
-  typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
 const authHeaders = () => ({
   "Content-Type": "application/json",
@@ -22,9 +24,9 @@ const authHeaders = () => ({
 });
 
 
-  // Fetch all users
-  const fetchData = async () => {
-     try {
+// Fetch all users
+const fetchData = async () => {
+  try {
     const token = getToken();
     if (!token) return console.warn("Token missing");
 
@@ -36,17 +38,19 @@ const authHeaders = () => ({
       if (!res.ok) throw new Error("Failed to fetch users");
       return res.json();
     });
-
+    
     setUsers(Array.isArray(data) ? data : []);
   } catch (err) {
     console.error("fetch users error:", err);
     setUsers([]);
   }
-  };
+};
   useEffect(() => {
     fetchData();
   }, []);
 
+  useAppRefresh(fetchData);
+  
   const filteredUsers = users.filter(
     (u) =>
       u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -3,7 +3,7 @@ import styles from "../styles/AttendanceCalendar.module.css";
 import { useLanguage } from "../context/LanguageContext";
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
-export default function AttendanceCalendar({ attendanceMap,  year,  month }) {
+export default function AttendanceCalendar({ attendanceMap,  ownerMarkedDates = [], year,  month }) {
   const safeAttendanceMap = attendanceMap ?? {};
   const today = new Date();
   const { t } = useLanguage();
@@ -57,9 +57,22 @@ export default function AttendanceCalendar({ attendanceMap,  year,  month }) {
         status = "noData";
       } else {
         const rawVal = safeAttendanceMap[dateStr];
-        if (rawVal === true || rawVal === "true") status = "present";
-        else if (rawVal === false || rawVal === "false") status = "absent";
-        else status = "noData";
+
+if (rawVal === true) {
+  status = "present";
+} 
+else if (
+  rawVal === false &&
+  ownerMarkedDates.includes(dateStr)
+) {
+  status = "ownerPresent"; // yellow
+} 
+else if (rawVal === false) {
+  status = "absent";
+} 
+else {
+  status = "noData";
+}
       }
 
       let className = `${styles.day} ${styles[status]}`;
@@ -78,7 +91,7 @@ export default function AttendanceCalendar({ attendanceMap,  year,  month }) {
     }
 
     return result;
-  }, [attendanceMap, currentYear, currentMonth]);
+  }, [attendanceMap, ownerMarkedDates, currentYear, currentMonth]);
 
   const monthLabels = [
     t("jan"), t("feb"), t("mar"), t("apr"), t("may"), t("jun"),
@@ -115,6 +128,10 @@ export default function AttendanceCalendar({ attendanceMap,  year,  month }) {
         <span className={styles.legendItem}>
           <span className={`${styles.colorBox} ${styles.absent}`}></span> {t("absent")}
         </span>
+        <span className={styles.legendItem}>
+  <span className={`${styles.colorBox} ${styles.ownerPresent}`}></span>
+  {t("ownerMarked")}
+</span>
         <span className={styles.legendItem}>
           <span className={`${styles.colorBox} ${styles.noData}`}></span> {t("noData")}
         </span>

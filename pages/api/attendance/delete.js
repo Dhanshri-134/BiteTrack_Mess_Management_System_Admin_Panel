@@ -2,17 +2,18 @@ import jwt from "jsonwebtoken";
 import { pgPool } from "@/lib/db";
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
+     res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', "GET, POST, DELETE, OPTIONS");
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-
-  if (req.method !== "POST") {
+  if (req.method !== "DELETE") {
     return res.status(405).json({ message: "Method not allowed" });
   }
+
+  const client = await pgPool.connect();
 
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -30,35 +31,38 @@ export default async function handler(req, res) {
     const { user_id, att_date } = req.body;
 
     if (!user_id || !att_date) {
-      return res.status(400).json({ message: "Missing fields" });
+      return res.status(400).json({
+        message: "user_id and att_date required",
+      });
     }
 
-    const result = await pgPool.query(
+    const deleteResult = await client.query(
       `
-      INSERT INTO "Owner_Marked_attendance"
-      (user_id, mess_id, att_date)
-      VALUES ($1, $2, $3)
-      ON CONFLICT (user_id, mess_id, att_date)
-      DO NOTHING
+      DELETE FROM public."Owner_Marked_attendance"
+      WHERE user_id = $1
+      AND mess_id = $2
+      AND att_date = $3
       RETURNING id
       `,
       [user_id, messId, att_date]
     );
 
-    if (result.rowCount === 0) {
-      return res.status(400).json({
-        message: "Attendance already marked",
+    if (deleteResult.rowCount === 0) {
+      return res.status(403).json({
+        message: "No owner attendance found to delete",
       });
     }
 
     return res.status(200).json({
-      message: "Attendance marked successfully",
+      message: "Owner attendance deleted successfully",
     });
 
-  } catch (err) {
-    console.error("OWNER MARK ERROR:", err);
+  } catch (error) {
+    console.error("OWNER DELETE ERROR:", error);
     return res.status(500).json({
       message: "Internal server error",
     });
+  } finally {
+    client.release();
   }
 }

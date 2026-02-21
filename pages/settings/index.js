@@ -50,7 +50,6 @@ export default function SettingsPage() {
   const [paymentConfig, setPaymentConfig] = useState({
   upi_id: "",
   receiver_name: "",
-  is_active: true,
 });
 
 
@@ -317,6 +316,18 @@ if (!paymentRes.ok) {
     }
   };
 
+  useEffect(() => {
+  const handleRefresh = () => {
+    fetchSettings();
+  };
+
+  window.addEventListener("APP_REFRESH", handleRefresh);
+
+  return () => {
+    window.removeEventListener("APP_REFRESH", handleRefresh);
+  };
+}, []);
+
 
   // if (loading) return <Layout>{t("loading")}</Layout>;
 
@@ -494,38 +505,7 @@ if (!paymentRes.ok) {
       setPaymentConfig({ ...paymentConfig, receiver_name: e.target.value })
     }
   />
-
-
-  {paymentConfig.qr_code_url && (
-    <div style={{ position: "relative", display: "inline-block" }}>
-      <img
-        src={paymentConfig.qr_code_url}
-        className={styles.preview}
-      />
-      <button
-        onClick={() =>
-          setPaymentConfig((p) => ({ ...p, qr_code_url: "" }))
-        }
-        className={styles.remove}
-      >
-        ✕
-      </button>
-    </div>
-  )}
-
-  <label>
-    <input
-      type="checkbox"
-      checked={paymentConfig.is_active}
-      onChange={(e) =>
-        setPaymentConfig({
-          ...paymentConfig,
-          is_active: e.target.checked,
-        })
-      }
-    />
-    Enable UPI Payments
-  </label>
+  
 </div>
 
 

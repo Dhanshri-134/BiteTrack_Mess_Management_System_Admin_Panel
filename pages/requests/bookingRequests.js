@@ -1,3 +1,4 @@
+import { useAppRefresh } from "@/lib/useAppRefresh";
 
 import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
@@ -60,6 +61,10 @@ export default function bookings() {
   useEffect(() => {
     fetchBookings();
   }, []);
+
+
+useAppRefresh(fetchBookings);
+
 
   const formatDateOnly = (date) => {
   if (!date) return "-";

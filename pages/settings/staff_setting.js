@@ -1,3 +1,4 @@
+import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useEffect, useState } from "react";
 import styles from "../../styles/settings.module.css";
 import toast from "react-hot-toast";
@@ -32,6 +33,9 @@ export default function StaffHandling() {
   useEffect(() => {
     loadStaffs();
   }, []);
+
+useAppRefresh(loadStaffs);
+
 
   const loadStaffs = async () => {
     try {

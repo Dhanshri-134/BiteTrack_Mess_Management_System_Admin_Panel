@@ -4,18 +4,20 @@ import styles from "../../styles/ratingsreviews.module.css";
 import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 export default function RatingsReviews() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
-
+  
   const fetchData = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Unauthorized — login required");
-
+      
       const data = await offlineFetch("menu-reviews", async () => {
         const res = await fetch(
           "https://bite-track-mess-management-system-a.vercel.app/api/menu/ratings/fetch/",
@@ -24,7 +26,7 @@ export default function RatingsReviews() {
         if (!res.ok) throw new Error("Failed to fetch reviews");
         return await res.json();
       });
-
+      
       setReviews(data || []);
     } catch (err) {
       console.error("fetchData error:", err);
@@ -38,7 +40,8 @@ export default function RatingsReviews() {
   useEffect(() => {
     fetchData();
   }, []);
-
+  
+  useAppRefresh(fetchData);
   return (
     <div className={styles.container}>
       <div className={styles.header}>

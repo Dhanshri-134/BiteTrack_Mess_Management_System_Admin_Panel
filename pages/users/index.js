@@ -10,6 +10,8 @@ import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { ChevronDown, ChevronUp, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, MoreVertical, Pen, Trash2Icon, X } from "lucide-react";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 export default function Users() {
   const { t } = useLanguage();
@@ -33,56 +35,56 @@ export default function Users() {
       Authorization: `Bearer ${token}`,
     };
   };
-
+  
   const [isMobile, setIsMobile] = useState(false);
-
-
+  
+  
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [dojTarget, setDojTarget] = useState(null);
   const [newDOJ, setNewDOJ] = useState("");
-
+  
   useEffect(() => {
   setOpenAccordionId(null);
 }, [activeTab]);
 
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 640);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+useEffect(() => {
+  const check = () => setIsMobile(window.innerWidth <= 640);
+  check();
+  window.addEventListener("resize", check);
+  return () => window.removeEventListener("resize", check);
+}, []);
 
 
-  // Fetch users
-  const fetchData = async () => {
-    try {
-      const data = await offlineFetch("users-tabs", async () => {
-        const [vRes, uRes, umRes] = await Promise.all([
-          fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
-            { headers: authHeaders() }
-          ),
-          fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/users/unverified/",
-            { headers: authHeaders() }
-          ),
-          fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/users/unmailed/",
-            { headers: authHeaders() }
+// Fetch users
+const fetchData = async () => {
+  try {
+    const data = await offlineFetch("users-tabs", async () => {
+      const [vRes, uRes, umRes] = await Promise.all([
+        fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
+          { headers: authHeaders() }
+        ),
+        fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/users/unverified/",
+          { headers: authHeaders() }
+        ),
+        fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/users/unmailed/",
+          { headers: authHeaders() }
           ),
         ]);
 
         if (!vRes.ok || !uRes.ok || !umRes.ok) {
           throw new Error("Failed to fetch users");
         }
-
+        
         const [vData, uData, umData] = await Promise.all([
           vRes.json(),
           uRes.json(),
           umRes.json(),
         ]);
-
+        
         return {
           verified: Array.isArray(vData) ? vData : [],
           unverified: Array.isArray(uData) ? uData : [],
@@ -102,8 +104,9 @@ export default function Users() {
       setLoading(false);
     }
   };
-
-
+  
+  
+  useAppRefresh(fetchData);
   useEffect(() => {
     fetchData();
   }, []);

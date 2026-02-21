@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { supabase } from "../../lib/supabase";
 
+import { useAppRefresh } from "@/lib/useAppRefresh";
 
 export default function SpecialDish() {
   const [specials, setSpecials] = useState([]);
@@ -20,6 +21,11 @@ export default function SpecialDish() {
     fetchSpecials();
     fetchCravings();
   }, []);
+
+
+useAppRefresh(fetchSpecials);
+useAppRefresh(fetchCravings);
+
 
   const fetchSpecials = async () => {
     setLoading(true);

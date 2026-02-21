@@ -1,3 +1,4 @@
+import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/suggestions.module.css";
@@ -40,6 +41,9 @@ export default function Suggestions() {
   useEffect(() => {
     fetchData();
   }, []);
+
+
+useAppRefresh(fetchData);
 
   // if (loading) return <Layout><p>Loading feedback...</p></Layout>;
 

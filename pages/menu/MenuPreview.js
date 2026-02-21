@@ -5,14 +5,16 @@ import styles from "../../styles/menupreview.module.css";
 import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 export default function MenuPreview() {
   const [menuData, setMenuData] = useState({});
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
   const [openDay, setOpenDay] = useState(null);
-
-
+  
+  
   const daysOfWeek = [
     "Monday",
     "Tuesday",
@@ -22,16 +24,16 @@ export default function MenuPreview() {
     "Saturday",
     "Sunday",
   ];
-
+  
   const mealTypes = ["Breakfast", "Lunch", "Dinner"];
-
+  
   useEffect(() => {
     async function fetchMenu() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("Unauthorized — login required");
-
+        
         const data = await offlineFetch("menuPreview", async () => {
           const res = await fetch(
             "https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/",
@@ -40,7 +42,7 @@ export default function MenuPreview() {
           if (!res.ok) throw new Error("Failed to fetch menu");
           return await res.json();
         });
-
+        
         setMenuData(data || {});
       } catch (err) {
         console.error("fetchMenu error:", err);
@@ -50,10 +52,11 @@ export default function MenuPreview() {
         setLoading(false);
       }
     }
-
+    
     fetchMenu();
   }, []);
-
+  
+  useAppRefresh(fetchMenu);
   // if (loading) {
   //   return <p className={styles.loading}>{t("loadingMenu")}</p>;
   // }

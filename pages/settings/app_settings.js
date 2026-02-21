@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { Eye, EyeClosedIcon } from "lucide-react";
 import { offlineFetch } from "../../lib/offlineFetch";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 
 function decodeToken(token) {
@@ -20,26 +22,26 @@ function decodeToken(token) {
 
 
 export default function AppSettingsPage() {
- 
+  
   const { t } = useLanguage();
-
+  
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [settings, setSettings] = useState({});
   const [supportModal, setSupportModal] = useState(false);
 
   const [showNewPwd, setShowNewPwd] = useState(false);
-const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
   const [credModal, setCredModal] = useState(false);
   const [credForm, setCredForm] = useState({
-  oldPassword: "",
-  newPassword: "",
-  confirmPassword: "",
-  newEmail: "",
-});
-
-
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    newEmail: "",
+  });
+  
+  
   const [viewCredLoading, setViewCredLoading] = useState(false);
   const [viewCredData, setViewCredData] = useState(null);
 
@@ -47,7 +49,7 @@ const [showConfirmPwd, setShowConfirmPwd] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
 
   const [plainPassword] = useState("••••••••");
-
+  
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -56,37 +58,37 @@ const [showConfirmPwd, setShowConfirmPwd] = useState(false);
     open: false,
     data: null,
   });
-
+  
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     const [role, setRole] = useState(null);
-
-useEffect(() => {
-  if (!token) return;
-  const decoded = decodeToken(token);
-  if (decoded?.role) {
-    setRole(decoded.role);
-  }
-}, [token]);
-
-  /* -------------------- LOAD PROFILE -------------------- */
-  useEffect(() => {
-    if (!token) return;
-
+    
+    useEffect(() => {
+      if (!token) return;
+      const decoded = decodeToken(token);
+      if (decoded?.role) {
+        setRole(decoded.role);
+      }
+    }, [token]);
+    
+    /* -------------------- LOAD PROFILE -------------------- */
+    useEffect(() => {
+      if (!token) return;
+      
     const loadProfile = async () => {
       try {
         const data = await offlineFetch("profile", async () => {
-        const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
-          {
-            headers: {
-              "Content-Type": "application/json",
+          const res = await fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
+            {
+              headers: {
+                "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }
         );
-
+        
         if (!res.ok) throw new Error("Profile load failed");
         return res.json();
       });
@@ -98,18 +100,18 @@ useEffect(() => {
 
     loadProfile();
   }, [token, t]);
-
+  
   /* -------------------- LOAD APP SETTINGS -------------------- */
   useEffect(() => {
     if (!token) return;
-
+    
     const loadSettings = async () => {
       try {
         const data = await offlineFetch("app_settings", async () => {
-        const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/settings/app/",
-          {
-            headers: {
+          const res = await fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/settings/app/",
+            {
+              headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
@@ -129,8 +131,9 @@ useEffect(() => {
 
     loadSettings();
   }, [token, t]);
+  
 
-
+  
   return (
     <Layout title={t("app_settings")}>
       <div className={styles.container}>

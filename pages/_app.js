@@ -68,7 +68,7 @@ useEffect(() => {
     window.removeEventListener("touchstart", onTouchStart);
     window.removeEventListener("touchend", onTouchEnd);
   };
-}, [router]);
+}, []);
 
 
 
@@ -189,13 +189,11 @@ useEffect(() => {
           transform: "translate(-50%, -50%)",
         }}
         toastOptions={{
-          duration: 2000,
+          duration: 500,
           style: {
             background: "#fff",
             color: "#16a34a",
             borderRadius: "12px",
-            fontSize: "14px",
-            padding: "14px 18px",
             textAlign: "center",
             maxWidth: "90vw",
           },

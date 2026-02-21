@@ -8,6 +8,8 @@ import { useLanguage } from "../../context/LanguageContext";
 import { Tooltip } from "recharts";
 import toast from "react-hot-toast";
 import DayDropdown from "../../components/DayDropdown";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -15,17 +17,17 @@ export default function CashPaymentsPage() {
   const [activeTab, setActiveTab] = useState("cash"); // cash | daily | verify
   const [payments, setPayments] = useState([]);
   const { t } = useLanguage();
-
+  
   const statusOptions = ["all", "pending", "approved", "rejected"];
-
+  
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState(null);
-
+  
   const openModal = (url) => {
     setModalImage(url);
     setModalOpen(true);
   };
-
+  
   const closeModal = () => {
     setClosing(true);
   setTimeout(() => {
@@ -33,23 +35,23 @@ export default function CashPaymentsPage() {
     setModalImage(null);
     setClosing(false);
   }, 250); 
-  };
+};
 
-  const [search, setSearch] = useState("");
+const [search, setSearch] = useState("");
 const [statusFilter, setStatusFilter] = useState("all");
 
 const [closing, setClosing] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const url =
-        activeTab === "cash"
+const fetchData = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    
+    const url =
+    activeTab === "cash"
           ? "https://bite-track-mess-management-system-a.vercel.app/api/cash-payments/fetch/"
           : activeTab === "daily"
-            ? "https://bite-track-mess-management-system-a.vercel.app/api/daily-payments/fetch/"
+          ? "https://bite-track-mess-management-system-a.vercel.app/api/daily-payments/fetch/"
             : "https://bite-track-mess-management-system-a.vercel.app/api/payment-verifications/fetch/";
   
 
@@ -69,11 +71,11 @@ const [closing, setClosing] = useState(false);
             const err = await res.text();
             throw new Error(err || t("failedToFetchPayments"));
           }
-
+          
           return res.json();
         }
       );
-
+      
       if (!Array.isArray(data)) {
         console.error(t("invalidResponse"), data);
         setPayments([]);
@@ -85,11 +87,12 @@ const [closing, setClosing] = useState(false);
       setPayments([]);
     }
   };
-
+  
   useEffect(() => {
     fetchData();
   }, [activeTab]);
-
+  
+  useAppRefresh(fetchData);
   const handleAction = async (id, status) => {
     console.log("🔥 API CALL", id, status);
 

@@ -4,6 +4,8 @@ import styles from "../../styles/deleteRequests.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 export default function DeleteRequests() {
   const [requests, setRequests] = useState([]);
@@ -11,7 +13,7 @@ export default function DeleteRequests() {
   const [activeTab, setActiveTab] = useState("requests");
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
-
+  
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -19,23 +21,23 @@ export default function DeleteRequests() {
     Authorization: `Bearer ${getToken()}`,
     "Content-Type": "application/json",
   });
-
+  
   // Format date
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     return new Date(dateString).toISOString().split("T")[0];
   };
-
+  
   // Fetch both:
   // 1️⃣ delete account requests
   // 2️⃣ inactive users list
   const fetchAll = async () => {
     setLoading(true);
-
+    
     try {
       const token = getToken();
       if (!token) return console.warn(t("tokenMissing"));
-
+      
       const data = await offlineFetch("delete-requests-all", async () => {
         // fetch delete requests
         const reqRes = await fetch(
@@ -63,10 +65,10 @@ export default function DeleteRequests() {
         Array.isArray(data.requests)
           ? data.requests.filter((r) => r.status === "pending")
           : []
-      );
+        );
 
-      setInactiveUsers(Array.isArray(data.inactive) ? data.inactive : []);
-    } catch (err) {
+        setInactiveUsers(Array.isArray(data.inactive) ? data.inactive : []);
+      } catch (err) {
       console.error(t("fetchAllError"), err);
       setRequests([]);
       setInactiveUsers([]);
@@ -78,17 +80,18 @@ export default function DeleteRequests() {
   useEffect(() => {
     fetchAll();
   }, []);
+  useAppRefresh(fetchAll);
 
   const deleteUser = async (user) => {
-  const confirmDelete = confirm(`${t("confirmDeleteUser")} ${user.name}?`);
-  if (!confirmDelete) return;
+    const confirmDelete = confirm(`${t("confirmDeleteUser")} ${user.name}?`);
+    if (!confirmDelete) return;
 
   const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/delete/", {
     method: "DELETE",
     headers: authHeaders(),
     body: JSON.stringify({ id: user.id }),
   });
-
+  
   const data = await res.json();
 
   if (res.ok) {

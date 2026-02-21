@@ -75,6 +75,7 @@ ORDER BY u.name
   days_billed
 FROM monthly_attendance_billing
 WHERE mess_id = $1
+ORDER BY year DESC, month DESC
 
     `;
     const { rows: attendanceRows } = await pgPool.query(attendanceQuery, [
@@ -103,6 +104,30 @@ WHERE mess_id = $1
     paymentRows.forEach(p => {
       paymentMap[`${p.user_id}-${p.year}-${p.month}`] = p;
     });
+
+    const ownerQuery = `
+  SELECT user_id, att_date
+  FROM "Owner_Marked_attendance"
+  WHERE mess_id = $1
+`;
+
+const { rows: ownerRows } = await pgPool.query(ownerQuery, [
+  messId
+]);
+
+const ownerMap = {};
+
+ownerRows.forEach(o => {
+  const dateStr = new Date(o.att_date)
+    .toISOString()
+    .slice(0, 10);
+
+  if (!ownerMap[o.user_id]) {
+    ownerMap[o.user_id] = [];
+  }
+
+  ownerMap[o.user_id].push(dateStr);
+});
 
     /* ---------------- BUILD BILLS ---------------- */
 
@@ -143,7 +168,8 @@ parent_mobile: u.parent_mobile,
 
         paid: payment?.status === "paid",
         note: payment?.note || null,
-        attendance_map: a.attendance_map ?? null,
+        attendance_map: a.attendance_map ?? {},
+owner_marked_dates: ownerMap[a.user_id] ?? [],
       });
     }
 

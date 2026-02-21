@@ -1,5 +1,3 @@
-// pages/api/payment/config/index.js
-
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 
@@ -26,12 +24,12 @@ export default async function handler(req, res) {
     }
 
     // ===============================
-    // 🟢 GET PAYMENT CONFIG
+    // 🟢 GET CONFIG
     // ===============================
     if (req.method === "GET") {
       const result = await pgPool.query(
         `
-        SELECT upi_id, receiver_name, is_active
+        SELECT upi_id, receiver_name
         FROM payment_config
         WHERE mess_id = $1
         ORDER BY id DESC
@@ -44,7 +42,6 @@ export default async function handler(req, res) {
         return res.status(200).json({
           upi_id: "",
           receiver_name: "",
-          is_active: false,
         });
       }
 
@@ -52,10 +49,10 @@ export default async function handler(req, res) {
     }
 
     // ===============================
-    // 🔵 UPSERT PAYMENT CONFIG
+    // 🔵 UPSERT CONFIG
     // ===============================
     if (req.method === "POST") {
-      const { upi_id, receiver_name, is_active } = req.body;
+      const { upi_id, receiver_name } = req.body;
 
       if (!upi_id || !receiver_name) {
         return res.status(400).json({
@@ -63,7 +60,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // Check if config exists
       const existing = await pgPool.query(
         `
         SELECT id FROM payment_config
@@ -80,26 +76,24 @@ export default async function handler(req, res) {
           UPDATE payment_config
           SET upi_id = $1,
               receiver_name = $2,
-              is_active = $3,
+              is_active = TRUE,
               updated_at = NOW()
-          WHERE mess_id = $4
+          WHERE mess_id = $3
           `,
-          [upi_id, receiver_name, is_active ?? true, messId]
+          [upi_id, receiver_name, messId]
         );
       } else {
         // INSERT
         await pgPool.query(
           `
           INSERT INTO payment_config (mess_id, upi_id, receiver_name, is_active)
-          VALUES ($1, $2, $3, $4)
+          VALUES ($1, $2, $3, TRUE)
           `,
-          [messId, upi_id, receiver_name, is_active ?? true]
+          [messId, upi_id, receiver_name]
         );
       }
 
-      return res.status(200).json({
-        success: true,
-      });
+      return res.status(200).json({ success: true });
     }
 
     return res.status(405).json({ error: "Method not allowed" });

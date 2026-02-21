@@ -1,3 +1,4 @@
+import { useAppRefresh } from "@/lib/useAppRefresh";
 
 
 // pages/billing.js
@@ -60,35 +61,35 @@ export default function BillsPage() {
 
 
   const openWhatsAppDrawer = (bill) => {
-  setWaDrawer(bill);
-};
+    setWaDrawer(bill);
+  };
 
-const closeWhatsAppDrawer = () => {
-  setWaDrawer(null);
-};
+  const closeWhatsAppDrawer = () => {
+    setWaDrawer(null);
+  };
 
-const router = useRouter();
+  const router = useRouter();
 
-useEffect(() => {
-  if (!router.isReady) return;
+  useEffect(() => {
+    if (!router.isReady) return;
 
-  const { userId, month: m, year: y } = router.query;
+    const { userId, month: m, year: y } = router.query;
 
-  if (m) setMonth(m);
-  if (y) setYear(y);
-  if (userId) setSelectedUserId(userId);
+    if (m) setMonth(m);
+    if (y) setYear(y);
+    if (userId) setSelectedUserId(userId);
 
-}, [router.isReady]);
+  }, [router.isReady]);
 
 
 
-const sendWhatsApp = (mobile, bill) => {
-  if (!mobile) {
-    toast.error("Mobile number not found");
-    return;
-  }
+  const sendWhatsApp = (mobile, bill) => {
+    if (!mobile) {
+      toast.error("Mobile number not found");
+      return;
+    }
 
-  const message = `
+    const message = `
 Hello ${bill.name},
 
 Your mess bill for ${bill.month}/${bill.year}
@@ -99,12 +100,12 @@ Please clear the payment on time.
 Thank you.
 `;
 
-  const formattedNumber = mobile.replace(/\D/g, "");
-  const url = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
+    const formattedNumber = mobile.replace(/\D/g, "");
+    const url = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
 
-  window.open(url, "_blank");
-  closeWhatsAppDrawer();
-};
+    window.open(url, "_blank");
+    closeWhatsAppDrawer();
+  };
 
   const TooltipText = ({ value }) => {
     const [pos, setPos] = useState({ x: 0, y: 0, show: false });
@@ -325,6 +326,9 @@ Thank you.
   }, [month, year]);
 
 
+  useAppRefresh(fetchBills);
+
+
   // Actions
   const togglePaid = async (userId, billMonth, billYear) => {
     try {
@@ -424,10 +428,10 @@ Thank you.
 
 
   const downloadMonthlyPDF = () => {
-     if (!isMonthYearSelected) {
-    toast("Please select month and year.");
-    return;
-  }
+    if (!isMonthYearSelected) {
+      toast("Please select month and year.");
+      return;
+    }
 
     const token = localStorage.getItem("token");
 
@@ -442,9 +446,9 @@ Thank you.
   // Filtered for UI
   const filtered = bills.filter((b) => {
 
-     if (selectedUserId && String(b.user_id) !== String(selectedUserId)) {
-    return false;
-  }
+    if (selectedUserId && String(b.user_id) !== String(selectedUserId)) {
+      return false;
+    }
     if (statusFilter !== "all") {
       if (statusFilter === "paid" && !b.paid) return false;
       if (statusFilter === "unpaid" && b.paid) return false;
@@ -584,24 +588,22 @@ Thank you.
                 <div className={styles.controlItemActions}>
                   <button className={styles.btnPrimary} onClick={fetchBills}>{t("refresh")}</button>
                   <button
-  className={`${styles.btnSecondary} ${
-    !isMonthYearSelected ? styles.btnDisabledDownload : ""
-  }`}
-  onClick={downloadMonthlyPDF}
-  disabled={!isMonthYearSelected}
->
-  {t("downloadMonthlyPdf")}
-</button>
+                    className={`${styles.btnSecondary} ${!isMonthYearSelected ? styles.btnDisabledDownload : ""
+                      }`}
+                    onClick={downloadMonthlyPDF}
+                    disabled={!isMonthYearSelected}
+                  >
+                    {t("downloadMonthlyPdf")}
+                  </button>
 
                   <button
-  className={`${styles.btnSecondary} ${
-    !isMonthYearSelected ? styles.btnDisabledDownload : ""
-  }`}
-  onClick={downloadExcel}
-  disabled={!isMonthYearSelected}
->
-  {t("downloadExcel")}
-</button>
+                    className={`${styles.btnSecondary} ${!isMonthYearSelected ? styles.btnDisabledDownload : ""
+                      }`}
+                    onClick={downloadExcel}
+                    disabled={!isMonthYearSelected}
+                  >
+                    {t("downloadExcel")}
+                  </button>
 
                 </div>
               </div>
@@ -753,86 +755,86 @@ Thank you.
                             </button>
                           </div>*/}
 
-                         <div
-  className={styles.cardHeader}
-  onClick={() =>
-    setExpandedCard(expandedCard === idx ? null : idx)
-  }
->
-  <div className={styles.headerLeft}>
-    <strong>{b.name}</strong>
+                          <div
+                            className={styles.cardHeader}
+                            onClick={() =>
+                              setExpandedCard(expandedCard === idx ? null : idx)
+                            }
+                          >
+                            <div className={styles.headerLeft}>
+                              <strong>{b.name}</strong>
 
-    <button
-      className={styles.inlineWhatsapp}
-      onClick={(e) => {
-        e.stopPropagation(); // prevent collapse toggle
-        openWhatsAppDrawer(b);
-      }}
-    >
-    <FaWhatsapp size={20} color="#25D366" />
-    </button>
-  {/* <span>
+                              <button
+                                className={styles.inlineWhatsapp}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // prevent collapse toggle
+                                  openWhatsAppDrawer(b);
+                                }}
+                              >
+                                <FaWhatsapp size={20} color="#25D366" />
+                              </button>
+                              {/* <span>
   </span> */}
-  </div>
+                            </div>
 
-  <div className={styles.cardBody}>
-  <div className={styles.cardRow}>
-      <span>{t("mobile")}</span>
-      <strong>{Number(b.mobile)}</strong>
-    </div>
+                            <div className={styles.cardBody}>
+                              <div className={styles.cardRow}>
+                                <span>{t("mobile")}</span>
+                                <strong>{Number(b.mobile)}</strong>
+                              </div>
 
-    <div className={styles.cardRow}>
-      <span>{t("parentContact")}</span>
-      <strong>{b.parent_mobile}</strong>
-    </div>
-    </div>
-  <div className={styles.cardRow}>
-      <span>{t("total")}</span>
-      <strong>₹{Number(b.total_amount).toFixed(2)}</strong>
-    </div>
+                              <div className={styles.cardRow}>
+                                <span>{t("parentContact")}</span>
+                                <strong>{b.parent_mobile}</strong>
+                              </div>
+                            </div>
+                            <div className={styles.cardRow}>
+                              <span>{t("total")}</span>
+                              <strong>₹{Number(b.total_amount).toFixed(2)}</strong>
+                            </div>
 
-    <div className={styles.cardRow}>
-      <span>{t("paymentStatus")}</span>
-      <strong>{b.paid ? t("paid") : t("unpaid")}</strong>
-    </div>
+                            <div className={styles.cardRow}>
+                              <span>{t("paymentStatus")}</span>
+                              <strong>{b.paid ? t("paid") : t("unpaid")}</strong>
+                            </div>
 
-</div>
+                          </div>
 
 
-     {expandedCard === idx && (
-  <div className={styles.cardBody}>
+                          {expandedCard === idx && (
+                            <div className={styles.cardBody}>
 
-    <div className={styles.cardRow}>
-      <span>{t("email")}</span>
-      <strong>{b.email || "-"}</strong>
-    </div>
+                              <div className={styles.cardRow}>
+                                <span>{t("email")}</span>
+                                <strong>{b.email || "-"}</strong>
+                              </div>
 
-    <div className={styles.cardRow}>
-      <span>{t("status")}</span>
-      <strong>{b.status}</strong>
-    </div>
+                              <div className={styles.cardRow}>
+                                <span>{t("status")}</span>
+                                <strong>{b.status}</strong>
+                              </div>
 
-    <div className={styles.cardRow}>
-      <span>{t("startDate")}</span>
-      <strong>{b.start_date || "-"}</strong>
-    </div>
+                              <div className={styles.cardRow}>
+                                <span>{t("startDate")}</span>
+                                <strong>{b.start_date || "-"}</strong>
+                              </div>
 
-    <div className={styles.cardRow}>
-      <span>{t("endDate")}</span>
-      <strong>{b.end_date || "-"}</strong>
-    </div>
+                              <div className={styles.cardRow}>
+                                <span>{t("endDate")}</span>
+                                <strong>{b.end_date || "-"}</strong>
+                              </div>
 
-    <div className={styles.cardRow}>
-      <span>{t("days")}</span>
-      <strong>{b.days_billed}</strong>
-    </div>
+                              <div className={styles.cardRow}>
+                                <span>{t("days")}</span>
+                                <strong>{b.days_billed}</strong>
+                              </div>
 
-    <div className={styles.cardRow}>
-      <span>{t("rate")}</span>
-      <strong>₹{Number(b.chosen_per_day_rate).toFixed(2)}</strong>
-    </div>
+                              <div className={styles.cardRow}>
+                                <span>{t("rate")}</span>
+                                <strong>₹{Number(b.chosen_per_day_rate).toFixed(2)}</strong>
+                              </div>
 
-    {/* <div className={styles.cardRow}>
+                              {/* <div className={styles.cardRow}>
       <span>{t("total")}</span>
       <strong>₹{Number(b.total_amount).toFixed(2)}</strong>
     </div>
@@ -842,64 +844,63 @@ Thank you.
       <strong>{b.paid ? t("paid") : t("unpaid")}</strong>
     </div> */}
 
-    {b.note && (
-      <div className={styles.cardRow}>
-        <span>{t("note")}</span>
-        <strong>{b.note}</strong>
-      </div>
-    )}
+                              {b.note && (
+                                <div className={styles.cardRow}>
+                                  <span>{t("note")}</span>
+                                  <strong>{b.note}</strong>
+                                </div>
+                              )}
 
-    {/* ACTION BUTTONS */}
-    <div className={styles.cardActions}>
+                              {/* ACTION BUTTONS */}
+                              <div className={styles.cardActions}>
 
-      <button
-        className={`${styles.btnAction} ${b.paid ? styles.btnPaidDisabled : styles.btnPaid}`}
-        disabled={b.paid}
-        onClick={() => !b.paid && openPaymentModal(b)}
-      >
-        {b.paid ? t("paid") : t("markPaid")}
-      </button>
+                                <button
+                                  className={`${styles.btnAction} ${b.paid ? styles.btnPaidDisabled : styles.btnPaid}`}
+                                  disabled={b.paid}
+                                  onClick={() => !b.paid && openPaymentModal(b)}
+                                >
+                                  {b.paid ? t("paid") : t("markPaid")}
+                                </button>
 
-      <button
-        className={`${styles.btnAction} ${
-          b.status === "Active"
-            ? b.paid
-              ? styles.btnFreeze
-              : styles.btnDisabled
-            : styles.btnUnfreeze
-        }`}
-        disabled={b.status === "Active" && !b.paid}
-        onClick={() => {
-          if (b.status === "Active" && !b.paid) {
-            return toast.error(t("somethingWentWrong"));
-          }
-          toggleFreeze(b.user_id, b.status === "Active" ? "freeze" : "unfreeze");
-        }}
-      >
-        {b.status === "Active" ? t("freeze") : t("unfreeze")}
-      </button>
+                                <button
+                                  className={`${styles.btnAction} ${b.status === "Active"
+                                      ? b.paid
+                                        ? styles.btnFreeze
+                                        : styles.btnDisabled
+                                      : styles.btnUnfreeze
+                                    }`}
+                                  disabled={b.status === "Active" && !b.paid}
+                                  onClick={() => {
+                                    if (b.status === "Active" && !b.paid) {
+                                      return toast.error(t("somethingWentWrong"));
+                                    }
+                                    toggleFreeze(b.user_id, b.status === "Active" ? "freeze" : "unfreeze");
+                                  }}
+                                >
+                                  {b.status === "Active" ? t("freeze") : t("unfreeze")}
+                                </button>
 
-      <button
-        className={`${styles.btnAction} ${styles.btnCalendar}`}
-        onClick={() =>
-          setSelectedAttendance({
-            year: b.year,
-            month: b.month,
-            attendanceMap: b.attendance_map || {},
-            name: b.name,
-          })
-        }
-      >
-        {t("viewCalendar")}
-      </button>
+                                <button
+                                  className={`${styles.btnAction} ${styles.btnCalendar}`}
+                                  onClick={() =>
+                                    setSelectedAttendance({
+                                      year: b.year,
+                                      month: b.month,
+                                      attendanceMap: b.attendance_map || {},
+                                      name: b.name,
+                                    })
+                                  }
+                                >
+                                  {t("viewCalendar")}
+                                </button>
 
-    </div>
-  </div>
-)}
+                              </div>
+                            </div>
+                          )}
 
-    </div>
-  ))}
-</div>
+                        </div>
+                      ))}
+                    </div>
                   </>
                 )}
               </section>
@@ -1113,41 +1114,41 @@ Thank you.
               token={token}
             />
           )}
-{waDrawer && (
-  <div className={styles.waOverlay} onClick={closeWhatsAppDrawer}>
-    <div
-      className={styles.waDrawer}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h3>Send WhatsApp Message</h3>
+          {waDrawer && (
+            <div className={styles.waOverlay} onClick={closeWhatsAppDrawer}>
+              <div
+                className={styles.waDrawer}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3>Send WhatsApp Message</h3>
 
-      <button
-        className={styles.waOption}
-        onClick={() =>
-          sendWhatsApp(waDrawer.mobile, waDrawer)
-        }
-      >
-        To {waDrawer.name}
-      </button>
+                <button
+                  className={styles.waOption}
+                  onClick={() =>
+                    sendWhatsApp(waDrawer.mobile, waDrawer)
+                  }
+                >
+                  To {waDrawer.name}
+                </button>
 
-      <button
-        className={styles.waOption}
-        onClick={() =>
-          sendWhatsApp(waDrawer.parent_mobile, waDrawer)
-        }
-      >
-        To Parent
-      </button>
+                <button
+                  className={styles.waOption}
+                  onClick={() =>
+                    sendWhatsApp(waDrawer.parent_mobile, waDrawer)
+                  }
+                >
+                  To Parent
+                </button>
 
-      <button
-        className={styles.waCancel}
-        onClick={closeWhatsAppDrawer}
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
+                <button
+                  className={styles.waCancel}
+                  onClick={closeWhatsAppDrawer}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
 
         </main>
       </div>

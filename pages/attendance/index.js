@@ -1,3 +1,4 @@
+import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useEffect, useState } from "react";
 import Scanner from "./scan";
 import HardwareScanner from "../../components/HardwareScanner";
@@ -7,6 +8,7 @@ import { offlineFetch } from "@/lib/offlineFetch";
 import { queueAction } from "@/lib/queueAction";
 import { useLanguage } from "../../context/LanguageContext";
 import { useRouter } from "next/router";
+import { Trash2Icon } from "lucide-react";
 
 
 export default function AttendancePage() {
@@ -37,7 +39,7 @@ const router = useRouter();
 const fetchUsersForAttendance = async () => {
   try {
     // setLoadingUsers(true);
-
+const data = await offlineFetch("verified-users", async () => {
     const res = await fetch(
       "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
       // "/api/users/verified/",
@@ -45,8 +47,9 @@ const fetchUsersForAttendance = async () => {
     );
 
     if (!res.ok) throw new Error();
+     return res.json();
+    });
 
-    const data = await res.json();
     setAllUsers(Array.isArray(data) ? data : []);
   } catch (err) {
     console.error(err);
@@ -76,8 +79,8 @@ const fetchUsersForAttendance = async () => {
     try {
       const data = await offlineFetch("attendance-fetch", async () => {
         const res = await fetch(
-          "/api/attendance/fetch/",
-          // "https://bite-track-mess-management-system-a.vercel.app/api/attendance/fetch/",
+          // "/api/attendance/fetch/",
+          "https://bite-track-mess-management-system-a.vercel.app/api/attendance/fetch/",
           { headers: authHeaders() }
         );
         if (!res.ok) throw new Error("Failed to fetch records");
@@ -115,7 +118,23 @@ const fetchUsersForAttendance = async () => {
     fetchAttendance();
   }, []);
 
+
+useAppRefresh(fetchAttendance);
+
+
 const handleManualMark = async (user) => {
+  const today = new Date().toISOString().slice(0, 10);
+     const alreadyMarked = records.some(
+  (r) =>
+    r.user_id === user.id &&
+    r.att_date === today &&
+    r.source_type === "owner"
+);
+
+if (alreadyMarked) {
+  setMessage("Attendance already marked");
+  return;
+}
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -123,10 +142,9 @@ const handleManualMark = async (user) => {
       return;
     }
 
-    const today = new Date().toISOString().slice(0, 10);
 
     const res = await fetch(
-      "/api/attendance/owner-mark/",
+      "https://bite-track-mess-management-system-a.vercel.app/api/attendance/owner-mark/",
       {
         method: "POST",
         headers: {
@@ -150,113 +168,111 @@ const handleManualMark = async (user) => {
     setMessage(data.message || t("attendanceMarked"));
 
     setRecentUsers([user.name]);
-
-    fetchAttendance();
+    useAppRefresh(fetchAttendance);
     setMarkModalOpen(false);
 
   } catch (err) {
-    console.error(err);
-    setMessage("Network error");
+ 
+     // 🚨 NETWORK FAILURE → OFFLINE MODE
+    await queueAction({
+      type: "OWNER_ATTENDANCE_MARK",
+      payload: {
+        user_id: user.id,
+        att_date: today,
+      },
+    });
+
+    // optimistic record
+    setRecords((prev) => [
+      ...prev,
+      {
+        id: `offline-owner-${Date.now()}`,
+        user_id: user.id,
+        user_name: user.name,
+        att_date: today,
+        source_type: "owner",
+        paid: false,
+      },
+    ]);
+
+    setStats((prev) => ({
+      ...prev,
+      todayAttendance: prev.todayAttendance + 1,
+    }));
+
+    setMessage(t("attendanceSavedOffline"));
+    setMarkModalOpen(false);
   }
 };
 
+const handleDelete = async (attendance) => {
+  if (!confirm("Are you sure you want to delete this attendance?")) return;
 
-
-const getMessIdFromToken = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
+  const payload = {
+    user_id: attendance.user_id,
+    att_date: attendance.att_date,
+  };
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.messId;
+    const token = localStorage.getItem("token");
 
-  } catch {
-    return null;
+    const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/delete/", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.message || "Failed to delete");
+      return;
+    }
+
+    // remove from UI
+    setRecords((prev) =>
+      prev.filter(
+        (r) =>
+          !(r.user_id === attendance.user_id &&
+            r.att_date === attendance.att_date)
+      )
+    );
+
+    setStats((prev) => ({
+      ...prev,
+      todayAttendance: Math.max(0, prev.todayAttendance - 1),
+    }));
+
+    setMessage("Attendance deleted");
+    fetchAttendance();
+    useAppRefresh(fetchAttendance)
+
+  } catch (err) {
+    // OFFLINE SUPPORT
+    await queueAction({
+      type: "OWNER_ATTENDANCE_DELETE",
+      payload,
+    });
+
+    setRecords((prev) =>
+      prev.filter(
+        (r) =>
+          !(r.user_id === attendance.user_id &&
+            r.att_date === attendance.att_date)
+      )
+    );
+
+    setStats((prev) => ({
+      ...prev,
+      todayAttendance: Math.max(0, prev.todayAttendance - 1),
+    }));
+
+    setMessage("Deleted (will sync when online)");
   }
 };
-
-
-//   const handleScan = async (qr) => {
-//     const today = new Date().toISOString().slice(0, 10);
-
-//     try {
-//       const token = localStorage.getItem("token");
-
-//       const res = await fetch(
-//         "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
-//           body: JSON.stringify({ qr }),
-//         }
-//       );
-
-
-//       const data = await res.json();
-
-      
-// if (!res.ok) {
-//   throw new Error(data.error || "Failed");
-// }
-
-//       if (res.ok) {
-//         setMessage(data.message || t("attendanceMarked"));
-
-//         const parts = qr.split("-");
-//         const userId = parts.length === 2 ? Number(parts[1]) : null;
-
-//         if (userId) {
-//           const token = localStorage.getItem("token");
-
-// const namesRes = await fetch(
-//   "https://bite-track-mess-management-system-a.vercel.app/api/users/names/",
-//   {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${token}`,
-//     },
-//     body: JSON.stringify({ userIds: [userId] }),
-//   }
-// );
-
-//           const namesData = await namesRes.json();
-//           setRecentUsers(namesData.names || []);
-//         } else {
-//           setRecentUsers([]);
-//         }
-
-//         fetchAttendance();
-//       }
-//     } catch (err) {
-//       await queueAction({
-//         type: "ATTENDANCE_SCAN",
-//         payload: { qr },
-//       });
-
-//       setMessage(t("attendanceSavedOffline"));
-//       const parts = qr.split("-");
-//   const userId = parts.length === 2 ? Number(parts[1]) : null;
-
-//   if (userId) {
-//     setRecords(prev => [
-//       ...prev,
-//       {
-//         id: `offline-${Date.now()}`,
-//         user_id: userId,
-//         user_name: t("offlineUser"),
-//         att_date: today,
-//       },
-//     ]);
-//   }
-
-//   setRecentUsers([]);
-//     }
-//   };
-
 
 
 const handleScan = async (qr) => {
@@ -440,17 +456,20 @@ const handleScan = async (qr) => {
                       <tr key={r.id}>
                         <td>{idx + 1}</td>
                         <td
-  style={{ cursor: "pointer", color: "#2563EB" }}
+><span
+  style={{ cursor: "pointer"}}
   onClick={() => {
     const today = new Date();
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const year = today.getFullYear();
 
     router.push(
-      `/billing?userId=${r.user_id}&month=${month}&year=${year}`
+      `/billing?userId=${r.user_id}`
     );
   }}
->{r.user_name}
+  >
+  {r.user_name}
+  </span>
 {r.source_type === "owner" && (
   <span className={styles.ownerBadge}>Owner</span>
 )}
@@ -463,6 +482,15 @@ const handleScan = async (qr) => {
   >
     {r.paid ? "Paid" : "Unpaid"}
   </span>
+  {r.source_type === "owner" && (
+  <button
+    className={styles.deleteBtn}
+    onClick={() => handleDelete(r)}
+  >
+    <Trash2Icon size={16} color="#007170"/>
+  </button>
+)}
+
                         </td>
                       </tr>
                     ))}

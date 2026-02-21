@@ -5,6 +5,8 @@ import styles from "../../styles/leave.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+
 
 const formatDate = (date) => {
   if (!date) return "-";
@@ -22,18 +24,18 @@ export default function LeaveManagement() {
   const [leaveMembers, setLeaveMembers] = useState(null);
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
-
+  
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
+  
   const authHeaders = () => ({
     Authorization: `Bearer ${getToken()}`,
     "Content-Type": "application/json",
   });
-
+  
   const fetchData = async () => {
     setLoading(true);
-
+    
     try {
       const token = getToken();
       if (!token) return console.warn(t("tokenMissing"));
@@ -66,13 +68,13 @@ export default function LeaveManagement() {
           members: membersData,
         };
       });
-
+      
       setLeaveRequests(Array.isArray(data.requests) ? data.requests : []);
       setLeaveHistory(Array.isArray(data.history) ? data.history : []);
       setLeaveMembers(
         Array.isArray(data.members.approved_members)
-          ? data.members.approved_members
-          : []
+        ? data.members.approved_members
+        : []
       );
     } catch (err) {
       console.error(t("fetchDataError"), err);
@@ -87,6 +89,7 @@ export default function LeaveManagement() {
   useEffect(() => {
     fetchData();
   }, []);
+  useAppRefresh(fetchData);
 
   return (
     <Layout>

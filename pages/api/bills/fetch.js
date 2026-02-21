@@ -95,6 +95,7 @@ FROM monthly_attendance_billing
 WHERE mess_id = $1
   AND month = $2
   AND year = $3
+  
 
     `;
     const { rows: attendanceRows } = await pgPool.query(attendanceQuery, [messId, Number(month), Number(year)]);
@@ -102,6 +103,34 @@ WHERE mess_id = $1
     attendanceRows.forEach(a => {
       attendanceMap[a.user_id] = a;
     });
+
+    const ownerQuery = `
+  SELECT user_id, att_date
+  FROM "Owner_Marked_attendance"
+  WHERE mess_id = $1
+    AND EXTRACT(MONTH FROM att_date) = $2
+    AND EXTRACT(YEAR FROM att_date) = $3
+`;
+
+const { rows: ownerRows } = await pgPool.query(ownerQuery, [
+  messId,
+  numericMonth,
+  Number(year),
+]);
+
+const ownerMap = {};
+
+ownerRows.forEach(o => {
+  const dateStr = new Date(o.att_date)
+    .toISOString()
+    .slice(0, 10);
+
+  if (!ownerMap[o.user_id]) {
+    ownerMap[o.user_id] = [];
+  }
+
+  ownerMap[o.user_id].push(dateStr);
+});
 
     // Fetch payment_history for the selected month/year
     const paymentsQuery = `
@@ -163,7 +192,8 @@ parent_mobile: u.parent_mobile,
 
     paid: payment?.status === "paid",
     note: payment?.note || null,
-    attendance_map: a.attendance_map ?? null,
+    attendance_map: a.attendance_map ?? {},
+owner_marked_dates: ownerMap[a.user_id] ?? [],
   });
 }
 
