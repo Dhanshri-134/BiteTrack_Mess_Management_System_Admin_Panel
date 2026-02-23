@@ -2,6 +2,7 @@ import { useState,useEffect } from "react";
 import Sidebar from "../../components/Sidebar";
 import styles from "../../styles/register.module.css";
 import Layout from "../../components/Layout";
+import toast from "react-hot-toast";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -59,7 +60,7 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("Submitting...");
+    toast("Submiting...")
 
 
 
@@ -71,16 +72,16 @@ export default function Register() {
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage("✅ Registered! Please check your email for the code.");
+        toast.success("✅ Registered! Please check your email for the code.");
       } else {
-        setMessage("❌ " + data.error);
+        toast.error("❌ " + data.error);
       }
     } catch (err) {
       console.error(err);
       setMessage("❌ Failed to register");
     }
   };
-
+  
   return (
   
 
@@ -197,6 +198,7 @@ export default function Register() {
             Register
           </button>
         </form>
+        
 
         {message && <p className={styles.message}>{message}</p>}
       </div>

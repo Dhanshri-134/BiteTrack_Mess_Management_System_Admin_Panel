@@ -113,8 +113,8 @@ export default async function handler(req, res) {
     await client.query('BEGIN');
 
     const insert = await client.query(
-      `INSERT INTO users (name, email, phone, mess_id)
-       VALUES ($1,$2,$3,$4)
+      `INSERT INTO users (name, email, phone, mess_id,mail_sent)
+       VALUES ($1,$2,$3,$4,TRUE)
        ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name
        RETURNING id`,
       [name, email, phone || null, finalMessId]

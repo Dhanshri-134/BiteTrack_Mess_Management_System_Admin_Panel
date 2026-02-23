@@ -110,29 +110,76 @@ export default function BillsPage() {
 // }, [router.isReady]);
 
 
-  const sendWhatsApp = (mobile, bill) => {
-    if (!mobile) {
-      toast.error("Mobile number not found");
-      return;
-    }
+//   const sendWhatsApp = (mobile, bill) => {
+//     if (!mobile) {
+//       toast.error("Mobile number not found");
+//       return;
+//     }
 
-    const message = `
+//     const message = `
+// Hello ${bill.name},
+
+// Your mess bill for ${bill.month}/${bill.year}
+// Amount: ₹${Number(bill.total_amount).toFixed(2)}
+
+// Please clear the payment on time.
+
+// Thank you.
+// `;
+
+//     const formattedNumber = mobile.replace(/\D/g, "");
+//     const url = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
+
+//     window.open(url, "_blank");
+//     closeWhatsAppDrawer();
+//   };
+
+const sendWhatsApp = (mobile, bill, type = "student") => {
+  if (!mobile) {
+    toast.error("Mobile number not found");
+    return;
+  }
+
+  let message = "";
+
+  if (type === "student") {
+    message = `
 Hello ${bill.name},
 
 Your mess bill for ${bill.month}/${bill.year}
 Amount: ₹${Number(bill.total_amount).toFixed(2)}
 
-Please clear the payment on time.
+Please clear your payment at the earliest.
 
-Thank you.
+Thank you,
+BiteTrack Admin
 `;
+  }
 
-    const formattedNumber = mobile.replace(/\D/g, "");
-    const url = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
+  if (type === "parent") {
+    message = `
+Dear Parent,
 
-    window.open(url, "_blank");
-    closeWhatsAppDrawer();
-  };
+This is to inform you that ${bill.name}'s mess bill 
+for ${bill.month}/${bill.year} is ₹${Number(
+      bill.total_amount
+    ).toFixed(2)}.
+
+Kindly ensure timely payment.
+
+Thank you,
+BiteTrack Admin
+`;
+  }
+
+  const formattedNumber = mobile.replace(/\D/g, "");
+  const url = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(
+    message
+  )}`;
+
+  window.open(url, "_blank");
+  closeWhatsAppDrawer();
+};
 
   const TooltipText = ({ value }) => {
     const [pos, setPos] = useState({ x: 0, y: 0, show: false });
@@ -1159,8 +1206,8 @@ const filtered = bills.filter((b) => {
                 <button
                   className={styles.waOption}
                   onClick={() =>
-                    sendWhatsApp(waDrawer.mobile, waDrawer)
-                  }
+  sendWhatsApp(waDrawer.mobile, waDrawer, "student")
+}
                 >
                   To {waDrawer.name}
                 </button>
@@ -1168,8 +1215,8 @@ const filtered = bills.filter((b) => {
                 <button
                   className={styles.waOption}
                   onClick={() =>
-                    sendWhatsApp(waDrawer.parent_mobile, waDrawer)
-                  }
+  sendWhatsApp(waDrawer.parent_mobile, waDrawer, "parent")
+}
                 >
                   To Parent
                 </button>
