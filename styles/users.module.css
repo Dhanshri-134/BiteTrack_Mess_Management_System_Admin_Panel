@@ -820,3 +820,14 @@
   transform: translateY(-4px);
   pointer-events: none;
 }
+.delBtn{
+    background-color: red;
+  color: #FFFFFF;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-left: 1px;
+  transition: background-color 0.2s, transform 0.1s;
+}

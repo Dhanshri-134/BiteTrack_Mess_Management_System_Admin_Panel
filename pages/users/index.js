@@ -17,14 +17,16 @@ export default function Users() {
   const { t } = useLanguage();
   const [verified, setVerified] = useState([]);
   const [unverified, setUnverified] = useState([]);
-  const [unmailed, setUnmailed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [modalUser, setModalUser] = useState(null);
   const [form, setForm] = useState({});
-  const [activeTab, setActiveTab] = useState("verified"); // 👈 Default tab
-  // const isMobile = typeof window !== "undefined" && window.innerWidth <= 640;
+  const [isMobile, setIsMobile] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [dojTarget, setDojTarget] = useState(null);
+  const [newDOJ, setNewDOJ] = useState("");
+  const [activeTab, setActiveTab] = useState("verified"); 
   const [openAccordionId, setOpenAccordionId] = useState(null);
 
 
@@ -35,100 +37,7 @@ export default function Users() {
       Authorization: `Bearer ${token}`,
     };
   };
-  
-  const [isMobile, setIsMobile] = useState(false);
-  
-  
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [dojTarget, setDojTarget] = useState(null);
-  const [newDOJ, setNewDOJ] = useState("");
-  
-  useEffect(() => {
-  setOpenAccordionId(null);
-}, [activeTab]);
 
-
-useEffect(() => {
-  const check = () => setIsMobile(window.innerWidth <= 640);
-  check();
-  window.addEventListener("resize", check);
-  return () => window.removeEventListener("resize", check);
-}, []);
-
-
-// Fetch users
-const fetchData = async () => {
-  try {
-    const data = await offlineFetch("users-tabs", async () => {
-      const [vRes, uRes, umRes] = await Promise.all([
-        fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
-          { headers: authHeaders() }
-        ),
-        fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/users/unverified/",
-          { headers: authHeaders() }
-        ),
-        fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/users/unmailed/",
-          { headers: authHeaders() }
-          ),
-        ]);
-
-        if (!vRes.ok || !uRes.ok || !umRes.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        
-        const [vData, uData, umData] = await Promise.all([
-          vRes.json(),
-          uRes.json(),
-          umRes.json(),
-        ]);
-        
-        return {
-          verified: Array.isArray(vData) ? vData : [],
-          unverified: Array.isArray(uData) ? uData : [],
-          unmailed: Array.isArray(umData) ? umData : [],
-        };
-      });
-
-      setVerified(data.verified || []);
-      setUnverified(data.unverified || []);
-      setUnmailed(data.unmailed || []);
-    } catch (err) {
-      console.error(err);
-      setVerified([]);
-      setUnverified([]);
-      setUnmailed([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  
-  useAppRefresh(fetchData);
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Send verification email
-  const handleSendMail = async (user) => {
-    try {
-      await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/sendmail/", {
-        method: "POST",
-        // headers: { "Content-Type": "application/json" },
-        headers: authHeaders(),
-        body: JSON.stringify({ userId: user.id, email: user.email }),
-      });
-      toast.success(t("emailSentSuccess"));
-      fetchData();
-    } catch (err) {
-      toast.error(t("somethingWentWrong"));
-      console.error("Error sending email:", err);
-    }
-  };
-
-  // Open modal
   const openModal = (user) => {
     console.log("USER PARENTS:", user.parents);
 
@@ -146,13 +55,52 @@ const fetchData = async () => {
       parent_address: parent?.address || "",
     });
   };
+  
+  const fetchData = async () => {
+    try {
+      const data = await offlineFetch("users-tabs", async () => {
+        const [vRes, uRes] = await Promise.all([
+          fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
+            { headers: authHeaders() }
+          ),
+          fetch(
+            "https://bite-track-mess-management-system-a.vercel.app/api/users/unverified/",
+            { headers: authHeaders() }
+          )
+          ]);
+
+          if (!vRes.ok || !uRes.ok ) {
+            throw new Error("Failed to fetch users");
+          }
+          
+          const [vData, uData] = await Promise.all([
+            vRes.json(),
+            uRes.json(),
+          ]);
+          
+          return {
+            verified: Array.isArray(vData) ? vData : [],
+            unverified: Array.isArray(uData) ? uData : [],
+          };
+        });
+
+        setVerified(data.verified || []);
+        setUnverified(data.unverified || []);
+      } catch (err) {
+        console.error(err);
+        setVerified([]);
+        setUnverified([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Update user
   const handleUpdate = async () => {
     try {
       const res = await fetch(
@@ -192,7 +140,6 @@ const fetchData = async () => {
     }
   };
 
-
   const filterAndSort = (users) => {
     let filtered = users;
     if (search) {
@@ -215,11 +162,6 @@ const fetchData = async () => {
     return filtered;
   };
 
-  const filteredVerified = filterAndSort(verified);
-  const filteredUnverified = filterAndSort(unverified);
-  const filteredUnmailed = filterAndSort(unmailed);
-
-
   const requestSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc")
@@ -231,8 +173,6 @@ const fetchData = async () => {
     if (sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? " ▲" : " ▼";
   };
-
-
 
   const tableColumns = [
     { key: "name", label: t("name") },
@@ -304,47 +244,6 @@ const fetchData = async () => {
     </div>
   );
 
-  // const deleteUser = async (user) => {
-  //   const confirmDelete = confirm(`${t("confirmDeleteUser")} ${user.name}?`);
-  //   if (!confirmDelete) return;
-
-  //   const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/delete/", {
-  //     method: "DELETE",
-  //     headers: authHeaders(),
-  //     body: JSON.stringify({ id: user.id }),
-  //   });
-
-  //   const data = await res.json();
-
-  //   if (res.ok) {
-  //     toast.success(t("userDeletedSuccess"));
-  //     fetchData();
-  //   } else {
-  //     toast.error(t("somethingWentWrong"));
-  //   }
-  // };
-
-  // const changeDOJ = async (user) => {
-  //   const date_of_joining = prompt(t("enterNewDOJ"), user.first_attendance_date);
-  //   if (!date_of_joining) return;
-
-  //   const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/changeDOJ/", {
-  //     method: "PUT",
-  //     headers: authHeaders(),
-  //     body: JSON.stringify({ id: user.id, date_of_joining }),
-  //   });
-
-  //   const data = await res.json();
-
-  //   if (res.ok) {
-  //     toast.success(t("userUpdatedSuccess"));
-  //     fetchData();
-  //   } else {
-  //     toast.error(t("somethingWentWrong"));
-  //   }
-  // };
-
-
   const requestDeleteUser = (user) => {
     setDeleteTarget(user);
   };
@@ -406,26 +305,11 @@ const fetchData = async () => {
     }
   };
 
-
   const limitedColumns = tableColumns.filter(
     (col) =>
       col.key !== "parents" &&
       col.key !== "first_attendance_date"
   );
-
-  useEffect(() => {
-    const onEsc = (e) => {
-      if (e.key !== "Escape") return;
-      setModalUser(null);
-      setDeleteTarget(null);
-      setDojTarget(null);
-    };
-
-    window.addEventListener("keydown", onEsc);
-    return () => window.removeEventListener("keydown", onEsc);
-  }, []);
-
-
 
   function MobileUserCard({ user, actions, t, openAccordionId, setOpenAccordionId  }) {
 const isOpen = openAccordionId === user.id;
@@ -508,7 +392,6 @@ const isOpen = openAccordionId === user.id;
     );
   }
 
-
   function ReviewCard({ user, actionButton, t, openAccordionId, setOpenAccordionId  }) {
 const isOpen = openAccordionId === user.id;
 
@@ -575,7 +458,37 @@ const isOpen = openAccordionId === user.id;
     );
   }
 
+ useEffect(() => {
+    const onEsc = (e) => {
+      if (e.key !== "Escape") return;
+      setModalUser(null);
+      setDeleteTarget(null);
+      setDojTarget(null);
+    };
 
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
+  }, []);
+
+  useAppRefresh(fetchData);
+  
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    setOpenAccordionId(null);
+  }, [activeTab]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+    const filteredVerified = filterAndSort(verified);
+  const filteredUnverified = filterAndSort(unverified);
 
   return (
     <Layout>
@@ -606,12 +519,7 @@ const isOpen = openAccordionId === user.id;
               {t("pendingVerification")} ({unverified.length})
             </button>
 
-            <button
-              className={`${styles.tabBtn} ${activeTab === "unmailed" ? styles.activeTab : ""}`}
-              onClick={() => setActiveTab("unmailed")}
-            >
-              {t("sendMail")} ({unmailed.length})
-            </button>
+         
           </div>
 
           {loading ? (
@@ -695,6 +603,7 @@ setOpenAccordionId={setOpenAccordionId}
 
                         t={t}
                         actionButton={
+                          <div className={styles.cardActions}>
                           <Link
                             href={`/quickSettings/verify?email=${encodeURIComponent(u.email)}`}
                             className={styles.link}
@@ -703,6 +612,13 @@ setOpenAccordionId={setOpenAccordionId}
                               {t("verify")}
                             </button>
                           </Link>
+                          <button
+                            className={`${styles.cardbtn} ${styles.delBtn}`}
+                            onClick={() => requestDeleteUser(u)}
+                          >
+                           {t(" Delete")}
+                          </button>
+                          </div>
                         }
                       />
                     ))
@@ -711,53 +627,25 @@ setOpenAccordionId={setOpenAccordionId}
                     renderTable(unverified, limitedColumns, {
                       label: t("verify"),
                       render: (u) => (
+                        <div className={styles.cardActions}>
                         <Link
                           href={`/quickSettings/verify?email=${encodeURIComponent(u.email)}`}
                           className={styles.link}
                         >
                           <button className={styles.button}>{t("verify")}</button>
                         </Link>
+
+                        <button
+                          className={`${styles.button} ${styles.btnDel}`}
+                          onClick={() => requestDeleteUser(u)}
+                        >
+                          {t("Delete")}
+                        </button>
+                      </div>
                       ),
                     }))
                 ))}
 
-              {activeTab === "unmailed" &&
-                (unmailed.length === 0 ? (
-                  <div className={styles.empty}>{t("noUsersToSendMail")}</div>
-                ) : (
-                  isMobile ? (
-                    filteredUnmailed.map((u) => (
-                      <ReviewCard
-                        key={u.id}
-                        user={u}
-                        t={t}
-                        openAccordionId={openAccordionId}
-  setOpenAccordionId={setOpenAccordionId}
-
-                        actionButton={
-                          <button
-                            className={`${styles.cardbtn} ${styles.button}`}
-                            onClick={() => handleSendMail(u)}
-                          >
-                            {t("sendEmail")}
-                          </button>
-                        }
-                      />
-                    ))
-                  ) : (
-                    renderTable(unmailed, limitedColumns, {
-                      label: t("sendMail"),
-                      render: (u) => (
-                        <button
-                          className={styles.button}
-                          onClick={() => handleSendMail(u)}
-                        >
-                          {t("sendEmail")}
-                        </button>
-                      ),
-                    })
-                  )
-                ))}
             </>
           )}
 

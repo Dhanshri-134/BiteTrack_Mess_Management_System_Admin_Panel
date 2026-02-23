@@ -19,53 +19,49 @@ export default function AttendancePage() {
   const [recentUsers, setRecentUsers] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const { t } = useLanguage();
-
-
   const [markModalOpen, setMarkModalOpen] = useState(false);
-const [allUsers, setAllUsers] = useState([]);
-const [userSearch, setUserSearch] = useState("");
-const [loadingUsers, setLoadingUsers] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const today = new Date().toISOString().slice(0, 10);
+  const [searchAttendance, setSearchAttendance] = useState("");
+  const todayRecords = records.filter(
+    (r) =>
+      r.att_date === today &&
+    r.user_name?.toLowerCase().includes(searchAttendance.toLowerCase())
+  );
+  const chunks = splitRecords(todayRecords, 3);
 
 
-const filteredUsers = allUsers.filter((u) =>
-  u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
-  u.phone?.toLowerCase().includes(userSearch.toLowerCase())
-);
+  const filteredUsers = allUsers.filter((u) =>
+    u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+    u.phone?.toLowerCase().includes(userSearch.toLowerCase())
+  );
 
+  const router = useRouter();
 
-const router = useRouter();
+  const fetchUsersForAttendance = async () => {
+    try {
+      // setLoadingUsers(true);
+      const data = await offlineFetch("verified-users", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
+          // "/api/users/verified/",
+          { headers: authHeaders() }
+        );
 
+        if (!res.ok) throw new Error();
+        return res.json();
+      }
+      );
 
-const fetchUsersForAttendance = async () => {
-  try {
-    // setLoadingUsers(true);
-const data = await offlineFetch("verified-users", async () => {
-    const res = await fetch(
-      "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
-      // "/api/users/verified/",
-      { headers: authHeaders() }
-    );
-
-    if (!res.ok) throw new Error();
-     return res.json();
-    });
-
-    setAllUsers(Array.isArray(data) ? data : []);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoadingUsers(false);
-  }
-};
-
-
-  /* ------------------ RESPONSIVE ------------------ */
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+      setAllUsers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
   const authHeaders = () => {
     const token = localStorage.getItem("token");
@@ -114,247 +110,256 @@ const data = await offlineFetch("verified-users", async () => {
     }
   };
 
-  useEffect(() => {
-    fetchAttendance();
-  }, []);
+  const handleManualMark = async (user) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const alreadyMarked = records.some(
+      (r) =>
+        r.user_id === user.id &&
+        r.att_date === today
+    );
 
-
-useAppRefresh(fetchAttendance);
-
-
-const handleManualMark = async (user) => {
-  const today = new Date().toISOString().slice(0, 10);
-     const alreadyMarked = records.some(
-  (r) =>
-    r.user_id === user.id &&
-    r.att_date === today &&
-    r.source_type === "owner"
-);
-
-if (alreadyMarked) {
-  setMessage("Attendance already marked");
-  return;
-}
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMessage("Invalid session");
+    if (alreadyMarked) {
+      setMessage("Attendance already marked");
+      setMarkModalOpen(false);
+      setUserSearch(""); 
       return;
     }
-
-
-    const res = await fetch(
-      "https://bite-track-mess-management-system-a.vercel.app/api/attendance/owner-mark/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          att_date: today,
-        }),
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMessage("Invalid session");
+        return;
       }
-    );
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.message || "Failed");
-      return;
-    }
-
-    setMessage(data.message || t("attendanceMarked"));
-    setRecentUsers([user.name]);
-    setMarkModalOpen(false);
-    useAppRefresh(fetchAttendance);
-
-  } catch (err) {
- 
-     // 🚨 NETWORK FAILURE → OFFLINE MODE
-    await queueAction({
-      type: "OWNER_ATTENDANCE_MARK",
-      payload: {
-        user_id: user.id,
-        att_date: today,
-      },
-    });
-
-    // optimistic record
-    setRecords((prev) => [
-      ...prev,
-      {
-        id: `offline-owner-${Date.now()}`,
-        user_id: user.id,
-        user_name: user.name,
-        att_date: today,
-        source_type: "owner",
-        paid: false,
-      },
-    ]);
-
-    setStats((prev) => ({
-      ...prev,
-      todayAttendance: prev.todayAttendance + 1,
-    }));
-
-    setMessage(t("attendanceSavedOffline"));
-    setMarkModalOpen(false);
-  }
-};
-
-const handleDelete = async (attendance) => {
-  if (!confirm("Are you sure you want to delete this attendance?")) return;
-
-  const payload = {
-    user_id: attendance.user_id,
-    att_date: attendance.att_date,
-  };
-
-  try {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/delete/", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.message || "Failed to delete");
-      return;
-    }
-
-    // remove from UI
-    setRecords((prev) =>
-      prev.filter(
-        (r) =>
-          !(r.user_id === attendance.user_id &&
-            r.att_date === attendance.att_date)
-      )
-    );
-
-    setStats((prev) => ({
-      ...prev,
-      todayAttendance: Math.max(0, prev.todayAttendance - 1),
-    }));
-
-    setMessage("Attendance deleted");
-    
-  } catch (err) {
-    useAppRefresh(fetchAttendance);
-    // OFFLINE SUPPORT
-    await queueAction({
-      type: "OWNER_ATTENDANCE_DELETE",
-      payload,
-    });
-
-    setRecords((prev) =>
-      prev.filter(
-        (r) =>
-          !(r.user_id === attendance.user_id &&
-            r.att_date === attendance.att_date)
-      )
-    );
-
-    setStats((prev) => ({
-      ...prev,
-      todayAttendance: Math.max(0, prev.todayAttendance - 1),
-    }));
-
-    setMessage("Deleted (will sync when online)");
-  }
-};
-
-
-const handleScan = async (qr) => {
-  const today = new Date().toISOString().slice(0, 10);
-
-  try {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(
-      // "/api/attendance/mark/",
-      "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ qr }),
-      }
-    );
-
-    const data = await res.json();
-
-    // ❗ Backend error — NOT offline
-    if (!res.ok) {
-      setMessage(data.error || "Failed");
-      return;
-    }
-
-    // ✅ Success
-    setMessage(data.message || t("attendanceMarked"));
-
-    const parts = qr.split("-");
-    const userId = parts.length === 2 ? Number(parts[1]) : null;
-
-    if (userId) {
-      const namesRes = await fetch(
-        // "/api/users/names/",
-        "https://bite-track-mess-management-system-a.vercel.app/api/users/names/",
+      const res = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/attendance/owner-mark/",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ userIds: [userId] }),
+          body: JSON.stringify({
+            user_id: user.id,
+            att_date: today,
+          }),
         }
       );
 
-      const namesData = await namesRes.json();
-      setRecentUsers(namesData.names || []);
-    }
+      const data = await res.json();
 
-    fetchAttendance();
+      if (!res.ok) {
+        setMessage(data.message || "Failed");
+        setMarkModalOpen(false); 
+        return;
+      }
 
-  } catch (err) {
-    // 🚨 ONLY NETWORK FAILURE COMES HERE
-    console.log("CATCH ERROR:", err);
+      setMessage(data.message || t("attendanceMarked"));
+      setRecentUsers([user.name]);
+      setMarkModalOpen(false);
+      useAppRefresh(fetchAttendance);
 
-    await queueAction({
-      type: "ATTENDANCE_SCAN",
-      payload: { qr },
-    });
+    } catch (err) {
 
-    setMessage(t("attendanceSavedOffline"));
-
-    const parts = qr.split("-");
-    const userId = parts.length === 2 ? Number(parts[1]) : null;
-
-    if (userId) {
-      setRecords(prev => [
-        ...prev,
-        {
-          id: `offline-${Date.now()}`,
-          user_id: userId,
-          user_name: t("offlineUser"),
+      // 🚨 NETWORK FAILURE → OFFLINE MODE
+      await queueAction({
+        type: "OWNER_ATTENDANCE_MARK",
+        payload: {
+          user_id: user.id,
           att_date: today,
         },
-      ]);
-    }
+      });
 
-    setRecentUsers([]);
-  }
-};
+      // optimistic record
+      setRecords((prev) => {
+        const exists = prev.some(
+          r => r.user_id === user.id && r.att_date === today
+        );
+
+        if (exists) return prev;
+
+        return [
+          ...prev,
+          {
+            id: `offline-owner-${Date.now()}`,
+            user_id: user.id,
+            user_name: user.name,
+            att_date: today,
+            source_type: "owner",
+            paid: false,
+          },
+        ]
+      });
+
+      setStats((prev) => ({
+        ...prev,
+        todayAttendance: prev.todayAttendance + 1,
+      }));
+
+      setMessage(t("attendanceSavedOffline"));
+      setMarkModalOpen(false);
+    }
+  };
+
+  const handleDelete = async (attendance) => {
+    if (!confirm("Are you sure you want to delete this attendance?")) return;
+
+    const payload = {
+      user_id: attendance.user_id,
+      att_date: attendance.att_date,
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/delete/", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.message || "Failed to delete");
+        return;
+      }
+
+      // remove from UI
+      setRecords((prev) =>
+        prev.filter(
+          (r) =>
+            !(r.user_id === attendance.user_id &&
+              r.att_date === attendance.att_date)
+        )
+      );
+
+      setStats((prev) => ({
+        ...prev,
+        todayAttendance: Math.max(0, prev.todayAttendance - 1),
+      }));
+
+      setMessage("Attendance deleted");
+
+    } catch (err) {
+      useAppRefresh(fetchAttendance);
+      // OFFLINE SUPPORT
+      await queueAction({
+        type: "OWNER_ATTENDANCE_DELETE",
+        payload,
+      });
+
+      setRecords((prev) =>
+        prev.filter(
+          (r) =>
+            !(r.user_id === attendance.user_id &&
+              r.att_date === attendance.att_date)
+        )
+      );
+
+      setStats((prev) => ({
+        ...prev,
+        todayAttendance: Math.max(0, prev.todayAttendance - 1),
+      }));
+
+      setMessage("Deleted (will sync when online)");
+    }
+  };
+
+  const handleScan = async (qr) => {
+    const today = new Date().toISOString().slice(0, 10);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        // "/api/attendance/mark/",
+        "https://bite-track-mess-management-system-a.vercel.app/api/attendance/mark/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ qr }),
+        }
+      );
+
+      const data = await res.json();
+
+      // ❗ Backend error — NOT offline
+      if (!res.ok) {
+        setMessage(data.error || "Failed");
+        return;
+      }
+
+      // ✅ Success
+      setMessage(data.message || t("attendanceMarked"));
+
+      const parts = qr.split("-");
+      const userId = parts.length === 2 ? Number(parts[1]) : null;
+
+      if (userId) {
+        const namesRes = await fetch(
+          // "/api/users/names/",
+          "https://bite-track-mess-management-system-a.vercel.app/api/users/names/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userIds: [userId] }),
+          }
+        );
+
+        const namesData = await namesRes.json();
+        setRecentUsers(namesData.names || []);
+      }
+
+      fetchAttendance();
+
+    } catch (err) {
+      // 🚨 ONLY NETWORK FAILURE COMES HERE
+      console.log("CATCH ERROR:", err);
+
+      await queueAction({
+        type: "ATTENDANCE_SCAN",
+        payload: { qr },
+      });
+
+      setMessage(t("attendanceSavedOffline"));
+
+      const parts = qr.split("-");
+      const userId = parts.length === 2 ? Number(parts[1]) : null;
+
+      if (userId) {
+
+        setRecords(prev => {
+          const exists = prev.some(
+            r => r.user_id === userId && r.att_date === today
+          );
+
+          if (exists) return prev;
+
+          return [
+            ...prev,
+            {
+              id: `offline-${Date.now()}`,
+              user_id: userId,
+              user_name: t("offlineUser"),
+              att_date: today,
+            },
+          ];
+        });
+      }
+
+      setRecentUsers([]);
+    }
+  };
 
   function splitRecords(records, columns = 3) {
     const result = Array.from({ length: columns }, () => []);
@@ -364,9 +369,21 @@ const handleScan = async (qr) => {
     return result;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  const todayRecords = records.filter((r) => r.att_date === today);
-  const chunks = splitRecords(todayRecords, 3);
+  /* ------------------ RESPONSIVE ------------------ */
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+
+  useEffect(() => {
+    fetchAttendance();
+  }, []);
+
+
+  useAppRefresh(fetchAttendance);
 
   return (
     <Layout>
@@ -406,14 +423,14 @@ const handleScan = async (qr) => {
 
 
             <button
-  className={styles.markBtn}
-  onClick={() => {
-    setMarkModalOpen(true);
-    fetchUsersForAttendance();
-  }}
->
-  {t("markAttendance")}
-</button>
+              className={styles.markBtn}
+              onClick={() => {
+                setMarkModalOpen(true);
+                fetchUsersForAttendance();
+              }}
+            >
+              {t("markAttendance")}
+            </button>
 
             <p className={styles.scannerInstructions}>
               {t("scannerInstructions")}
@@ -430,6 +447,13 @@ const handleScan = async (qr) => {
             <h2>
               {t("attendanceRecord")} ({today})
             </h2>
+            <input
+              type="text"
+              placeholder="Search by name"
+              value={searchAttendance}
+              onChange={(e) => setSearchAttendance(e.target.value)}
+              className={styles.searchInput}
+            />
 
             {loading ? (
               <div className={styles.loading}>
@@ -454,40 +478,43 @@ const handleScan = async (qr) => {
                       <tr key={r.id}>
                         <td>{idx + 1}</td>
                         <td
-><span
-  style={{ cursor: "pointer"}}
-  onClick={() => {
-    const today = new Date();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const year = today.getFullYear();
+                        ><span
+                          style={{ cursor: "pointer" }}
+                          
+                          onClick={() => {
+                            const today = new Date();
+                            const month = String(today.getMonth() + 1).padStart(2, "0");
+                            const year = today.getFullYear();
 
-    router.push(
-       `/billing?search=${encodeURIComponent(r.user_name)}`
-    );
-  }}
-  >
-  {r.user_name}
-  </span>
-{r.source_type === "owner" && (
-  <span className={styles.ownerBadge}>Owner</span>
-)}
+                            router.push(
+                              `/billing?search=${encodeURIComponent(r.user_name)}`
+                            );
+                          }}
+                        >
+                            {r.user_name}
+                          </span>
+                          <div className={styles.user}>
+                          {r.source_type === "owner" && (
+                            <span className={styles.ownerBadge}>Owner</span>
+                          )}
                           <span
-    className={
-      r.paid
-        ? styles.badgePaid
-        : styles.badgeUnpaid
-    }
-  >
-    {r.paid ? "Paid" : "Unpaid"}
-  </span>
-  {r.source_type === "owner" && (
-  <button
-    className={styles.deleteBtn}
-    onClick={() => handleDelete(r)}
-  >
-    <Trash2Icon size={16} color="#007170"/>
-  </button>
-)}
+                            className={
+                              r.paid
+                                ? styles.badgePaid
+                                : styles.badgeUnpaid
+                            }
+                          >
+                            {r.paid ? "Paid" : "Unpaid"}
+                          </span>
+                          {r.source_type === "owner" && (
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => handleDelete(r)}
+                            >
+                              Delete
+                            </button>
+                          )}
+                          </div>
 
                         </td>
                       </tr>
@@ -503,7 +530,7 @@ const handleScan = async (qr) => {
                       <thead>
                         <tr className={styles.tableHeader}>
                           <th>{t("srNo")}</th>
-                      <th>{t("status")}</th>
+                          <th>{t("status")}</th>
                           <th>{t("name")}</th>
                         </tr>
                       </thead>
@@ -513,31 +540,31 @@ const handleScan = async (qr) => {
                             <td>
                               {idx +
                                 colIdx *
-                                  Math.ceil(todayRecords.length / 3) +
+                                Math.ceil(todayRecords.length / 3) +
                                 1}
                             </td>
                             <td
-  style={{ cursor: "pointer", color: "#2563EB" }}
-  onClick={() => {
-    const today = new Date();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const year = today.getFullYear();
+                              style={{ cursor: "pointer", color: "#2563EB" }}
+                              onClick={() => {
+                                const today = new Date();
+                                const month = String(today.getMonth() + 1).padStart(2, "0");
+                                const year = today.getFullYear();
 
-    router.push(
-      `/billing?userId=${r.user_id}&month=${month}&year=${year}`
-    );
-  }}
->
-  {r.user_name}
-  </td>
-  <td>
-    {r.source_type === "owner" && (
-  <span className={styles.ownerBadge}>Owner</span>
-)}
-  <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
-    {r.paid ? "Paid" : "Unpaid"}
-  </span>
-</td>
+                                router.push(
+                                  `/billing?userId=${r.user_id}&month=${month}&year=${year}`
+                                );
+                              }}
+                            >
+                              {r.user_name}
+                            </td>
+                            <td>
+                              {r.source_type === "owner" && (
+                                <span className={styles.ownerBadge}>Owner</span>
+                              )}
+                              <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
+                                {r.paid ? "Paid" : "Unpaid"}
+                              </span>
+                            </td>
 
                           </tr>
                         ))}
@@ -552,49 +579,49 @@ const handleScan = async (qr) => {
       </div>
 
       {markModalOpen && (
-  <div className={styles.modalOverlay}>
-    <div className={styles.attendanceModal}>
-      <div className={styles.modalHeader}>
-        <h3>{t("markAttendance")}
+        <div className={styles.modalOverlay}>
+          <div className={styles.attendanceModal}>
+            <div className={styles.modalHeader}>
+              <h3>{t("markAttendance")}
 
-        </h3>
-        <button onClick={() => setMarkModalOpen(false)}>✕</button>
-      </div>
-
-      <input
-        type="text"
-        placeholder={t("searchByNameOrPhone")}
-        value={userSearch}
-        onChange={(e) => setUserSearch(e.target.value)}
-        className={styles.searchInput}
-      />
-
-      {loadingUsers ? (
-        <div className={styles.loading}>{t("loading")}</div>
-      ) : (
-        <div className={styles.userList}>
-          {filteredUsers.map((u) => (
-            <div key={u.id} className={styles.userRow}>
-              <div>
-                <strong>{u.name}</strong>
-                <div className={styles.subText}>
-                  {u.phone || "-"}
-                </div>
-              </div>
-
-              <button
-                className={styles.markUserBtn}
-                onClick={() => handleManualMark(u)}
-              >
-                {t("mark")}
-              </button>
+              </h3>
+              <button onClick={() => setMarkModalOpen(false)}>✕</button>
             </div>
-          ))}
+
+            <input
+              type="text"
+              placeholder={t("searchByNameOrPhone")}
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              className={styles.searchInput}
+            />
+
+            {loadingUsers ? (
+              <div className={styles.loading}>{t("loading")}</div>
+            ) : (
+              <div className={styles.userList}>
+                {filteredUsers.map((u) => (
+                  <div key={u.id} className={styles.userRow}>
+                    <div>
+                      <strong>{u.name}</strong>
+                      <div className={styles.subText}>
+                        {u.phone || "-"}
+                      </div>
+                    </div>
+
+                    <button
+                      className={styles.markUserBtn}
+                      onClick={() => handleManualMark(u)}
+                    >
+                      {t("mark")}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </div>
-  </div>
-)}
 
     </Layout>
   );
