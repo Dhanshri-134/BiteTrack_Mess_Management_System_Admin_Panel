@@ -60,8 +60,8 @@ export default async function handler(req, res) {
     const today = new Date().toISOString().slice(0, 10);
 
     const already = await pgPool.query(
-      "SELECT id FROM attendance WHERE user_id=$1 AND att_date=$2",
-      [userId, today]
+      "SELECT id FROM attendance WHERE user_id=$1 AND att_date=$2 AND mess_id=$3",
+      [userId, today, messId]
     );
 
     if (already.rows.length > 0) {
