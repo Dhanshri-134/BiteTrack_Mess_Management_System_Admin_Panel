@@ -38,6 +38,7 @@ function FastingRequests() {
        setGroupedRequests(data.groupedRequests || {});
 setTotalRequests(data.totalRequests || 0);
 setTodayCount(data.todayCount || 0);
+console.log(data);
       } catch (err) {
         console.error("Error fetching fasting requests:", err);
       setGroupedRequests(data.groupedRequests || {});

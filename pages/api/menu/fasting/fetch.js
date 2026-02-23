@@ -53,7 +53,7 @@ export default async function handler(req, res) {
                            AND CURRENT_DATE + INTERVAL '7 days'
       ORDER BY fr.fasting_date DESC
     `;
-   const { rows } = await client.query(query, [messId]);
+   const { rows } = await client.query(fastingQuery, [messId]);
 
     const todayStr = new Date().toISOString().split("T")[0];
 
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
     let todayCount = 0;
 
     rows.forEach(r => {
-      const date = r.fasting_date.toISOString().split("T")[0];
+      const date = r.fasting_date;
 
       if (!grouped[date]) grouped[date] = [];
 
