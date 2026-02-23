@@ -166,10 +166,9 @@ if (alreadyMarked) {
     }
 
     setMessage(data.message || t("attendanceMarked"));
-
     setRecentUsers([user.name]);
-    useAppRefresh(fetchAttendance);
     setMarkModalOpen(false);
+    useAppRefresh(fetchAttendance);
 
   } catch (err) {
  
@@ -247,10 +246,9 @@ const handleDelete = async (attendance) => {
     }));
 
     setMessage("Attendance deleted");
-    fetchAttendance();
-    useAppRefresh(fetchAttendance)
-
+    
   } catch (err) {
+    useAppRefresh(fetchAttendance);
     // OFFLINE SUPPORT
     await queueAction({
       type: "OWNER_ATTENDANCE_DELETE",
