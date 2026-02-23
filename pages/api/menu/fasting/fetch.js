@@ -53,22 +53,56 @@ export default async function handler(req, res) {
                            AND CURRENT_DATE + INTERVAL '7 days'
       ORDER BY fr.fasting_date DESC
     `;
-    const fastingResult = await client.query(fastingQuery, [messId]);
+   const { rows } = await client.query(query, [messId]);
 
-    // Count fasting requests
-    const countQuery = `
-      SELECT COUNT(*) AS total
-      FROM fasting_requests
-      WHERE mess_id = $1
-    `;
-    const countResult = await client.query(countQuery, [messId]);
+    const todayStr = new Date().toISOString().split("T")[0];
 
-    const totalRequests = Number(countResult.rows[0]?.total || 0);
+    const grouped = {};
+    let todayCount = 0;
 
-    // Response
+    rows.forEach(r => {
+      const date = r.fasting_date.toISOString().split("T")[0];
+
+      if (!grouped[date]) grouped[date] = [];
+
+      grouped[date].push({
+        name: r.name,
+        phone: r.phone,
+      });
+
+      if (date === todayStr) {
+        todayCount++;
+      }
+    });
+
+    // 🔹 Sort: Today first → Future → Past
+    const sortedDates = Object.keys(grouped).sort((a, b) => {
+      if (a === todayStr) return -1;
+      if (b === todayStr) return 1;
+
+      const aDate = new Date(a);
+      const bDate = new Date(b);
+
+      if (aDate > new Date(todayStr) && bDate > new Date(todayStr)) {
+        return aDate - bDate; // future ascending
+      }
+
+      if (aDate < new Date(todayStr) && bDate < new Date(todayStr)) {
+        return bDate - aDate; // past descending
+      }
+
+      return aDate - bDate;
+    });
+
+    const sortedGrouped = {};
+    sortedDates.forEach(d => {
+      sortedGrouped[d] = grouped[d];
+    });
+
     return res.status(200).json({
-      fastingRequests: fastingResult.rows,
-      totalRequests,
+      groupedRequests: sortedGrouped,
+      totalRequests: rows.length,
+      todayCount,
     });
 
   } catch (err) {
