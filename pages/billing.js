@@ -70,17 +70,44 @@ export default function BillsPage() {
 
   const router = useRouter();
 
+
   useEffect(() => {
-    if (!router.isReady) return;
+  if (!router.isReady) return;
 
-    const { userId, month: m, year: y } = router.query;
+  const { search: searchQuery, month: m, year: y } = router.query;
 
-    if (m) setMonth(m);
-    if (y) setYear(y);
-    if (userId) setSelectedUserId(userId);
+  if (searchQuery) {
+    setSearch(searchQuery);
+  }
 
-  }, [router.isReady]);
+  if (m) setMonth(m);
+  if (y) setYear(y);
 
+}, [router.isReady]);
+
+
+//   useEffect(() => {
+//   if (!router.isReady) return;
+
+//   const { userId, month: m, year: y } = router.query;
+
+//   if (m) setMonth(m);
+//   if (y) setYear(y);
+
+//   if (userId) {
+//     setSelectedUserId(userId);
+
+//     // 🔥 Remove userId from URL immediately
+//     router.replace(
+//       {
+//         pathname: "/billing",
+//         query: { month: m, year: y },
+//       },
+//       undefined,
+//       { shallow: true }
+//     );
+//   }
+// }, [router.isReady]);
 
 
   const sendWhatsApp = (mobile, bill) => {
@@ -445,19 +472,24 @@ Thank you.
   };
 
   // Filtered for UI
-  const filtered = bills.filter((b) => {
+const userIdFromQuery = router.isReady ? router.query.userId : null;
 
-    if (selectedUserId && String(b.user_id) !== String(selectedUserId)) {
-      return false;
-    }
-    if (statusFilter !== "all") {
-      if (statusFilter === "paid" && !b.paid) return false;
-      if (statusFilter === "unpaid" && b.paid) return false;
-    }
-    if (!search) return true;
-    return `${b.name || ""} ${b.email || ""}`.toLowerCase().includes(search.toLowerCase());
-  });
+const filtered = bills.filter((b) => {
+  if (userIdFromQuery && String(b.user_id) !== String(userIdFromQuery)) {
+    return false;
+  }
 
+  if (statusFilter !== "all") {
+    if (statusFilter === "paid" && !b.paid) return false;
+    if (statusFilter === "unpaid" && b.paid) return false;
+  }
+
+  if (!search) return true;
+
+  return `${b.name || ""} ${b.email || ""}`
+    .toLowerCase()
+    .includes(search.toLowerCase());
+});
 
   const downloadExcel = () => {
     if (!month || !year) {
@@ -1098,7 +1130,7 @@ Thank you.
                   <div className={styles.modalContent}>
                     <div className={styles.modalHeader}>
                       <h3>{selectedAttendance.name}{t("attendanceSuffix")}</h3>
-                      <button className={styles.closeX} onClick={() => setSelectedAttendance(null)}>✕</button>
+                      {/* <button className={styles.closeX} onClick={() => setSelectedAttendance(null)}>✕</button> */}
                     </div>
                     <AttendanceCalendar year={selectedAttendance.year} month={selectedAttendance.month} attendanceMap={selectedAttendance.attendanceMap} ownerMarkedDates={selectedAttendance.ownerMarkedDates} />
                     <div style={{ textAlign: "right", marginTop: 12 }}>

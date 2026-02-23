@@ -218,8 +218,6 @@ const deleteDish = async (id) => {
     }
   };
   
-  useAppRefresh(fetchSpecials);
-  useAppRefresh(fetchCravings);
   
   
   return (

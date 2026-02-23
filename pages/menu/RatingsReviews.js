@@ -41,7 +41,6 @@ export default function RatingsReviews() {
     fetchData();
   }, []);
   
-  useAppRefresh(fetchData);
   return (
     <div className={styles.container}>
       <div className={styles.header}>

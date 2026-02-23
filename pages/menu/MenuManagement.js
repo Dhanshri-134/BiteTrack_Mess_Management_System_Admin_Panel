@@ -53,15 +53,12 @@ export default function MenuManagement() {
       } finally {
         setLoading(false);
       }
-      fetchMenu();
     }
     
   
   useEffect(() =>{
     fetchMenu();
   }, []);
-  
-  useAppRefresh(fetchMenu);
   
   const handleAddDish = (day, mealType) => {
     setMenuData({

@@ -5,7 +5,6 @@ import styles from "../../styles/fasting.module.css";
 
 import { offlineFetch } from "../../lib/offlineFetch";
 import { useLanguage } from "../../context/LanguageContext";
-import { useAppRefresh } from "@/lib/useAppRefresh";
 
 
 function FastingRequests() {
@@ -47,7 +46,6 @@ function FastingRequests() {
 
     fetchData();
   }, [token]);
-  useAppRefresh(fetchData());
   
   return (
     <div className={styles.container}>

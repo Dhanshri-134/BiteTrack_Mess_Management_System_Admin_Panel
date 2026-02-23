@@ -464,7 +464,7 @@ const handleScan = async (qr) => {
     const year = today.getFullYear();
 
     router.push(
-      `/billing?userId=${r.user_id}`
+       `/billing?search=${encodeURIComponent(r.user_name)}`
     );
   }}
   >

@@ -6,16 +6,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 export default function AttendanceCalendar({ attendanceMap,  ownerMarkedDates = [], year,  month }) {
   const safeAttendanceMap = attendanceMap ?? {};
   const today = new Date();
+  
   const { t } = useLanguage();
 
   // Default to current month/year
   const [currentYear, setCurrentYear] = useState( year ? Number(year) : today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(  month ? Number(month) : today.getMonth() + 1);
 
-   useEffect(() => {
-    if (year) setCurrentYear(Number(year));
-    if (month) setCurrentMonth(Number(month));
-  }, [year, month]);
+  
 
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();

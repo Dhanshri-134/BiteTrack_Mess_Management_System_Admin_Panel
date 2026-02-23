@@ -5,8 +5,6 @@ import styles from "../../styles/menupreview.module.css";
 import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
-import { useAppRefresh } from "@/lib/useAppRefresh";
-
 
 export default function MenuPreview() {
   const [menuData, setMenuData] = useState({});
@@ -58,7 +56,6 @@ export default function MenuPreview() {
     fetchMenu();
   }, []);
    
-  useAppRefresh(fetchMenu);
   
   // if (loading) {
   //   return <p className={styles.loading}>{t("loadingMenu")}</p>;
