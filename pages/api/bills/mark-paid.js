@@ -4,7 +4,6 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 
-
 async function generateReceiptNumber(client, mess_id) {
   const year = new Date().getFullYear();
 
@@ -38,7 +37,36 @@ async function generateReceiptNumber(client, mess_id) {
 
   return `R${prefix}${year}${String(next).padStart(6, "0")}`;
 }
+function normalizeMonth(monthInput) {
+  const monthMap = {
+    "01": "January",
+    "02": "February",
+    "03": "March",
+    "04": "April",
+    "05": "May",
+    "06": "June",
+    "07": "July",
+    "08": "August",
+    "09": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December",
+  };
 
+  if (monthMap[monthInput]) return monthMap[monthInput];
+
+  return monthInput; // if already text
+}
+function generateCashTransactionId() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const min = String(now.getMinutes()).padStart(2, "0");
+
+  return `CASH-${dd}${mm}${yyyy}-${hh}${min}`;
+}
 
 export default async function handler(req, res) {
 
@@ -54,6 +82,7 @@ export default async function handler(req, res) {
 
   try {
     // ✅ Auth
+
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: "Unauthorized" });
 
@@ -67,7 +96,9 @@ export default async function handler(req, res) {
     }
 
     const mess_id =decoded.messId;
-    
+    if (!mess_id)
+      return res.status(400).json({ error: "messId missing in token" });
+
     const {
       user_id,
       month,
@@ -78,6 +109,9 @@ export default async function handler(req, res) {
       upi_id,
       transaction_id,
       payment_date,
+      leave_days,
+      billing_start_date,
+      billing_end_date,
       note,
     } = req.body;
 
@@ -99,45 +133,64 @@ export default async function handler(req, res) {
     const client = await pgPool.connect();
     
     try {
+await client.query("BEGIN");
+      let finalTransactionId = transaction_id;
+
+      if (payment_method === "Cash") {
+        finalTransactionId = generateCashTransactionId();
+      }
+      const normalizedMonth = normalizeMonth(month);
       const receipt_number = await generateReceiptNumber(client, mess_id);
 
-const result = await client.query(
-  `INSERT INTO payment_history (
-    user_id,
-    payment_date,
-    amount,
-    month,
-    year,
-    receipt_number,
-    payment_type,
-    payment_method,
-    upi_id,
-    transaction_id,
-    mess_id,
-    status,
-    note,
-    created_at,
-    updated_at
-  )
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'paid',$12,NOW(),NOW())
-  RETURNING *`,
-  [
-    user_id,
-    payment_date,
-    amount,
-    month,
-    year,
-    receipt_number,
-    payment_type,
-    payment_method,
-    upi_id || null,
-    transaction_id || null,
-    mess_id,
-    note || null,
-  ]
+const result = await client.query(`
+  INSERT INTO payment_history (
+          user_id,
+          payment_date,
+          amount,
+          month,
+          year,
+          receipt_number,
+          payment_type,
+          payment_method,
+          upi_id,
+          transaction_id,
+          mess_id,
+          status,
+          leave_days,
+          billing_start_date,
+          billing_end_date,
+          note,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
+          'paid',
+          $12,$13,$14,$15,
+          NOW(),NOW()
+        )
+        RETURNING *
+        `,
+        [
+          user_id,
+          payment_date,
+          amount,
+          normalizedMonth,
+          year,
+          receipt_number,
+          payment_type,
+          payment_method,
+          upi_id || null,
+          finalTransactionId || null,
+          mess_id,
+          leave_days || 0,
+          billing_start_date || null,
+          billing_end_date || null,
+          note || null,
+        ]
 );
 
-
+ await client.query("COMMIT");
       return res.status(200).json({ ok: true, payment: result.rows[0] });
     } finally {
       client.release();
