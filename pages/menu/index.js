@@ -8,27 +8,72 @@ import RatingsReviews from "./RatingsReviews";
 import FastingRequests from "./fasting";
 import styles from "../../styles/menu.module.css";
 import { useLanguage } from "../../context/LanguageContext";
+import { offlineFetch } from "../../lib/offlineFetch";
 
 export default function MenuPage() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("MenuManagement");
   const { t } = useLanguage();
+const [messAccess, setMessAccess] = useState(null);
+const [loadingAccess, setLoadingAccess] = useState(true);
 
-  const tabs = [
-    { key: "MenuManagement", label: t("menuManagement") },
-    { key: "MenuPreview", label: t("menuPreview") },
-    { key: "Specials", label: t("specialDishes") },
-    { key: "RatingsReviews", label: t("ratingsReviews") },
-    { key: "FastingRequests", label: t("fastingRequests") },
-  ];
+const hasAccess = (key) => {
+  if (!messAccess) return true; // fallback safe
+  return messAccess[key] !== false;
+};
+const tabs = [
+  { key: "MenuManagement", label: t("menuManagement") },
+
+  
+  { key: "MenuPreview", label: t("menuPreview") },
+  
+  (hasAccess("special_menu") || hasAccess("cravings")) && {
+    key: "Specials",
+    label: t("specialDishes"),
+  },
+
+  hasAccess("fasting") && {
+    key: "FastingRequests",
+    label: t("fastingRequests"),
+  },
+].filter(Boolean);
 
   // Set initial tab based on URL param
+useEffect(() => {
+  const tabFromUrl = searchParams.get("tab");
+
+  if (tabFromUrl) {
+    setActiveTab(tabFromUrl);
+  }
+}, []); // 🔥 only run once
+
   useEffect(() => {
-    const tabFromUrl = searchParams.get("tab");
-    if (tabFromUrl && tabs.some((t) => t.key === tabFromUrl)) {
-      setActiveTab(tabFromUrl);
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const fetchAccess = async () => {
+    try {
+      const data = await offlineFetch("mess-access", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/mess/access/",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch access");
+        return res.json();
+      });
+
+      setMessAccess(data || {});
+    } catch (err) {
+      console.error("Access unavailable offline");
+      setMessAccess({});
+    } finally {
+      setLoadingAccess(false);
     }
-  }, [searchParams]);
+  };
+
+  fetchAccess();
+}, []);
 
   return (
     <Layout>
@@ -53,9 +98,13 @@ export default function MenuPage() {
           <div className={styles.tabContent}>
             {activeTab === "MenuManagement" && <MenuManagement />}
             {activeTab === "MenuPreview" && <MenuPreview />}
-            {activeTab === "Specials" && <SpecialDish />}
+            {activeTab === "Specials" && (
+  <SpecialDish messAccess={messAccess} />
+)}
             {activeTab === "RatingsReviews" && <RatingsReviews />}
-            {activeTab === "FastingRequests" && <FastingRequests />}
+            {activeTab === "FastingRequests" && hasAccess("fasting") && (
+  <FastingRequests />
+)}
           </div>
         </main>
       </div>

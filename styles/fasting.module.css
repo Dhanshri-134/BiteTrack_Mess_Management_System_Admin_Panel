@@ -41,9 +41,11 @@
 .requestCard {
   background: #ffffff;
   border-radius: 14px;
-  border: 1px solid #e5e7eb;
+  /* border: 1px solid #e5e7eb; */
   padding: 0.9rem 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.305);
+  margin-bottom: 5px;
+  margin-top: 5px;
 }
 
 /* Row inside card */
@@ -84,4 +86,14 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
+}
+
+.dateHeader{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.date{
+  display: flex;
+  flex-direction: column;
 }

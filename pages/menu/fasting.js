@@ -5,6 +5,7 @@ import styles from "../../styles/fasting.module.css";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { offlineFetch } from "../../lib/offlineFetch";
 import { useLanguage } from "../../context/LanguageContext";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 
 function FastingRequests() {
@@ -69,10 +70,7 @@ useAppRefresh(fetchData)
       {/* Summary */}
     <div className={styles.summaryCard}>
   <div>
-    {t("totalRequests")}: <strong>{totalRequests}</strong>
-  </div>
-  <div>
-    {t("todayRequests")}: <strong>{todayCount}</strong>
+    {t("totalRequests")}: <strong>{todayCount}</strong>
   </div>
 </div>
 
@@ -129,16 +127,16 @@ useAppRefresh(fetchData)
             className={styles.dateHeader}
             onClick={() => setOpenDate(isOpen ? null : date)}
           >
-            <div>
+            <div className={styles.date}>
               <strong>
                 {date === today ? `${date} (${t("today")})` : date}
               </strong>
               <span className={styles.countBadge}>
-                {users.length}
+                {t("count")}  : {users.length}
               </span>
             </div>
             <span>
-              {isOpen ? "▲" : "▼"}
+              {isOpen ? <ChevronUp /> : < ChevronDown  />}
             </span>
           </div>
 

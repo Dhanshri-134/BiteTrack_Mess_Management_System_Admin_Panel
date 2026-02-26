@@ -42,7 +42,7 @@
   "add": "Add",
   "saveMenu": "Save Menu",
  "loadingMenu": "Loading menu...",
-
+ "today": "Today",
   "All": "All",
   "Monday": "Monday",
   "Tuesday": "Tuesday",
@@ -486,14 +486,17 @@
   "noRequestsFound": "No requests found",
   "cash": "cash",
   "verification": "verification",
-
+  "latestAmount":"Latest Amount",
   "failedToFetchPayments": "Failed to fetch payments",
   "paymentsFetchError": "Error while fetching payments",
   "invalidResponse": "Invalid server response",
 "emailSentSuccess": "Verification email sent successfully",
   "confirmDeleteUser": "Are you sure you want to delete",
+  "areYouSure":"Are you sure",
+  "yesProceed":"Yes, Proceed",
+  "confirmAction":"Confirm Action",
   "enterNewDOJ": "Enter new Date of Joining (YYYY-MM-DD):",
-
+  "requestedMonth":"Requested Month",
   "confirmDelete": "Confirm Delete",
   "userDeletedSuccess": "User deleted successfully",
   "userUpdatedSuccess": "User updated successfully",
@@ -638,7 +641,7 @@
   "billing_subscription": "Billing & Subscription",
   "loading_billing_details": "Loading billing details...",
   "status": "Status",
-  "trial_ends_on": "Trial ends on",
+  "trial_ends_on": "Ends on",
   "days_remaining": "Days remaining",
   "trial_expired": "Your trial has expired.",
   "contact_support_to_continue": "Please contact Shris Tech to continue using the app.",
@@ -653,5 +656,8 @@
   "allStatus": "All Status",
   "notePlaceholder": "Enter note here...",
   "phone_number": "Phone Number",
-  "leave_days": "Leave Days"
+  "leave_days": "Leave Days",
+  "LatestFirst":"Latest First",
+  "OldestFirst":"Oldest First",
+  "GroupByUser":"Group By User"
 }

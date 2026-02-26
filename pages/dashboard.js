@@ -5,68 +5,60 @@ import { useRouter } from "next/router";
 import Card from "../components/Card";
 import styles from "../styles/dashboardmain.module.css";
 import Layout from "../components/Layout";
-import HardwareScanner from "../components/HardwareScanner";
 import { offlineFetch } from "@/lib/offlineFetch";
-import toast from "react-hot-toast";
 import { useLanguage } from "../context/LanguageContext";
-
 import { Eye, EyeOff, CalendarDays, Wallet } from "lucide-react";
-
-// Recharts imports
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar} from "recharts";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import Link from "next/link";
 
 export default function Dashboard() {
-
   const [stats, setStats] = useState({
     totalMembers: 0,
     todayAttendance: 0,
     monthlyRevenue: 0,
     totalRevenue: 0,
   });
-
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
-
-
+  const [messAccess, setMessAccess] = useState(null);
+  const [loadingAccess, setLoadingAccess] = useState(true);
+    const [rawAttendance, setRawAttendance] = useState([]);
+    const hasAccess = (key) => {
+    if (!messAccess) return true;
+    return messAccess[key] !== false;
+  };
   const [alerts, setAlerts] = useState([]);
   const [attendanceTrend, setAttendanceTrend] = useState({
     dailyTrend: [],
     monthlyTrend: [],
     yearlyTrend: [],
   });
-
-
+  const [foodUsers, setFoodUsers] = useState([]);
+  const [foodModal, setFoodModal] = useState({
+    open: false,
+    type: null,
+    users: [],
+  });
+  const [attendanceSearch, setAttendanceSearch] = useState("");
   const [revenueTrend, setRevenueTrend] = useState([]);
-  const [trendType, setTrendType] = useState("daily"); // "daily", "monthly", or "yearly"
+  const [trendType, setTrendType] = useState("daily");
   const [foodStats, setFoodStats] = useState({ veg: 0, nonveg: 0 });
   const [mess, setMess] = useState(null);
-  const [role, setRole] = useState(null); // OWNER | STAFF
+  const [role, setRole] = useState(null);
   const [showMonthlyRevenue, setShowMonthlyRevenue] = useState(false);
-  const [showTotalRevenue, setShowTotalRevenue] = useState(false);
-  const attendanceData =
+  const attendanceData = 
     trendType === "daily"
       ? attendanceTrend.dailyTrend
       : trendType === "monthly"
         ? attendanceTrend.monthlyTrend
         : attendanceTrend.yearlyTrend;
-
   const [fastingStats, setFastingStats] = useState({
     total: 0,
     today: 0,
     monthly: 0,
   });
+  const [foodSearch, setFoodSearch] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -80,7 +72,6 @@ export default function Dashboard() {
     }
   }, []);
 
-
   const getToken = () => localStorage.getItem("token");
 
   const fetchFastingStats = async () => {
@@ -93,36 +84,22 @@ export default function Dashboard() {
           "https://bite-track-mess-management-system-a.vercel.app/api/menu/fasting/fetch/",
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
         if (!res.ok) throw new Error("fasting fetch failed");
         return await res.json();
-      }) ?? { fastingRequests: [] };
-
-
-
-      const rows = data.fastingRequests ? data.fastingRequests
-  : [];
-
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const now = new Date();
-
-      const todayCount = rows.filter(r => r.fasting_date === todayStr).length;
-
-      const monthlyCount = rows.filter(r => {
-        const d = new Date(r.fasting_date);
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-      }).length;
+      }) ?? { todayCount: 0, totalRequests: 0 };
 
       setFastingStats({
-        total: rows.length,
-        today: todayCount,
-        monthly: monthlyCount,
+        total: data.totalRequests || 0,
+        today: data.todayCount || 0,
+        monthly: 0, // remove if not needed
       });
+
     } catch (err) {
       console.error("Fasting stats error:", err);
       setFastingStats({ total: 0, today: 0, monthly: 0 });
     }
   };
-
 
   const fetchFoodStats = async () => {
     try {
@@ -141,7 +118,12 @@ export default function Dashboard() {
         if (!res.ok) throw new Error(data.error || "Failed to fetch food stats");
         return data;
       }) ?? { veg: 0, nonveg: 0 };
-      setFoodStats(data);
+      setFoodStats({
+        veg: data.veg || 0,
+        nonveg: data.nonveg || 0,
+      });
+
+      setFoodUsers(data.users || []); 
     } catch (err) {
       console.error("Food stats unavailable offline", err);
     }
@@ -175,42 +157,16 @@ export default function Dashboard() {
     }
   };
 
-  // const fetchStats = async () => {
-  //   const token = getToken();
-  //   if (!token) {
-  //     console.warn("Session expired! Please login again.");
-  //     return;
-  //   }
-
-  //   try {
-  //     // send token for all requests
-  //     const [usersRes, attendanceRes, billsRes] = await Promise.all([
-  //       fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/count/", { headers: { Authorization: `Bearer ${token}` } }),
-  //       fetch("https://bite-track-mess-management-system-a.vercel.app/api/attendance/fetch/", { headers: { Authorization: `Bearer ${token}` } }),
-  //       fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/all/", { headers: { Authorization: `Bearer ${token}` } }),
-  //     ]);
-
-  //     if (!usersRes.ok) {
-  //       const err = await usersRes.text();
-  //       throw new Error(`users/count failed: ${err}`);
-  //     }
-  //     if (!attendanceRes.ok) {
-  //       const err = await attendanceRes.text();
-  //       throw new Error(`attendance/fetch failed: ${err}`);
-  //     }
-  //     if (!billsRes.ok) {
-  //       const err = await billsRes.text();
-  //       throw new Error(`bills/all failed: ${err}`);
-  //     }
-
-  //     const usersData = await usersRes.json();
-  //     const attendanceData = await attendanceRes.json();
-  //     const billsData = await billsRes.json();
+  const [attendanceModal, setAttendanceModal] = useState({
+    open: false,
+    date: null,
+    users: [],
+  });
 
   const fetchStats = async () => {
     try {
       const now = new Date();
-      const month = now.getMonth() + 1; // 1-based
+      const month = now.getMonth() + 1; 
       const year = now.getFullYear();
 
       const token = getToken();
@@ -234,7 +190,6 @@ export default function Dashboard() {
         return res.json();
       }) || [];
 
-      // Total Revenue (ALL)
       const billsAllData = await offlineFetch("bills-all", async () => {
         const res = await fetch(
           "https://bite-track-mess-management-system-a.vercel.app/api/bills/all/",
@@ -244,7 +199,6 @@ export default function Dashboard() {
         return res.json();
       }) || [];
 
-      // Monthly Revenue (FILTERED)
       const billsMonthlyData = await offlineFetch(
         `dashboard-bills-${month}-${year}`,
         async () => {
@@ -256,10 +210,6 @@ export default function Dashboard() {
           return res.json();
         }
       ) || [];
-
-
-      //     // Common date keys
-      // const keys = ["generated_at", "bill_date", "date", "created_at", "att_date"];
 
       const getDateFromObj = (obj) => {
         if (!obj) return null;
@@ -277,11 +227,8 @@ export default function Dashboard() {
         return null;
       };
 
-
-      // --- Basic Stats ---
       const today = new Date().toISOString().slice(0, 10);
       const todayCount = attendanceData.filter((r) => {
-        // normalize att_date to YYYY-MM-DD string
         const att = r.att_date ? new Date(r.att_date).toISOString().slice(0, 10) : null;
         return att === today;
       }).length;
@@ -296,7 +243,6 @@ export default function Dashboard() {
         0
       );
 
-      // --- Alerts ---
       const uniqueUsers = [...new Set(attendanceData.map((r) => r.user_id))];
       const inactiveCount = uniqueUsers.filter((uid) => {
         const records = attendanceData.filter((r) => r.user_id === uid);
@@ -315,7 +261,6 @@ export default function Dashboard() {
           ? [`⚠️ ${inactiveCount} members inactive for 10+ days`]
           : [];
 
-      // --- Attendance Trends builder ---
       const buildTrends = (data) => {
         const now = new Date();
         const getDateKey = (r) => {
@@ -324,7 +269,6 @@ export default function Dashboard() {
           return getDateFromObj(r);
         };
 
-        // daily (last 7 days)
         const dailyTrend = [...Array(7)].map((_, i) => {
           const d = new Date();
           d.setDate(d.getDate() - (6 - i));
@@ -339,7 +283,6 @@ export default function Dashboard() {
           };
         });
 
-        // monthly (last 6 months)
         const monthlyTrend = [...Array(6)].map((_, i) => {
           const d = new Date();
           d.setMonth(d.getMonth() - (5 - i));
@@ -355,7 +298,6 @@ export default function Dashboard() {
           };
         });
 
-        // yearly (last 3 years)
         const yearlyTrend = [...Array(3)].map((_, i) => {
           const year = now.getFullYear() - (2 - i);
           const count = data.filter((r) => {
@@ -390,10 +332,10 @@ export default function Dashboard() {
           revenue: parseFloat(revenue.toFixed(2)),
         };
       });
+
       const buildRevenueTrend = (bills) => {
         if (!bills || bills.length === 0) return [];
 
-        // Collect all unique month-year combos
         const monthsSet = new Set();
         bills.forEach(b => {
           if (b.year && b.month != null) {
@@ -401,7 +343,6 @@ export default function Dashboard() {
           }
         });
 
-        // Sort ascending
         const monthsArray = Array.from(monthsSet)
           .map(m => {
             const [year, month] = m.split("-").map(Number);
@@ -409,7 +350,6 @@ export default function Dashboard() {
           })
           .sort((a, b) => a.year - b.year || a.month - b.month);
 
-        // Build trend array
         const trend = monthsArray.map(({ year, month }) => {
           const revenue = bills
             .filter(b => b.year === year && b.month === month)
@@ -423,18 +363,16 @@ export default function Dashboard() {
         return trend;
       };
 
-      // Usage:
       setRevenueTrend(buildRevenueTrend(billsAllData));
 
-      // setRevenueTrend(revTrend);
-
-      // --- Final State ---
       setStats({
         totalMembers: usersData.count || 0,
         todayAttendance: todayCount,
         monthlyRevenue: parseFloat(monthlyRevenue.toFixed(2)),
         totalRevenue: parseFloat(totalRevenue.toFixed(2)),
       });
+
+      setRawAttendance(attendanceData);
 
 
       setAlerts(alertsList);
@@ -457,6 +395,33 @@ export default function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const fetchAccess = async () => {
+      try {
+        const data = await offlineFetch("mess-access", async () => {
+          const res = await fetch(
+            "/api/mess/access/",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!res.ok) throw new Error("Failed to fetch access");
+          return res.json();
+        });
+
+        setMessAccess(data || {});
+      } catch (err) {
+        console.error("Access unavailable offline");
+        setMessAccess({});
+      } finally {
+        setLoadingAccess(false);
+      }
+    };
+
+    fetchAccess();
+  }, []);
+
   const fetchData = async () => {
     await Promise.allSettled([
       fetchMessInfo(),
@@ -471,11 +436,7 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-
-
-useAppRefresh(fetchData);
-
-  
+  useAppRefresh(fetchData);
 
   useEffect(() => {
     const sections = document.querySelectorAll(`.${styles.section}`);
@@ -499,14 +460,22 @@ useAppRefresh(fetchData);
     return () => observer.disconnect();
   }, []);
 
-
   const router = useRouter();
+
+  const filteredFoodUsers = foodModal.users.filter(u =>
+    u.name?.toLowerCase().includes(foodSearch.toLowerCase()) ||
+    u.phone?.toLowerCase().includes(foodSearch.toLowerCase())
+  );
+
+  const filteredAttendanceUsers = attendanceModal.users.filter(u =>
+    u.user_name?.toLowerCase().includes(attendanceSearch.toLowerCase())
+  );
+  
   return (
     <Layout>
       <div className={styles.dashboard}>
         <main className={styles.main}>
           <h1>{t("dashboardOverview")}</h1>
-
 
             <div className={styles.cards}>
               {role !== "STAFF" ? (
@@ -517,7 +486,6 @@ useAppRefresh(fetchData);
                 <Card title={t("totalMembers")} value={stats.totalMembers} />
               )}
 
-
               <Link href="/attendance/">
                 <Card
                   title={t("todaysAttendance")}
@@ -525,12 +493,14 @@ useAppRefresh(fetchData);
                 />
               </Link>
 
-              <Link href="/menu?tab=FastingRequests">
-                <Card
-                  title={t("fastingRequests")}
-                  value={fastingStats.today}
-                />
-              </Link>
+              {hasAccess("fasting") && (
+                <Link href="/menu?tab=FastingRequests">
+                  <Card
+                    title={t("fastingRequests")}
+                    value={fastingStats.today}
+                  />
+                </Link>
+              )}
 
               <Card
                 title={
@@ -635,10 +605,30 @@ useAppRefresh(fetchData);
                   <YAxis />
                   <Tooltip />
                   <Bar
-                    dataKey="attendance"
-                    fill="#0f766e"
-                    radius={[10, 10, 0, 0]}
-                  />
+  dataKey="attendance"
+  fill="#0f766e"
+  radius={[10, 10, 0, 0]}
+  onClick={(data, index) => {
+    if (trendType !== "daily") return;
+
+    const selectedDate = new Date();
+    selectedDate.setDate(selectedDate.getDate() - (6 - index));
+    const dateStr = selectedDate.toISOString().slice(0, 10);
+
+    const users = rawAttendance.filter(r => {
+      const att = r.att_date
+        ? new Date(r.att_date).toISOString().slice(0, 10)
+        : null;
+      return att === dateStr;
+    });
+
+    setAttendanceModal({
+      open: true,
+      date: dateStr,
+      users,
+    });
+  }}
+/>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -741,7 +731,22 @@ useAppRefresh(fetchData);
                     <span className={styles.vegDot}></span>
                     <strong>{t("veg")}</strong>
                   </div>
-                  <p className={styles.summaryCount}>{foodStats.veg}</p>
+                  <p
+  className={styles.summaryCount}
+  style={{ cursor: "pointer" }}
+  onClick={() => {
+    const vegUsers = foodUsers.filter(u => u.food_preference === "veg");
+
+setFoodModal({
+  open: true,
+  type: "Veg",
+  users: vegUsers,
+});
+setFoodSearch(""); 
+  }}
+>
+  {foodStats.veg}
+</p>
                   <p className={styles.summaryPercent}>
                     {Math.round(
                       (foodStats.veg /
@@ -760,9 +765,23 @@ useAppRefresh(fetchData);
                     <span className={styles.nonVegDot}></span>
                     <strong>{t("nonVeg")}</strong>
                   </div>
-                  <p className={styles.summaryCount}>
-                    {foodStats.nonveg}
-                  </p>
+                  <p
+  className={styles.summaryCount}
+  style={{ cursor: "pointer" }}
+  onClick={() => {
+    const nonVegUsers = foodUsers.filter(u => u.food_preference === "nonveg");
+
+    setFoodModal({
+      open: true,
+      type: "Non-Veg",
+      users: nonVegUsers,
+    });
+
+setFoodSearch(""); // reset search
+  }}
+>
+  {foodStats.nonveg}
+</p>
                   <p className={styles.summaryPercent}>
                     {Math.round(
                       (foodStats.nonveg /
@@ -809,6 +828,85 @@ useAppRefresh(fetchData);
 
         </main>
       </div>
+
+
+
+      {attendanceModal.open && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.attendanceModal}>
+      <div className={styles.modalHeader}>
+        <h3>
+          Attendance List ({attendanceModal.date})
+        </h3>
+        <button onClick={() =>{
+          setAttendanceModal({ open: false, date: null, users: [] })
+          setAttendanceSearch("");
+        }
+        }>
+          ✕
+        </button>
+      </div>
+      <input
+  type="text"
+  placeholder="Search student..."
+  value={attendanceSearch}
+  onChange={(e) => setAttendanceSearch(e.target.value)}
+  className={styles.searchInput}
+/>
+
+      {filteredAttendanceUsers.length === 0 ? (
+        <p>No students attended</p>
+      ) : (
+        <div className={styles.userList}>
+          {filteredAttendanceUsers.map((u, i) => (
+            <div key={i} className={styles.userRow}>
+              <strong>{u.user_name}</strong>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
+{foodModal.open && (
+  
+  <div className={styles.modalOverlay}>
+    <div className={styles.attendanceModal}>
+      <div className={styles.modalHeader}>
+        <h3>{foodModal.type} Members</h3>
+        <button
+          onClick={() =>
+            setFoodModal({ open: false, type: null, users: [] })
+          }
+        >
+          ✕
+        </button>
+      </div>
+      
+ <input
+        type="text"
+        placeholder="Search by name or phone..."
+        value={foodSearch}
+        onChange={(e) => setFoodSearch(e.target.value)}
+        className={styles.searchInput}
+      />
+      {filteredFoodUsers.length === 0 ? (
+        <p>No members found</p>
+      ) : (
+        <div className={styles.userList}>
+          {filteredFoodUsers.map((u, i) => (
+            <div key={i} className={styles.userRow}>
+              <strong>{u.name}</strong>
+              <div style={{ fontSize: "12px", color: "#64748B" }}>
+                {u.phone || "-"}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
     </Layout>
   );
 }

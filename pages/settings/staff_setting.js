@@ -4,6 +4,7 @@ import styles from "../../styles/settings.module.css";
 import toast from "react-hot-toast";
 import {Edit, Delete, Trash, PencilIcon } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
+import { offlineFetch } from "../../lib/offlineFetch";
 
 export default function StaffHandling() {
   const { t } = useLanguage();
@@ -30,16 +31,14 @@ export default function StaffHandling() {
   /* ----------------------------------
      Load Staffs
   ---------------------------------- */
-  useEffect(() => {
-    loadStaffs();
-  }, []);
-
+  
   
   
   const loadStaffs = async () => {
     try {
       const token = localStorage.getItem("token");
 
+      const data = await offlineFetch("staff-list", async () => {
       const res = await fetch(
         "https://bite-track-mess-management-system-a.vercel.app/api/settings/staffs/",
         {
@@ -49,8 +48,9 @@ export default function StaffHandling() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-
-      setStaffs(data.data || []);
+ return data.data || [];
+    });
+      setStaffs(data || []);
     } catch {
       toast.error(t("failed_to_load_staffs"));
     } finally {
@@ -92,25 +92,25 @@ export default function StaffHandling() {
       toast.error(e.message || t("update_failed"));
     }
   };
-
+  
   /* ----------------------------------
-     Update Staff Credentials
+  Update Staff Credentials
   ---------------------------------- */
   const updateCredentials = async () => {
     try {
       if (!credForm.newPassword && !credForm.newEmail) {
         return toast.error(t("nothing_to_update"));
       }
-
+      
       const token = localStorage.getItem("token");
-
+      
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/settings/staffs/${editStaff.id}/`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       newEmail: credForm.newEmail,
@@ -130,16 +130,16 @@ export default function StaffHandling() {
       toast.error(e.message || t("update_failed"));
     }
   };
-
+  
   /* ----------------------------------
-     Delete Staff
-     ---------------------------------- */
+  Delete Staff
+  ---------------------------------- */
   const handleDeleteStaff = async (staffId) => {
     if (!confirm(t("confirm_delete_staff"))) return;
     
     try {
       const token = localStorage.getItem("token");
-
+      
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/settings/staffs/${staffId}/`,
         {
@@ -147,10 +147,10 @@ export default function StaffHandling() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+      
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-
+      
       toast.success(t("staff_deleted"));
       loadStaffs();
     } catch (e) {
@@ -158,6 +158,9 @@ export default function StaffHandling() {
     }
   };
   
+  useEffect(() => {
+    loadStaffs();
+  }, []);
   useAppRefresh(loadStaffs);
   /* ----------------------------------
      UI
@@ -188,7 +191,14 @@ export default function StaffHandling() {
 
       {/* 🔹 ADD STAFF MODAL */}
       {showAddModal && (
-        <div className={styles.group}>
+        <div
+    className={styles.modalOverlay}
+    onClick={() => setShowAddModal(false)}
+  >
+    <div
+      className={styles.modal}
+      onClick={(e) => e.stopPropagation()}
+    >
           <button
       className={styles.closeBtn}
       onClick={() => setShowAddModal(false)}
@@ -225,11 +235,20 @@ export default function StaffHandling() {
 
           <button onClick={addStaff}>{t("add_staff")}</button>
         </div>
+        </div>
       )}
 
       {/* 🔹 EDIT CREDENTIALS MODAL */}
       {editStaff && (
-        <div className={styles.group}>
+        <div
+    className={styles.modalOverlay}
+    onClick={() => {setEditStaff(null);
+  setCredForm({ newEmail: "", newPassword: "" })}}
+  >
+    <div
+      className={styles.modal}
+      onClick={(e) => e.stopPropagation()}
+    >
           <button
       className={styles.closeBtn}
       onClick={() => {
@@ -263,6 +282,7 @@ export default function StaffHandling() {
           <button onClick={updateCredentials}>
             {t("update_credentials")}
           </button>
+        </div>
         </div>
       )}
 

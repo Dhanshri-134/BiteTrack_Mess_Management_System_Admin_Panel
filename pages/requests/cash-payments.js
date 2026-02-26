@@ -42,6 +42,152 @@ const [statusFilter, setStatusFilter] = useState("all");
 
 const [closing, setClosing] = useState(false);
 
+
+
+function UserPaymentGroup({ user, activeTab, onAction, onImageClick, t }) {
+  const [open, setOpen] = useState(false);
+
+  // sort latest first
+  const history = [...user.history].sort(
+    (a, b) =>
+      new Date(b.submitted_at || b.requested_at) -
+      new Date(a.submitted_at || a.requested_at)
+  );
+
+  const latest = history[0];
+
+  const status =
+    latest.request_status || latest.verification_status || "pending";
+
+  return (
+    <div className={styles.mobileCard}>
+      {/* HEADER (Same CSS as MobilePaymentCard) */}
+      <div className={styles.cardTop}>
+        <div>
+          <strong>{user.user_name}</strong>
+          <div className={styles.subText}>{user.email}</div>
+        </div>
+
+        <button
+          className={styles.expandBtn}
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+      </div>
+
+      {/* Latest summary */}
+      <div className={styles.cardRow}>
+        <span>{t("latestAmount")}:</span>
+        ₹{Number(latest.amount).toFixed(2)}
+      </div>
+
+      <div className={styles.cardRow}>
+        <span>{t("status")}:</span>
+        {statusBadge(status)}
+      </div>
+
+      {/* HISTORY DROPDOWN */}
+      <div className={`${styles.dropdown} ${open ? styles.open : ""}`}>
+        {history.map((p) => {
+          const itemStatus =
+            p.request_status || p.verification_status || "pending";
+
+          const isPending =
+            itemStatus.toLowerCase() === "pending";
+
+          return (
+            <div key={p.id} className={styles.grid}>
+              <div>
+                <span>{t("amount")}</span>
+                ₹{Number(p.amount).toFixed(2)}
+              </div>
+
+              {activeTab === "cash" && (
+                <>
+                  <div>
+                    <span>{t("month")}</span>
+                    {p.month}
+                  </div>
+                  <div>
+                    <span>{t("year")}</span>
+                    {p.year}
+                  </div>
+                </>
+              )}
+
+              {activeTab === "daily" && (
+                <div>
+                  <span>{t("requestedMonth")}</span>
+                  {p.month || "-"}
+                </div>
+              )}
+
+              <div>
+                <span>{t("requestedAt")}</span>
+                {new Date(
+                  p.submitted_at || p.requested_at
+                ).toLocaleDateString()}
+              </div>
+
+              <div>
+                <span>{t("leaveDays")}</span>
+                {p.leave_days || 0}
+              </div>
+
+              <div>
+                <span>{t("status")}</span>
+                {statusBadge(itemStatus)}
+              </div>
+              {p.screenshot_url && (
+                <img
+                  src={p.screenshot_url}
+                  alt={t("paymentProof")}
+                  className={styles.thumbnail}
+                  onClick={() => onImageClick(p.screenshot_url)}
+                />
+              )}
+
+              {isPending && (
+                <div className={styles.actions}>
+                  <button
+                    className={styles.approveBtn}
+                    onClick={() =>
+                      onAction(
+                        p.id,
+                        activeTab === "verify"
+                          ? "approved"
+                          : "Approved"
+                      )
+                    }
+                  >
+                    {t("approve")}
+                  </button>
+
+                  <button
+                    className={styles.rejectBtn}
+                    onClick={() =>
+                      onAction(
+                        p.id,
+                        activeTab === "verify"
+                          ? "rejected"
+                          : "Rejected"
+                      )
+                    }
+                  >
+                    {t("reject")}
+                  </button>
+                </div>
+              )}
+
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const fetchData = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -94,7 +240,6 @@ const fetchData = async () => {
   
   useAppRefresh(fetchData);
   const handleAction = async (id, status) => {
-    console.log("🔥 API CALL", id, status);
 
     const processed_by = "Admin";
 
@@ -168,7 +313,7 @@ const fetchData = async () => {
     }
   };
 
-  const filteredPayments = payments.filter((p) => {
+const filtered = payments.filter((p) => {
   const text = `${p.user_name} ${p.email}`.toLowerCase();
 
   if (search && !text.includes(search.toLowerCase())) return false;
@@ -178,6 +323,8 @@ const fetchData = async () => {
 
   return true;
 });
+
+
 
 
 function MobilePaymentCard({
@@ -315,8 +462,25 @@ function MobilePaymentCard({
   );
 }
 
+const groupByUser = (data) => {
+  const grouped = {};
 
+  data.forEach((p) => {
+    if (!grouped[p.user_id]) {
+      grouped[p.user_id] = {
+        user_name: p.user_name,
+        email: p.email,
+        history: [],
+      };
+    }
 
+    grouped[p.user_id].history.push(p);
+  });
+
+  return Object.values(grouped);
+};
+
+const groupedPayments = groupByUser(filtered);
 
   return (
     <Layout>
@@ -367,33 +531,12 @@ function MobilePaymentCard({
 
         {/* ---------------- TABLE ---------------- */}
         <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>{t("user")}</th>
-                <th>{t("amount")}</th>
+          <div className={styles.table}>
+         
 
-                {activeTab === "cash" && <th>{t("month")}</th>}
-                {activeTab === "cash" && <th>{t("year")}</th>}
-
-                {activeTab === "verify" && <th>{t("paymentType")}</th>}
-                {activeTab === "verify" && <th>{t("billingStart")}</th>}
-                {activeTab === "verify" && <th>{t("billingEnd")}</th>}
-
-                <th>{t("leaveDays")}</th>
-                <th>{t("status")}</th>
-                <th>{t("requestedAt")}</th>
-                {activeTab === "verify" && <th>{t("screenshot")}</th>}
-                <th>{t("action")}</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredPayments.length === 0 ? (
-                <tr>
-                  <td colSpan="12" className={styles.empty}>
-                    {t("noRequestsFound", {
+              {groupedPayments.length === 0 ? (
+                <>
+                                    {t("noRequestsFound", {
                       type:
                         activeTab === "cash"
                           ? t("cash")
@@ -401,106 +544,23 @@ function MobilePaymentCard({
                             ? t("daily")
                             : t("verification"),
                     })}
-                  </td>
-                </tr>
+                    </>
               ) : (
-                filteredPayments.map((p, i) => (
-//                   <tr key={p.id} className={p._updated ? styles.updatedRow : ""}>
-//                     <td>{i + 1}</td>
-//                     <td>
-//   <div className={styles.userInfo}>
-//     <strong>{p.user_name}</strong>
-//     <div className={styles.email}>{p.email}</div>
-//   </div>
-// </td>
 
-
-//                     <td data-col="right">₹{Number(p.amount).toFixed(2)}</td>
-
-//                     {activeTab === "cash" && <td>{p.month}</td>}
-//                     {activeTab === "cash" && <td data-col="right">{p.year}</td>}
-
-//                     {activeTab === "verify" && <td>{p.payment_type}</td>}
-//                     {activeTab === "verify" && <td data-col="right">{p.billing_start_date || "-"}</td>}
-//                     {activeTab === "verify" && <td>{p.billing_end_date || "-"}</td>}
-
-//                     <td>{p.leave_days || 0} { t("leave_days")}</td>
-//                     <td data-col="right">{statusBadge(p.request_status || p.verification_status)}</td>
-//                     <td> <span>
-//                       At:{new Date(p.submitted_at || p.requested_at).toLocaleDateString()}
-//                       </span>
-//                       </td>
-
-//                     {activeTab === "verify" && (
-//                       <td>
-//                         {p.screenshot_url && (
-//                           <img
-//                             src={p.screenshot_url}
-//                             alt={t("paymentProof")}
-//                             className={styles.thumbnail}
-//                             onClick={() => openModal(p.screenshot_url)}
-//                           />
-//                         )}
-//                       </td>
-//                     )}
-
-//                     <td data-col="right"> 
-//                       {/* VERIFY TAB */}
-//                       {activeTab === "verify" &&
-//                         (p.verification_status === "pending" ? (
-//                           <div className={styles.actions}>
-//                             <button
-//                               onClick={() => handleAction(p.id, "approved")}
-//                               className={styles.approveBtn}
-//                             >
-//                               {t("approve")}
-//                             </button>
-//                             <button
-//                               onClick={() => handleAction(p.id, "rejected")}
-//                               className={styles.rejectBtn}
-//                             >
-//                               {t("reject")}
-//                             </button>
-//                           </div>
-//                         ) : (
-//                           <span className={styles.processed}>{t("processed")}</span>
-//                         ))}
-
-//                       {/* CASH & DAILY TABS */}
-//                       {(activeTab === "cash" || activeTab === "daily") &&
-//                         (p.request_status === "Pending" ? (
-//                           <div className={styles.actions}>
-//                             <button
-//                               onClick={() => handleAction(p.id, "Approved")}
-//                               className={styles.approveBtn}
-//                             >
-//                               {t("approve")}
-//                             </button>
-//                             <button
-//                               onClick={() => handleAction(p.id, "Rejected")}
-//                               className={styles.rejectBtn}
-//                             >
-//                               {t("reject")}
-//                             </button>
-//                           </div>
-//                         ) : (
-//                           <span  className={styles.processed}>{t("processed")}</span>
-//                         ))}
-//                     </td>
-//                   </tr>
-
-<MobilePaymentCard
-    key={p.id}
-    payment={p}
+  groupedPayments.map((user, index) => (
+  <UserPaymentGroup
+    key={index}
+    user={user}
     activeTab={activeTab}
     t={t}
     onAction={handleAction}
     onImageClick={openModal}
   />
-                ))
+))
+  
+
               )}
-            </tbody>
-          </table>
+</div>
 
           {modalOpen && (
             <div className={`${styles.modalOverlay} ${closing ? styles.closing : ""}`} onClick={closeModal}>

@@ -42,6 +42,8 @@ export default function Verify() {
   };
 
   return (
+    <Layout>
+
     <div className={styles.container}>
       <div className={styles.main}>
 
@@ -63,18 +65,18 @@ export default function Verify() {
             value={form.code}
             onChange={handleChange}
             required
-          />
+            />
           <button type="submit">Verify</button>
         </form>
         {message && (
           <p
           className={`${styles.message} ${
-              message.startsWith("✅")
-              ? styles.success
-              : message.startsWith("❌")
-              ? styles.error
-              : ""
-            }`}
+            message.startsWith("✅")
+            ? styles.success
+            : message.startsWith("❌")
+            ? styles.error
+            : ""
+          }`}
           >
             {message}
           </p>
@@ -82,5 +84,6 @@ export default function Verify() {
       </div>
             </div>
     </div>
+        </Layout>
   );
 }

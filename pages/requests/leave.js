@@ -6,6 +6,7 @@ import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { DatabaseIcon } from "lucide-react";
 
 
 const formatDate = (date) => {
@@ -24,6 +25,15 @@ export default function LeaveManagement() {
   const [leaveMembers, setLeaveMembers] = useState(null);
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
+  const [historySearch, setHistorySearch] = useState("");
+const [dateFrom, setDateFrom] = useState("");
+const [dateTo, setDateTo] = useState("");
+
+  
+  const [historyStatusFilter, setHistoryStatusFilter] = useState("all");
+const [historySort, setHistorySort] = useState("latest");
+const [groupByUser, setGroupByUser] = useState(false);
+
   
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -134,7 +144,23 @@ export default function LeaveManagement() {
           ) : activeTab === "requests" ? (
             <LeaveTable data={leaveRequests} type="requests" refresh={fetchData} />
           ) : activeTab === "history" ? (
-            <LeaveTable data={leaveHistory} type="history" refresh={fetchData} />
+            <LeaveTable
+  data={leaveHistory}
+  type="history"
+  refresh={fetchData}
+  statusFilter={historyStatusFilter}
+  setStatusFilter={setHistoryStatusFilter}
+  sortOrder={historySort}
+  setSortOrder={setHistorySort}
+  groupByUser={groupByUser}
+  setGroupByUser={setGroupByUser}
+  historySearch={historySearch}
+  setHistorySearch={setHistorySearch}
+  dateFrom={dateFrom}
+  setDateFrom={setDateFrom}
+  dateTo={dateTo}
+  setDateTo={setDateTo}
+/>
           ) : (
             <LeaveMembers data={leaveMembers} />
           )}
@@ -150,7 +176,21 @@ export default function LeaveManagement() {
 /* ===== REQUESTS / HISTORY ===== */
 /* ========================== */
 
-function LeaveTable({ data, type, refresh }) {
+function LeaveTable({ data,
+  type,
+  refresh,
+  statusFilter,
+  setStatusFilter,
+  sortOrder,
+  setSortOrder,
+  groupByUser,
+  setGroupByUser, 
+  historySearch,
+  setHistorySearch,
+  dateFrom,
+  setDateFrom,
+  dateTo,
+  setDateTo,}) {
   const { t } = useLanguage();
 
   if (!data?.length)
@@ -181,8 +221,139 @@ function LeaveTable({ data, type, refresh }) {
     }
   };
 
+let processedData = [...data];
+
+if (type === "history") {
+
+  // 🔹 Status filter
+  if (statusFilter !== "all") {
+    processedData = processedData.filter(
+      (item) => item.status === statusFilter
+    );
+  }
+
+  // 🔹 Search filter
+  if (historySearch) {
+    const searchLower = historySearch.toLowerCase();
+    processedData = processedData.filter(
+      (item) =>
+        item.user_name?.toLowerCase().includes(searchLower) ||
+        item.email?.toLowerCase().includes(searchLower) ||
+        item.user_email?.toLowerCase().includes(searchLower)
+    );
+  }
+
+  // 🔹 Date range filter
+  if (dateFrom) {
+    processedData = processedData.filter(
+      (item) => new Date(item.from_date) >= new Date(dateFrom)
+    );
+  }
+
+  if (dateTo) {
+    processedData = processedData.filter(
+      (item) => new Date(item.to_date) <= new Date(dateTo)
+    );
+  }
+
+  // 🔹 Sort
+  processedData.sort((a, b) => {
+    const dateA = new Date(a.from_date);
+    const dateB = new Date(b.from_date);
+    return sortOrder === "latest"
+      ? dateB - dateA
+      : dateA - dateB;
+  });
+}
+
+let groupedData = [];
+
+if (type === "history" && groupByUser) {
+  const map = {};
+
+  processedData.forEach((item) => {
+    if (!map[item.user_id]) {
+      map[item.user_id] = {
+        user_id: item.user_id,
+        user_name: item.user_name,
+        user_email: item.user_email || item.email,
+        phone: item.contact_no,
+        hostel_name: item.hostel_name,
+        leaves: [],
+      };
+    }
+
+    map[item.user_id].leaves.push(item);
+  });
+
+  groupedData = Object.values(map);
+}
   return (
     <>
+    {type === "history" && (
+  <div className={styles.filterBar}>
+
+    <input
+      type="text"
+      placeholder={t("searchByNameOrEmail")}
+      value={historySearch}
+      onChange={(e) => setHistorySearch(e.target.value)}
+      className={styles.searchInput}
+    />
+    <label>
+      {t("startDate")}
+    <input
+      type="date"
+      value={dateFrom}
+      onChange={(e) => setDateFrom(e.target.value)}
+      className={styles.select}
+      />
+      </label>
+    <label>
+      {t("endDate")}
+    <input
+      type="date"
+      value={dateTo}
+      
+      onChange={(e) => setDateTo(e.target.value)}
+      className={styles.select}
+      />
+      </label>
+      
+
+    <select
+      value={statusFilter}
+      onChange={(e) => setStatusFilter(e.target.value)}
+      className={styles.select}
+    >
+      <option value="all">{t("All")}</option>
+      <option value="Approved">{t("approved")}</option>
+      <option value="Rejected">{t("rejected")}</option>
+    </select>
+
+    <select
+      value={sortOrder}
+      onChange={(e) => setSortOrder(e.target.value)}
+      className={styles.select}
+    >
+      <option value="latest">{t("LatestFirst")}</option>
+      <option value="oldest">{t("OldestFirst")}</option>
+    </select>
+    <div className={styles.check}>
+      
+      <input
+        type="checkbox"
+        checked={groupByUser}
+        onChange={(e) => setGroupByUser(e.target.checked)}
+        />
+      <span>
+      {t("GroupByUser")}
+      </span>
+        </div>
+
+  </div>
+
+)}
       {/* DESKTOP TABLE */}
       <table className={styles.table}>
         <thead>
@@ -199,7 +370,7 @@ function LeaveTable({ data, type, refresh }) {
         </thead>
 
         <tbody>
-          {data.map((item) => (
+          {(processedData).map((item) => (
             <tr key={item.id}>
               <td>{item.user_name}</td>
               <td>{item.email || item.user_email}</td>
@@ -251,7 +422,12 @@ function LeaveTable({ data, type, refresh }) {
 
       {/* MOBILE STACKED CARDS */}
       <div className={styles.mobileList}>
-        {data.map((item) => (
+        {groupByUser ? (
+  groupedData.map((user) => (
+    <GroupedLeaveCard key={user.user_id} user={user} />
+  ))
+) : (
+  processedData.map((item) => (
           <div key={item.id} className={styles.mobileCard}>
             <p><span className={styles.header}>{t("name")}:</span> {item.user_name}</p>
             <p><span className={styles.header}>{t("email")}:</span> {item.email || item.user_email}</p>
@@ -295,9 +471,63 @@ function LeaveTable({ data, type, refresh }) {
               </span>
             )}
           </div>
-        ))}
+        )))}
       </div>
     </>
+  );
+}
+
+function GroupedLeaveCard({ user }) {
+  const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
+
+  return (
+    <div className={styles.mobileCard}>
+      
+      {/* 🔹 USER HEADER (shown once) */}
+      <div
+        className={styles.groupHeader}
+        onClick={() => setOpen(!open)}
+      >
+        <div>
+          <p><strong>{t("name")}:</strong> {user.user_name}</p>
+          <p><strong>{t("email")}:</strong> {user.user_email}</p>
+          <p><strong>{t("contact")}:</strong> {user.phone}</p>
+          <p><strong>{t("hostel")}:</strong> {user.hostel_name}</p>
+        </div>
+        <span className={styles.expandIcon}>
+          {open ? "▲" : "▼"}
+        </span>
+
+      </div>
+
+      {/* 🔹 LEAVE DATES (only dates repeated) */}
+      {open && (
+        <div className={styles.groupBody}>
+          {user.leaves.map((leave) => (
+            <div key={leave.id} className={styles.leaveItem}>
+              
+              <p><strong>{t("from")}:</strong> {formatDate(leave.from_date)}</p>
+              <p><strong>{t("to")}:</strong> {formatDate(leave.to_date)}</p>
+
+              <p>
+                <span
+                  className={
+                    leave.status === "Approved"
+                      ? styles.approved
+                      : styles.rejected
+                  }
+                >
+                  {leave.status}
+                </span>
+              </p>
+
+              <hr className={styles.leaveDivider}/>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -365,289 +595,4 @@ function LeaveMembers({ data }) {
 
 
 
-// //pages/leave.js
-// import { useState, useEffect } from "react";
-// import Layout from "../components/Layout";
-// import styles from "../styles/leave.module.css";
 
-// export default function LeaveManagement() {
-//   const [activeTab, setActiveTab] = useState("requests");
-//   const [leaveRequests, setLeaveRequests] = useState([]);
-//   const [leaveHistory, setLeaveHistory] = useState([]);
-//   const [leaveMembers, setLeaveMembers] = useState([]);
-
-//   const [loading, setLoading] = useState(false);
-
-//   const fetchData = async () => {
-//     setLoading(true);
-//     try {
-//       // const resRequests = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/leave/requests/");
-//       // const resHistory = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/leave/history/");
-//       const token = localStorage.getItem("token");
-
-// const resRequests = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/leave/requests/", {
-//   headers: { Authorization: `Bearer ${token}` }
-// });
-// const resHistory = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/leave/history/", {
-//   headers: { Authorization: `Bearer ${token}` }
-// });
-// const resMembers = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/leave/members/", {
-//   headers: { Authorization: `Bearer ${token}` }
-// });
-
-// const membersData = await resMembers.json();
-
-// setLeaveMembers(membersData); // contains two lists
-
-
-//       setLeaveRequests(await resRequests.json());
-//       setLeaveHistory(await resHistory.json());
-//     } catch (err) {
-//       console.error("Error fetching leave data:", err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchData();
-//   }, []);
-
-//   return (
-//     <Layout>
-//       <div className={styles.container}>
-//         <h1 className={styles.title}>🏖 Leave Management</h1>
-
-//         {/* Tabs */}
-//         <div className={styles.tabs}>
-//           <button
-//             className={`${styles.tabBtn} ${activeTab === "requests" ? styles.active : ""}`}
-//             onClick={() => setActiveTab("requests")}
-//           >
-//             Leave Requests
-//           </button>
-//           <button
-//             className={`${styles.tabBtn} ${activeTab === "members" ? styles.active : ""}`}
-//             onClick={() => setActiveTab("members")}
-//           >
-//             Leave Members
-//           </button>
-//           <button
-//             className={`${styles.tabBtn} ${activeTab === "history" ? styles.active : ""}`}
-//             onClick={() => setActiveTab("history")}
-//           >
-//             Leave History
-//           </button>
-//         </div>
-
-//         {/* Table Container */}
-//         <div className={styles.tableContainer}>
-//           {loading ? (
-//             <p>Loading...</p>
-//           ) : activeTab === "requests" ? (
-//             <LeaveTable data={leaveRequests} type="requests" refresh={fetchData} />
-//           ) : activeTab === "history" ? (
-//             <LeaveTable data={leaveHistory} type="history" refresh={fetchData} />
-//           ) : (
-//             <LeaveMembers data={leaveMembers} />
-
-//           )}
-//         </div>
-//       </div>
-//     </Layout>
-//   );
-// }
-
-// function LeaveTable({ data, type, refresh }) {
-//   if (!data?.length) return <p className={styles.emptyState}>No records found.</p>;
-
-//   const handleAction = async (id, action) => {
-//     try {
-//       const token = localStorage.getItem("token");
-
-//       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/leave/update-status/", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//         },
-//         body: JSON.stringify({ id, action }),
-//       });
-
-//       const result = await res.json();
-
-//       if (!res.ok) {
-//         alert(result.message || "Failed to update status");
-//         return;
-//       }
-
-//       alert(result.message);
-//       refresh();
-//     } catch (error) {
-//       console.error("Error:", error);
-//       alert("Something went wrong");
-//     }
-//   };
-
-//   return (
-//     <table className={styles.table}>
-//       <thead>
-//         <tr>
-//           <th>Name</th>
-//           <th>Email</th>
-//           <th>Contact</th>
-//           <th>Hostel</th>
-//           <th>From</th>
-//           <th>To</th>
-
-//           {type === "requests" && <th>Actions</th>}
-//           {type === "history" && <th>Status</th>}
-//         </tr>
-//       </thead>
-
-//       <tbody>
-//         {data.map((item) => (
-//           <tr key={item.id}>
-//             <td>{item.user_name}</td>
-//             <td>{item.email || item.user_email}</td>
-//             <td>{item.contact_no}</td>
-//             <td>{item.hostel_name}</td>
-//             <td>{item.from_date}</td>
-//             <td>{item.to_date}</td>
-
-//             {/* ACTION BUTTONS FOR REQUESTS */}
-//             {type === "requests" && (
-//               <td>
-//                 <button
-//                   className={styles.approveBtn}
-//                   onClick={() => handleAction(item.id, "Approved")}
-//                 >
-//                   Approve
-//                 </button>
-
-//                 <button
-//                   className={styles.rejectBtn}
-//                   onClick={() => handleAction(item.id, "Rejected")}
-//                 >
-//                   Reject
-//                 </button>
-//               </td>
-//             )}
-
-//             {/* STATUS COLOR FOR HISTORY */}
-//             {type === "history" && (
-//               <td>
-//                 <span
-//                   className={
-//                     item.status === "Approved"
-//                       ? styles.approved
-//                       : item.status === "Rejected"
-//                       ? styles.rejected
-//                       : styles.pending
-//                   }
-//                 >
-//                   {item.status}
-//                 </span>
-//               </td>
-//             )}
-//           </tr>
-//         ))}
-//       </tbody>
-//     </table>
-//   );
-// }
-// function LeaveMembers({ data }) {
-//   if (!data) return <p>Loading...</p>;
-
-//   const { approved_members = [], excess_absent_members = [] } = data;
-
-//   const formatDate = (d) => {
-//     if (!d) return "-";
-//     return new Date(d).toLocaleDateString("en-IN", {
-//       day: "2-digit",
-//       month: "short",
-//       year: "numeric",
-//     });
-//   };
-
-//   return (
-//     <div>
-
-//       {/* APPROVED LEAVE MEMBERS */}
-//       <h2 className={styles.subTitle}>Approved Leave Members</h2>
-
-// {approved_members.length === 0 ? (
-//   <p className={styles.emptyState}>No approved leave members.</p>
-// ) : (
-//   <div className={styles.tableWrapper}>
-//     <table className={`${styles.tables} ${styles.stickyTable}`}>
-//       <thead>
-//         <tr>
-//           <th>Name</th>
-//           <th>Email</th>
-//           <th>Contact</th>
-//           <th>Hostel</th>
-//           <th>From</th>
-//           <th>To</th>
-//         </tr>
-//       </thead>
-//       <tbody>
-//         {approved_members.map((item) => (
-//           <tr key={item.id}>
-//             <td>{item.user_name}</td>
-//             <td>{item.user_email}</td>
-//             <td>{item.phone}</td>
-//             <td>{item.hostel_name}</td>
-//             <td>{formatDate(item.from_date)}</td>
-//             <td>{formatDate(item.to_date)}</td>
-//           </tr>
-//         ))}
-//       </tbody>
-//     </table>
-//   </div>
-// )}
-
-
-//       {/* EXCESS ABSENT MEMBERS */}
-//       <h2 className={styles.subTitle} style={{ marginTop: "30px" }}>
-//   Excess Absent Members
-// </h2>
-
-// {excess_absent_members.length === 0 ? (
-//   <p className={styles.emptyState}>No members exceeded absence limit.</p>
-// ) : (
-//   <div className={styles.tableWrapper}>
-//     <table className={`${styles.table} ${styles.stickyTable}`}>
-//       <thead>
-//         <tr>
-//           <th>Name</th>
-//           <th>Email</th>
-//           <th>Contact</th>
-//           <th>Absent Days</th>
-//           <th>Absent From</th>
-//           <th>Absent To</th>
-//         </tr>
-//       </thead>
-//       <tbody>
-//         {excess_absent_members.map((item) => (
-//           <tr key={item.user_id}>
-//             <td>{item.user_name}</td>
-//             <td>{item.user_email}</td>
-//             <td>{item.phone}</td>
-//             <td>
-//               <span className={styles.rejected}>
-//                 {item.absent_count} Days
-//               </span>
-//             </td>
-//             <td>{formatDate(item.start_date)}</td>
-//             <td>{formatDate(item.end_date)}</td>
-//           </tr>
-//         ))}
-//       </tbody>
-//     </table>
-//   </div>
-// )}
-
-//     </div>
-//   );
-// }

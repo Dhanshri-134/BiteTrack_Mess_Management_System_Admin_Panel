@@ -391,8 +391,9 @@
 }
 
 .dropdown.open {
-  max-height: 500px;
+  max-height:max-content;
   opacity: 1;
+  overflow-y: auto;
 }
 
 .grid {
@@ -401,12 +402,16 @@
   gap: 8px;
   margin-top: 10px;
   font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+  border-top: 0.5px;
+  padding-bottom: 20px;
 }
 
 .grid span {
   display: block;
   font-weight: 600;
   color: #047857;
+  width:fit-content;
 }
 
 .actions {

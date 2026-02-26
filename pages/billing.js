@@ -292,50 +292,75 @@ BiteTrack Admin
     setPdfBase64(null);
   };
 
-  const submitPayment = async () => {
-    if (!paymentModal) return;
+const submitPayment = async () => {
+  if (!paymentModal) return;
 
-    if (!paymentData.amount || Number(paymentData.amount) <= 0)
-      return toast.error("Enter a valid amount");
+  if (!paymentData.amount || Number(paymentData.amount) <= 0)
+    return toast.error("Enter a valid amount");
 
-    if (!paymentData.payment_type) return toast("Select payment type");
-    if (!paymentData.payment_method) return toast("Select payment method");
+  if (!paymentData.payment_method)
+    return toast.error("Select payment method");
 
-    const payload = {
-      user_id: paymentModal.user_id,
-      month: paymentModal.month,
-      year: paymentModal.year, // current year
-      amount: Number(paymentData.amount),
-      payment_type: paymentData.payment_type,
-      payment_method: paymentData.payment_method,
-      upi_id: paymentData.upi_id || null,
-      transaction_id: paymentData.transaction_id || null,
-      payment_date: paymentData.payment_date,
-      note: paymentData.note?.trim() || null
-    };
+  // 🔥 AUTO GENERATE CASH TRANSACTION ID
+  let transactionId = paymentData.transaction_id;
 
-    try {
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bills/mark-paid/", {
+  if (paymentData.payment_method === "Cash") {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, "0");
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const yyyy = now.getFullYear();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const min = String(now.getMinutes()).padStart(2, "0");
+
+    transactionId = `CASH-${dd}${mm}${yyyy}-${hh}${min}`;
+  }
+
+  const payload = {
+    user_id: paymentModal.user_id,
+    month: paymentModal.month,
+    year: Number(paymentModal.year),
+
+    amount: Number(paymentData.amount),
+    payment_date: paymentData.payment_date,
+
+    payment_type: paymentData.payment_type,
+    payment_method: paymentData.payment_method,
+    transaction_id: transactionId || null,
+    upi_id: paymentData.upi_id || null,
+
+    receipt_number: paymentData.receipt_number,
+
+    leave_days: paymentModal.leave_days || 0,
+
+    billing_start_date: paymentModal.start_date,
+    billing_end_date: paymentModal.end_date,
+
+    note: paymentData.note?.trim() || null
+  };
+
+  try {
+    const res = await fetch(
+      "https://bite-track-mess-management-system-a.vercel.app/api/bills/mark-paid/",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-      });
+      }
+    );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to mark payment");
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
 
-      toast.success("Payment recorded successfully!");
-      setPaymentModal(null);
-      fetchBills();
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong");
-    }
-  };
-
+    toast.success("Payment recorded successfully!");
+    setPaymentModal(null);
+    fetchBills();
+  } catch (err) {
+    toast.error(err.message || "Something went wrong");
+  }
+};
   // Token
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const authHeaders = () => ({ Authorization: `Bearer ${token}`, "Content-Type": "application/json" });

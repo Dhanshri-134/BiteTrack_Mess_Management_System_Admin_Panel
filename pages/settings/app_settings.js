@@ -73,65 +73,105 @@ export default function AppSettingsPage() {
     }, [token]);
     
     /* -------------------- LOAD PROFILE -------------------- */
-    useEffect(() => {
-      if (!token) return;
+  //   useEffect(() => {
+  //     if (!token) return;
       
-    const loadProfile = async () => {
-      try {
-        const data = await offlineFetch("profile", async () => {
+  //   const loadProfile = async () => {
+  //     try {
+  //       const data = await offlineFetch("profile", async () => {
+  //         const res = await fetch(
+  //           "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
+  //           {
+  //             headers: {
+  //               "Content-Type": "application/json",
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+        
+  //       if (!res.ok) throw new Error("Profile load failed");
+  //       return res.json();
+  //     });
+  //       setProfile(data);
+  //     } catch {
+  //       toast.error(t("profile_load_failed"));
+  //     }
+  //   };
+
+  //   loadProfile();
+  // }, [token, t]);
+  
+  // /* -------------------- LOAD APP SETTINGS -------------------- */
+  // useEffect(() => {
+  //   if (!token) return;
+    
+  //   const loadSettings = async () => {
+  //     try {
+  //       const data = await offlineFetch("app_settings", async () => {
+  //         const res = await fetch(
+  //           "https://bite-track-mess-management-system-a.vercel.app/api/settings/app/",
+  //           {
+  //             headers: {
+  //             "Content-Type": "application/json",
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+
+  //       if (!res.ok) throw new Error("Settings load failed");
+  //       return res.json();
+  //     });
+  //       setSettings(data?.data || {});
+  //     } catch {
+  //       toast.error(t("settings_load_failed"));
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   loadSettings();
+  // }, [token, t]);
+  
+
+
+  useEffect(() => {
+  if (!token) return;
+
+  const loadAll = async () => {
+    try {
+      setLoading(true);
+
+      const [profileData, settingsData] = await Promise.all([
+        offlineFetch("profile", async () => {
           const res = await fetch(
             "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
-            {
-              headers: {
-                "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        
-        if (!res.ok) throw new Error("Profile load failed");
-        return res.json();
-      });
-        setProfile(data);
-      } catch {
-        toast.error(t("profile_load_failed"));
-      }
-    };
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!res.ok) throw new Error();
+          return res.json();
+        }),
 
-    loadProfile();
-  }, [token, t]);
-  
-  /* -------------------- LOAD APP SETTINGS -------------------- */
-  useEffect(() => {
-    if (!token) return;
-    
-    const loadSettings = async () => {
-      try {
-        const data = await offlineFetch("app_settings", async () => {
+        offlineFetch("app_settings", async () => {
           const res = await fetch(
             "https://bite-track-mess-management-system-a.vercel.app/api/settings/app/",
-            {
-              headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!res.ok) throw new Error();
+          return res.json();
+        }),
+      ]);
 
-        if (!res.ok) throw new Error("Settings load failed");
-        return res.json();
-      });
-        setSettings(data?.data || {});
-      } catch {
-        toast.error(t("settings_load_failed"));
-      } finally {
-        setLoading(false);
-      }
-    };
+      setProfile(profileData);
+      setSettings(settingsData?.data || {});
+    } catch {
+      toast.error(t("settings_load_failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    loadSettings();
-  }, [token, t]);
-  
+  loadAll();
+}, [token]);
 
   
   return (
@@ -164,19 +204,32 @@ export default function AppSettingsPage() {
         <Section title={t("legal")}>
           <Item
             title={t("privacy_policy")}
-            onClick={() => openPolicy(settings.privacy_policy, setPolicyModal)}
+            onClick={ () => {
+              if (!settings?.privacy_policy) {
+      toast.error(t("content_not_loaded"));
+      return;
+    }
+             openPolicy(settings.privacy_policy, setPolicyModal)}}
           />
           <Item
             title={t("terms_conditions")}
-            onClick={() =>
+            onClick={ () => {
+              if (!settings?.terms_conditions) {
+      toast.error(t("content_not_loaded"));
+      return;
+    }
               openPolicy(settings.terms_conditions, setPolicyModal)
-            }
+            }}
           />
           <Item
             title={t("account_deletion_policy")}
-            onClick={() =>
+            onClick={ () => {
+              if (!settings?.account_deletion) {
+      toast.error(t("content_not_loaded"));
+      return;
+    }
               openPolicy(settings.account_deletion, setPolicyModal)
-            }
+            }}
           />
         </Section>
 
@@ -184,9 +237,13 @@ export default function AppSettingsPage() {
         <Section title={t("app")}>
           <Item
             title={t("about_bitetrack")}
-            onClick={() =>
+            onClick={ () => {
+              if (!settings?.about_bitetrack) {
+      toast.error(t("content_not_loaded"));
+      return;
+    }
               openPolicy(settings.about_bitetrack, setPolicyModal)
-            }
+            }}
           />
         </Section>
 
@@ -212,7 +269,7 @@ export default function AppSettingsPage() {
         </Section>
       </div>
       {deleteModal && (
-        <div className={styles.modalOverlay}>
+        <div className={styles.modalOverlay} onClick={() => setSupportModal(false)}>
           <div className={styles.modal}>
             <button
               className={styles.closeBtn}
@@ -286,8 +343,8 @@ export default function AppSettingsPage() {
 
       {/* ================= POLICY MODAL ================= */}
       {policyModal.open && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+        <div className={styles.modalOverlay} onClick={() => setSupportModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <button
               className={styles.closeBtn}
               onClick={() => setPolicyModal({ open: false, data: null })}
@@ -310,8 +367,8 @@ export default function AppSettingsPage() {
       )}
 
       {supportModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+        <div className={styles.modalOverlay} onClick={() => setSupportModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <button
               className={styles.closeBtn}
               onClick={() => setSupportModal(false)}
@@ -352,8 +409,8 @@ export default function AppSettingsPage() {
       )}
 
       {viewCredModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+        <div className={styles.modalOverlay} onClick={() => setSupportModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <button
               className={styles.closeBtn}
               onClick={() => {
@@ -405,8 +462,8 @@ export default function AppSettingsPage() {
         </div>
       )}
       {credModal && role !== "STAFF" &&  (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+        <div className={styles.modalOverlay} onClick={() => setSupportModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <button
               className={styles.closeBtn}
               onClick={() => setCredModal(false)}
@@ -562,7 +619,7 @@ function Item({ title, subtitle, onClick }) {
 /* ---------------- OPEN POLICY MODAL ---------------- */
 
 function openPolicy(data, setPolicyModal) {
-  if (!data) return toast.error("Content not available");
+  if (!data || !data.sections || data.sections.length === 0) return toast.error("Content not available");
 
   setPolicyModal({
     open: true,

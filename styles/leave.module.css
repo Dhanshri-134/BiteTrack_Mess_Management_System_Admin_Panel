@@ -267,3 +267,84 @@
   border-bottom: 1px solid #e5e7eb;
 }
 }
+
+
+.filterBar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+}
+
+.check{
+  display: flex;
+  flex-direction: row;
+}
+.check input{
+  width: 25px;
+}
+/* .checkboxLabel {
+  display: flex;
+  flex-direction: row;
+  /* align-items: center; */
+  /* justify-content: space-between; */
+  /* gap: 6px; 
+  font-size: 14px;
+  /* width: 100%; 
+}*/
+.check span{
+  width: 200px;
+} 
+.container label {
+  width: 100%;
+}
+.searchInput {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+}
+
+.groupHeader {
+  /* display: flex; */
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.groupBody {
+  margin-top: 10px;
+}
+
+.groupItem {
+  margin-bottom: 10px;
+}
+
+.groupHeader {
+  cursor: pointer;
+  position: relative;
+}
+
+.expandIcon {
+
+}
+
+.groupBody {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.leaveItem {
+  margin-bottom: 10px;
+}
+
+.leaveDivider {
+  border: none;
+  border-top: 1px dashed #E2E8F0;
+  margin-top: 8px;
+}

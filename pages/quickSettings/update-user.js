@@ -3,13 +3,25 @@ import styles from "../../styles/updatuser.module.css";
 import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
+import Layout from "../../components/Layout";
 
 export default function UpdateUser() {
+  const initialFormState = {
+  first_name: "",
+  last_name: "",
+  phone: "",
+  room_no: "",
+  hostel_name: "",
+  course: "",
+  parent_name: "",
+  parent_contact: "",
+  parent_address: "",
+};
    const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
@@ -56,20 +68,24 @@ export default function UpdateUser() {
     : [];
 
   /* ---------------- Select user ---------------- */
-  const handleSelectUser = (u) => {
-    setSelectedUser(u);
-    setForm({
-      first_name: u.first_name || "",
-      last_name: u.last_name || "",
-      phone: u.phone || "",
-      room_no: u.room_no || "",
-      hostel_name: u.hostel_name || "",
-      course: u.course || "",
-      parent_name: u.parents?.[0]?.name || "",
-      parent_contact: u.parents?.[0]?.contact || "",
-      parent_address: u.parents?.[0]?.address || "",
-    });
-  };
+const handleSelectUser = (u) => {
+  setSelectedUser(u);
+
+  setForm({
+    first_name: u.first_name || "",
+    last_name: u.last_name || "",
+    phone: u.phone || "",
+    room_no: u.room_no || "",
+    hostel_name: u.hostel_name || "",
+    course: u.course || "",
+    parent_name: u.parents?.[0]?.name || "",
+    parent_contact: u.parents?.[0]?.contact || "",
+    parent_address: u.parents?.[0]?.address || "",
+  });
+
+  // ✅ CLOSE DROPDOWN
+  setSearchTerm("");
+};
 
   /* ---------------- Form change ---------------- */
   const handleChange = (e) => {
@@ -174,7 +190,7 @@ export default function UpdateUser() {
 
     // 🔹 Reset UI
     setSelectedUser(null);
-    setForm({});
+    setForm(initialFormState);
     setSearchTerm("");
   } catch (err) {
     console.error(err);
@@ -194,6 +210,8 @@ export default function UpdateUser() {
 };
   /* ---------------- UI ---------------- */
   return (
+    <Layout>
+
     <div className={styles.container}>
       <main className={styles.main}>
         <h1>Update User</h1>
@@ -205,28 +223,33 @@ export default function UpdateUser() {
             placeholder="Search by Name, Email, or Mobile"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-          />
+            />
         </div>
 
         {/* Results */}
-        {searchTerm && filteredUsers.length > 0 && (
+        {searchTerm && filteredUsers.length > 0 && filteredUsers.length > 0 && (
           <ul className={styles.userList}>
             {filteredUsers.map((u) => (
               <li
-                key={u.id}
-                onClick={() => handleSelectUser(u)}
-                className={
-                  selectedUser?.id === u.id ? styles.selectedUser : ""
-                }
+              key={u.id}
+              onClick={() => handleSelectUser(u)}
+              className={
+                selectedUser?.id === u.id ? styles.selectedUser : ""
+              }
               >
                 {u.name || `${u.first_name} ${u.last_name}`} (
                 {u.email || u.phone})
               </li>
             ))}
           </ul>
+          
         )}
+
+
+
+        
  {selectedUser && (
-          <div className={styles.formWrapper}>
+   <div className={styles.formWrapper}>
               <h2>{t("updateUser")}</h2>
 
               <div style={{ maxHeight: "70vh", overflowY: "auto", paddingRight: "0.5rem" }}>
@@ -246,8 +269,8 @@ export default function UpdateUser() {
                 </label>
 {/* 
                 <label>
-                  Mobile:
-                  <input name="mobile" value={form.mobile} onChange={handleChange} />
+                Mobile:
+                <input name="mobile" value={form.mobile} onChange={handleChange} />
                 </label> */}
 
                 <label>
@@ -287,7 +310,7 @@ export default function UpdateUser() {
               className={styles.saveButton}
               onClick={handleUpdate}
               disabled={updating}
-            >
+              >
               {updating ? "Saving..." : "Save Changes"}
             </button>
           </div>
@@ -295,5 +318,6 @@ export default function UpdateUser() {
         
       </main>
     </div>
+              </Layout>
   );
 }

@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/Sidebar";
 import styles from "../../styles/register.module.css";
 import Layout from "../../components/Layout";
@@ -81,12 +81,13 @@ export default function Register() {
       setMessage("❌ Failed to register");
     }
   };
-  
+
   return (
+<Layout>
   
 
     <div className={styles.container}>
-        <h1 className={styles.title}>Register User</h1>
+      <h1 className={styles.title}>Register User</h1>
       <div className={styles.formWrapper}>
 
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -121,56 +122,56 @@ export default function Register() {
             </div>
           </div>
 
-         <div className={styles.row}>
+          <div className={styles.row}>
             <div className={styles.field}>
               <label>Room No.</label>
-            <input name="room_no" onChange={handleChange} />
+              <input name="room_no" onChange={handleChange} />
             </div>
 
             <div className={styles.field}>
               <label>Hostel Name:</label>
-            <select name="hostel_name" required onChange={handleChange}>
-              <option value="" ></option>
-              {hostels.map((h) => (
-                <option key={h.id} value={h.name} >
-                  {h.name}
-                </option>
-              ))}
-            </select>
+              <select name="hostel_name" required onChange={handleChange}>
+                <option value="" ></option>
+                {hostels.map((h) => (
+                  <option key={h.id} value={h.name} >
+                    {h.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.field}>
               <label>Course Name</label>
-            <select name="course" required onChange={handleChange}>
-              <option value=""></option>
-              {courses.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              <select name="course" required onChange={handleChange}>
+                <option value=""></option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-            <div className={styles.field}>
-              <label>Gender</label>
-              <select name="gender" onChange={handleChange}>
-  <option value=""></option>
-  <option value="Male">Male</option>
-  <option value="Female">Female</option>
-  <option value="Other">Other</option>
-</select>
+          <div className={styles.field}>
+            <label>Gender</label>
+            <select name="gender" onChange={handleChange}>
+              <option value=""></option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
 
 
-            </div>
-            <div className={styles.field}>
-              <label>Food Preference</label>
-<select name="food_preference" onChange={handleChange}>
-  <option value=""></option>
-  <option value="veg">Veg</option>
-  <option value="nonveg">Non-Veg</option>
-</select>
-              </div>
+          </div>
+          <div className={styles.field}>
+            <label>Food Preference</label>
+            <select name="food_preference" onChange={handleChange}>
+              <option value=""></option>
+              <option value="veg">Veg</option>
+              <option value="nonveg">Non-Veg</option>
+            </select>
+          </div>
 
           <div className={styles.field}>
             <label>Date of Joining</label>
@@ -198,10 +199,11 @@ export default function Register() {
             Register
           </button>
         </form>
-        
+
 
         {message && <p className={styles.message}>{message}</p>}
       </div>
     </div>
+                </Layout>
   );
 }

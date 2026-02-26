@@ -616,7 +616,7 @@ setOpenAccordionId={setOpenAccordionId}
                             className={`${styles.cardbtn} ${styles.delBtn}`}
                             onClick={() => requestDeleteUser(u)}
                           >
-                           {t(" Delete")}
+                           {t("delete")}
                           </button>
                           </div>
                         }

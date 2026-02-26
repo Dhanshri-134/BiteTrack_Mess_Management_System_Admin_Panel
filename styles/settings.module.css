@@ -391,3 +391,36 @@
   letter-spacing: normal !important;
   text-transform: none !important;
 }
+
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  width: 95%;
+  max-width: 420px;
+  padding: 24px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0 }
+  to { transform: scale(1); opacity: 1 }
+}

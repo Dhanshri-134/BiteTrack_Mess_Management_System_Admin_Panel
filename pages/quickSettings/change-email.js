@@ -92,6 +92,8 @@ const fetchData = async () => {
   };
 
   return (
+    <Layout>
+
   <div className={styles.container}>
     <main className={styles.main}>
       <h1>Change User Email</h1>
@@ -108,9 +110,9 @@ const fetchData = async () => {
         <ul className={styles.userList}>
           {filteredUsers.map((u) => (
             <li
-              key={u.id}
-              onClick={() => setSelectedUser(u)}
-              className={selectedUser?.id === u.id ? styles.selectedUser : ""}
+            key={u.id}
+            onClick={() => setSelectedUser(u)}
+            className={selectedUser?.id === u.id ? styles.selectedUser : ""}
             >
               {u.name || `${u.first_name} ${u.last_name}`} ({u.email})
             </li>
@@ -128,7 +130,7 @@ const fetchData = async () => {
             placeholder="Enter new email"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
-          />
+            />
           <button onClick={handleUpdateEmail} disabled={loading}>
             {loading ? "Updating..." : "Update Email"}
           </button>
@@ -136,5 +138,6 @@ const fetchData = async () => {
       )}
     </main>
   </div>
+      </Layout>
   );
 }

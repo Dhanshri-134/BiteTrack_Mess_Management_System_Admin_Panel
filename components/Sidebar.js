@@ -39,6 +39,9 @@ export default function Sidebar({ closeSidebar }) {
   const { t } = useLanguage();
   const sectionRefs = useRef({});
 
+  const [messAccess, setMessAccess] = useState(null);
+const [loadingAccess, setLoadingAccess] = useState(true);
+
 
   const [role, setRole] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -58,6 +61,33 @@ export default function Sidebar({ closeSidebar }) {
     if (decoded?.role) setRole(decoded.role);
   }, []);
 
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const fetchAccess = async () => {
+    try {
+      const data = await offlineFetch("mess-access", async () => {
+        const res = await fetch(
+          "https://bite-track-mess-management-system-a.vercel.app/api/mess/access/",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch access");
+        return res.json();
+      });
+
+      setMessAccess(data || {});
+    } catch (err) {
+      console.error("Access unavailable offline");
+      setMessAccess({});
+    } finally {
+      setLoadingAccess(false);
+    }
+  };
+
+  fetchAccess();
+}, []);
 
 useEffect(() => {
   const token = localStorage.getItem("token");
@@ -67,7 +97,7 @@ useEffect(() => {
     try {
       const data = await offlineFetch("mess-profile", async () => {
         const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
+          "/api/mess/profile/",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch profile");
@@ -264,9 +294,11 @@ const Section = ({ title, icon, openKey, children }) => {
                 <Link href="/menu/" onClick={closeSidebar}>
                   {t("menu")}
                 </Link>
-                <Link href="/requests/leave/" onClick={closeSidebar}>
-                  {t("leaves")}
-                </Link>
+                {messAccess?.leaves !== false && (
+  <Link href="/requests/leave/" onClick={closeSidebar}>
+    {t("leaves")}
+  </Link>
+)}
               </Section>
 
               <Section

@@ -386,3 +386,53 @@ justify-content: space-between;
 .section:not(.is-visible) {
   opacity: 0;
 }
+
+
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.attendanceModal {
+  background: #fff;
+  width: 90%;
+  max-width: 450px;
+  border-radius: 14px;
+  padding: 18px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.userRow {
+  padding: 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  font-size: 14px;
+  margin-bottom: 12px;
+}

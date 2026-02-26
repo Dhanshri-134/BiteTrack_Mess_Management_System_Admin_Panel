@@ -7,7 +7,7 @@ import { supabase } from "../../lib/supabase";
 
 import { useAppRefresh } from "@/lib/useAppRefresh";
 
-export default function SpecialDish() {
+export default function SpecialDish({ messAccess }) {
   const [specials, setSpecials] = useState([]);
   const [newDish, setNewDish] = useState("");
   const [isVeg, setIsVeg] = useState(true);
@@ -17,6 +17,10 @@ export default function SpecialDish() {
 
   const { t } = useLanguage();
 
+  const hasAccess = (key) => {
+  if (!messAccess) return true;
+  return messAccess[key] !== false;
+};
   useEffect(() => {
     fetchSpecials();
     fetchCravings();
@@ -219,10 +223,13 @@ const deleteDish = async (id) => {
   };
   
   
-  
+  if (!hasAccess("special_menu") && !hasAccess("cravings")) {
+  return null;
+}
   return (
     <div className={styles.container}>
-      <h2 className={styles.heading}>{t("sundaySpecialDishes")}</h2>
+      {hasAccess("special_menu") && (
+  <>      <h2 className={styles.heading}>{t("sundaySpecialDishes")}</h2>
       <p className={styles.subtext}>{t("sundaySpecialSubtitle")}</p>
 
       <div className={styles.addSection}>
@@ -310,8 +317,10 @@ const deleteDish = async (id) => {
           ))}
         </div>
       )}
-
-      <div className={styles.cravingsSection}>
+</>
+      )}
+      {hasAccess("cravings") && (
+  <div className={styles.cravingsSection}>
         <h3>{t("userCravings")}</h3>
 
         {cravings.length ? (
@@ -327,6 +336,7 @@ const deleteDish = async (id) => {
           <p>{t("noCravingsYet")}</p>
         )}
       </div>
+      )}
     </div>
   );
 }

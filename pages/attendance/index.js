@@ -9,7 +9,7 @@ import { queueAction } from "@/lib/queueAction";
 import { useLanguage } from "../../context/LanguageContext";
 import { useRouter } from "next/router";
 import { Trash2Icon } from "lucide-react";
-
+import Link from "next/link";
 
 export default function AttendancePage() {
   const [records, setRecords] = useState([]);
@@ -25,6 +25,21 @@ export default function AttendancePage() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
   const [searchAttendance, setSearchAttendance] = useState("");
+
+  const [role, setRole] = useState(null);
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    setRole(payload.role || "OWNER");
+  } catch {
+    setRole("OWNER");
+  }
+}, []);
+
   const todayRecords = records.filter(
     (r) =>
       r.att_date === today &&
@@ -394,8 +409,17 @@ export default function AttendancePage() {
           {/* Stats */}
           <div className={styles.stats}>
             <div className={styles["stat-card"]}>
-              <h3>{t("totalMembers")}</h3>
-              <p>{stats.totalMembers}</p>
+            {role !== "STAFF" ? (
+  <Link href="/users/">
+    <h3>{t("totalMembers")}</h3>
+    <p>{stats.totalMembers}</p>
+  </Link>
+) : (
+  <>
+    <h3>{t("totalMembers")}</h3>
+    <p>{stats.totalMembers}</p>
+  </>
+)}
             </div>
             <div className={styles["stat-card"]}>
               <h3>{t("todaysAttendance")}</h3>
@@ -479,9 +503,10 @@ export default function AttendancePage() {
                         <td>{idx + 1}</td>
                         <td
                         ><span
-                          style={{ cursor: "pointer" }}
+                          style={{ cursor: role === "STAFF" ? "default" : "pointer",}}
                           
                           onClick={() => {
+                             if (role === "STAFF") return;
                             const today = new Date();
                             const month = String(today.getMonth() + 1).padStart(2, "0");
                             const year = today.getFullYear();
@@ -546,6 +571,7 @@ export default function AttendancePage() {
                             <td
                               style={{ cursor: "pointer", color: "#2563EB" }}
                               onClick={() => {
+                                if (role === "STAFF") return; 
                                 const today = new Date();
                                 const month = String(today.getMonth() + 1).padStart(2, "0");
                                 const year = today.getFullYear();

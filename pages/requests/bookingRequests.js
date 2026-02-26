@@ -13,6 +13,7 @@ export default function bookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [confirmData, setConfirmData] = useState(null);
 
   const statusOptions = [
   "all",
@@ -71,37 +72,40 @@ useAppRefresh(fetchBookings);
   return new Date(date).toISOString().split("T")[0];
 };
 
+const openConfirmModal = (id, status) => {
+  setConfirmData({ id, status });
+};
 
-  const updateStatus = async (id, status) => {
-    if (!confirm(`Are you sure you want to mark this booking as ${status}?`))
-      return;
+//   const updateStatus = async (id, status) => {
+//    setConfirmData({ id, status });
 
-    try {
-      const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/bookings/${id}/`, {
-        method: "PATCH",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ status }),
-      });
+//     try {
+//       const res = await fetch(`/api/bookings/${id}/`, {
+//         method: "PATCH",
+//         headers: { 
+//           "Content-Type": "application/json",
+//           "Authorization": `Bearer ${localStorage.getItem("token")}`
+//         },
+//         body: JSON.stringify({ status }),
+//       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update booking");
-      toast.success(
-  status === "Confirmed"
-    ? t("bookingConfirmed")
-    : status === "Rejected"
-    ? t("bookingRejected")
-    : t("bookingCompleted")
-);
+//       const data = await res.json();
+//       if (!res.ok) throw new Error(data.error || "Failed to update booking");
+//       toast.success(
+//   status === "Confirmed"
+//     ? t("bookingConfirmed")
+//     : status === "Rejected"
+//     ? t("bookingRejected")
+//     : t("bookingCompleted")
+// );
 
-  fetchBookings();
+//   fetchBookings();
 
-    } catch (err) {
-      toast.error("Something went wrong. Please try again.");
-    }
-  };
+//     } catch (err) {
+// console.log(err)
+//       toast.error("Something went wrong. Please try again.");
+//     }
+//   };
 
 
   const filtered =
@@ -157,6 +161,8 @@ useAppRefresh(fetchBookings);
             <div><span>{t("people")}</span>{booking.people_count}</div>
             <div><span>{t("menu")}</span>{booking.menu_preference}</div>
             <div><span>{t("date")}</span>{formatDateOnly(booking.function_date)}</div>
+            <div><span>{t("address")}</span>{booking.address}</div>
+            <div><span>{t("requestedAt")}</span>{formatDateOnly(booking.created_at)}</div>
            
           </div>
 
@@ -202,6 +208,42 @@ useAppRefresh(fetchBookings);
   );
 }
 
+
+const confirmStatusUpdate = async () => {
+  if (!confirmData) return;
+
+  const { id, status } = confirmData;
+
+  try {
+    const res = await fetch(`/api/bookings/${id}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to update booking");
+
+    toast.success(
+      status === "Confirmed"
+        ? t("bookingConfirmed")
+        : status === "Rejected"
+        ? t("bookingRejected")
+        : t("bookingCompleted")
+    );
+
+    setConfirmData(null);
+    fetchBookings();
+
+  } catch (err) {
+    console.log(err);
+    toast.error("Something went wrong. Please try again.");
+    setConfirmData(null);
+  }
+};
 
    return (
     <Layout>
@@ -259,16 +301,16 @@ useAppRefresh(fetchBookings);
                         <td className={styles.actions}>
                           {b.status === "Pending" && (
                             <>
-                              <button onClick={() => updateStatus(b.id, "Confirmed")} className={styles.confirm}>
+                              <button onClick={() => openConfirmModal(b.id, "Confirmed")} className={styles.confirm}>
                                 {t("confirm")}
                               </button>
-                              <button onClick={() => updateStatus(b.id, "Rejected")} className={styles.reject}>
+                              <button onClick={() => openConfirmModal(b.id, "Rejected")} className={styles.reject}>
                                 {t("reject")}
                               </button>
                             </>
                           )}
                           {b.status === "Confirmed" && (
-                            <button onClick={() => updateStatus(b.id, "Completed")} className={styles.complete}>
+                            <button onClick={() => openConfirmModal(b.id, "Completed")} className={styles.complete}>
                               {t("complete")}
                             </button>
                           )}
@@ -290,7 +332,7 @@ useAppRefresh(fetchBookings);
     key={b.id}
     booking={b}
     t={t}
-    onStatusChange={updateStatus}
+    onStatusChange={openConfirmModal}
   />
 ))
 
@@ -300,6 +342,37 @@ useAppRefresh(fetchBookings);
         )}
 
       </div>
+
+      {confirmData && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modal}>
+      <h3>
+        {t("confirmAction")}
+      </h3>
+
+      <p>
+        {t("areYouSure")}{" "}
+        ?
+      </p>
+
+      <div className={styles.modalActions}>
+        <button
+          className={styles.cancelBtn}
+          onClick={() => setConfirmData(null)}
+        >
+          {t("cancel")}
+        </button>
+
+        <button
+          className={styles.confirmBtn}
+          onClick={confirmStatusUpdate}
+        >
+          {t("yesProceed")}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </Layout>
   );
 }
