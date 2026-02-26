@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import StaffHandling from "./staff_setting";
 import { useLanguage } from "../../context/LanguageContext";
 import { offlineFetch } from "@/lib/offlineFetch";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+import GlobalLoader from "@/components/GlobalLoader";
 const SUPABASE_URL = "https://db.vhnhtypxvpwagghunnjr.supabase.co";
 
 export default function SettingsPage() {
@@ -46,6 +48,7 @@ export default function SettingsPage() {
     address: "",
   });
 
+  const [saving, setSaving] = useState(false);
 
   const [paymentConfig, setPaymentConfig] = useState({
   upi_id: "",
@@ -148,6 +151,8 @@ if (paymentData) {
     fetchSettings();
   }, []);
 
+  useAppRefresh(fetchSettings);
+
   // --------------------------------------------------
   // 🟡 Field handler
   // --------------------------------------------------
@@ -217,6 +222,7 @@ if (paymentData) {
   // 🟢 Save
   // --------------------------------------------------
   const saveSettings = async () => {
+    setSaving(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Unauthorized");
@@ -308,11 +314,12 @@ if (!paymentRes.ok) {
   throw new Error("Failed to save payment config");
 }
 
-
+  setSaving(false);
       toast.success(t("settings_updated"));
     } catch (err) {
       console.error(err);
       toast.error(t("update_failed"));
+      setSaving(false); 
     }
   };
 
@@ -329,11 +336,15 @@ if (!paymentRes.ok) {
 }, []);
 
 
-  // if (loading) return <Layout>{t("loading")}</Layout>;
-
+if(saving) return (
+  <Layout>
+    {saving && <GlobalLoader />}   {/* 🔥 Fkt save time la show honar */}
+  </Layout>
+);
   // --------------------------------------------------
   // 🧩 UI
   // --------------------------------------------------
+
   return (
     <Layout>
       <div className={styles.container}>

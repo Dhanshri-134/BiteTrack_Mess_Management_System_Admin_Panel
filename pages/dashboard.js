@@ -403,7 +403,7 @@ export default function Dashboard() {
       try {
         const data = await offlineFetch("mess-access", async () => {
           const res = await fetch(
-            "/api/mess/access/",
+            "https://bite-track-mess-management-system-a.vercel.app/api/mess/access/",
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch access");

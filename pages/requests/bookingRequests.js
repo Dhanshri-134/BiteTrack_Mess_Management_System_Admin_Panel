@@ -215,7 +215,7 @@ const confirmStatusUpdate = async () => {
   const { id, status } = confirmData;
 
   try {
-    const res = await fetch(`/api/bookings/${id}/`, {
+    const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/bookings/${id}/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

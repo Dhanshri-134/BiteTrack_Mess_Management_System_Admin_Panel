@@ -97,7 +97,7 @@ useEffect(() => {
     try {
       const data = await offlineFetch("mess-profile", async () => {
         const res = await fetch(
-          "/api/mess/profile/",
+          "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch profile");
@@ -241,9 +241,11 @@ const Section = ({ title, icon, openKey, children }) => {
 
           <div className={styles.profileInfo}>
             <p className={styles.profileName}>
-              {loadingProfile ? "Loading..." : profile?.name || "My Mess"}
+              { profile?.name || "My Mess"}
             </p>
             <span className={styles.profileRole}>
+              { profile?.secret_key} 
+              <br></br>
               {role === "STAFF" ? t("staff") : t("owner")}
             </span>
           </div>

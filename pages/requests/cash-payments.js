@@ -56,8 +56,13 @@ function UserPaymentGroup({ user, activeTab, onAction, onImageClick, t }) {
 
   const latest = history[0];
 
-  const status =
-    latest.request_status || latest.verification_status || "pending";
+  const rawStatus =
+  latest.request_status ||
+  latest.verification_status ||
+  latest.payment_status ||
+  latest.status;
+
+const status = normalizeStatus(rawStatus);
 
   return (
     <div className={styles.mobileCard}>
@@ -90,8 +95,13 @@ function UserPaymentGroup({ user, activeTab, onAction, onImageClick, t }) {
       {/* HISTORY DROPDOWN */}
       <div className={`${styles.dropdown} ${open ? styles.open : ""}`}>
         {history.map((p) => {
-          const itemStatus =
-            p.request_status || p.verification_status || "pending";
+          const rawItemStatus =
+  p.request_status ||
+  p.verification_status ||
+  p.payment_status ||
+  p.status;
+
+const itemStatus = normalizeStatus(rawItemStatus);
 
           const isPending =
             itemStatus.toLowerCase() === "pending";
@@ -299,6 +309,17 @@ const fetchData = async () => {
       )
     );
   };
+  const normalizeStatus = (status) => {
+  if (!status) return "pending";
+
+  const s = status.toLowerCase();
+
+  if (s === "paid") return "approved";   // 🔥 main fix
+  if (s === "approved") return "approved";
+  if (s === "rejected") return "rejected";
+
+  return "pending";
+};
 
   const statusBadge = (status) => {
     switch (status) {
@@ -336,8 +357,13 @@ function MobilePaymentCard({
 }) {
   const [open, setOpen] = useState(false);
 
-  const status =
-    payment.request_status || payment.verification_status || "pending";
+  const rawStatus =
+  payment.request_status ||
+  payment.verification_status ||
+  payment.payment_status ||
+  payment.status;
+
+const status = normalizeStatus(rawStatus);
 
   const isPending =
     status.toLowerCase() === "pending";
