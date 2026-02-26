@@ -84,19 +84,17 @@ ORDER BY u.name
     // Fetch monthly_attendance for the selected month/year
     const attendanceQuery = `
       SELECT
-  user_id,
-  year,
-  month,
-  days_billed,
-  present_days,
-  allowed_leave_days,
-  attendance_map
-FROM monthly_attendance_billing
-WHERE mess_id = $1
-  AND month = $2
-  AND year = $3
-  
-
+        user_id,
+        year,
+        month,
+        days_billed,
+        present_days,
+        allowed_leave_days,
+        attendance_map
+      FROM monthly_attendance_billing
+      WHERE mess_id = $1
+        AND month = $2
+        AND year = $3
     `;
     const { rows: attendanceRows } = await pgPool.query(attendanceQuery, [messId, Number(month), Number(year)]);
     const attendanceMap = {};
@@ -104,111 +102,100 @@ WHERE mess_id = $1
       attendanceMap[a.user_id] = a;
     });
 
-// Compute start and end date of selected month
-const startDate = new Date(Number(year), numericMonth - 1, 1);
-const endDate = new Date(Number(year), numericMonth, 0);
+    const startDate = new Date(Number(year), numericMonth - 1, 1);
+    const endDate = new Date(Number(year), numericMonth, 0);
 
-// Format to YYYY-MM-DD for Postgres DATE comparison
-const startStr = startDate.toISOString().slice(0, 10);
-const endStr = endDate.toISOString().slice(0, 10);
+    const startStr = startDate.toISOString().slice(0, 10);
+    const endStr = endDate.toISOString().slice(0, 10);
 
-const ownerQuery = `
-  SELECT user_id, att_date
-  FROM "Owner_Marked_attendance"
-  WHERE mess_id = $1
-    AND att_date BETWEEN $2 AND $3
-`;
+    const ownerQuery = `
+      SELECT user_id, att_date
+      FROM "Owner_Marked_attendance"
+      WHERE mess_id = $1
+        AND att_date BETWEEN $2 AND $3
+    `;
 
-const { rows: ownerRows } = await pgPool.query(ownerQuery, [
-  messId,
-  startStr,
-  endStr,
-]);
+    const { rows: ownerRows } = await pgPool.query(ownerQuery, [
+      messId,
+      startStr,
+      endStr,
+    ]);
 
-const ownerMap = {};
+    const ownerMap = {};
 
-ownerRows.forEach(o => {
-  const dateStr = new Date(o.att_date)
-    .toISOString()
-    .slice(0, 10);
+    ownerRows.forEach(o => {
+      const dateStr = new Date(o.att_date)
+        .toISOString()
+        .slice(0, 10);
 
-  if (!ownerMap[o.user_id]) {
-    ownerMap[o.user_id] = [];
-  }
+      if (!ownerMap[o.user_id]) {
+        ownerMap[o.user_id] = [];
+      }
 
-  ownerMap[o.user_id].push(dateStr);
-});
+      ownerMap[o.user_id].push(dateStr);
+    });
 
-    // Fetch payment_history for the selected month/year
     const paymentsQuery = `
-  SELECT user_id, payment_date, amount, status, note
-  FROM payment_history
-  WHERE mess_id = $1
-    AND (
-      CASE
-        -- If the text is numeric (e.g., "2", "02")
-        WHEN month ~ '^[0-9]+$' THEN CAST(month AS INTEGER)
+      SELECT user_id, payment_date, amount, status, note
+      FROM payment_history
+      WHERE mess_id = $1
+        AND (
+          CASE
+            -- If the text is numeric (e.g., "2", "02")
+            WHEN month ~ '^[0-9]+$' THEN CAST(month AS INTEGER)
 
-        -- If the text is a month name (e.g., "February", "Feb")
-        ELSE EXTRACT(MONTH FROM TO_DATE(month, 'Month'))
-      END
-    ) = $2
-    AND year = $3
-`;
+            -- If the text is a month name (e.g., "February", "Feb")
+            ELSE EXTRACT(MONTH FROM TO_DATE(month, 'Month'))
+          END
+        ) = $2
+        AND year = $3
+      `;
 
     const { rows: paymentRows } = await pgPool.query(paymentsQuery, [messId, numericMonth, Number(year)]);
     const paymentMap = {};
-paymentRows.forEach(p => {
-  paymentMap[`${p.user_id}-${year}-${Number(month)}`] = p;
-});
 
+    paymentRows.forEach(p => {
+      paymentMap[`${p.user_id}-${year}-${Number(month)}`] = p;
+    });
 
+    const bills = [];
 
- const bills = [];
+    for (const a of attendanceRows) {
+      const u = users.find(x => x.id === a.user_id);
+      if (!u) continue;
 
-for (const a of attendanceRows) {
-  const u = users.find(x => x.id === a.user_id);
-  if (!u) continue;
+      const paymentKey = `${a.user_id}-${a.year}-${a.month}`;
+      const payment = paymentMap[paymentKey];
 
-  const paymentKey = `${a.user_id}-${a.year}-${a.month}`;
-  const payment = paymentMap[paymentKey];
+      const perDay = Number(u.per_day_rate ?? 0);
+      const totalAmount = Number((a.days_billed * perDay).toFixed(2));
 
-  const perDay = Number(u.per_day_rate ?? 0);
-  const totalAmount = Number((a.days_billed * perDay).toFixed(2));
+      const start = new Date(a.year, a.month - 1, 1);
+      const end = new Date(a.year, a.month, 0);
 
-  const start = new Date(a.year, a.month - 1, 1);
-  const end = new Date(a.year, a.month, 0);
-
-    bills.push({
-    user_id: u.id,
-    name: u.name,
-    email: u.email,
-    status: u.status ?? "Active",
- mobile: u.phone,
-parent_mobile: u.parent_mobile,
-
-    year: a.year,
-    month: a.month,
-
-    start_date: toISTDate(start),
-    end_date: toISTDate(end),
-
-    days_billed: a.days_billed,
-    chosen_per_day_rate: perDay,
-    total_amount: totalAmount,
-
-    paid: payment?.status === "paid",
-    note: payment?.note || null,
-    attendance_map: a.attendance_map ?? {},
-owner_marked_dates: ownerMap[a.user_id] ?? [],
-  });
-}
-
+        bills.push({
+        user_id: u.id,
+        name: u.name,
+        email: u.email,
+        status: u.status ?? "Active",
+        mobile: u.phone,
+        parent_mobile: u.parent_mobile,
+        year: a.year,
+        month: a.month,
+        start_date: toISTDate(start),
+        end_date: toISTDate(end),
+        days_billed: a.days_billed,
+        chosen_per_day_rate: perDay,
+        total_amount: totalAmount,
+        paid: payment?.status === "paid",
+        note: payment?.note || null,
+        attendance_map: a.attendance_map ?? {},
+        owner_marked_dates: ownerMap[a.user_id] ?? [],
+      });
+    }
 
     return res.status(200).json(bills);
-
   } catch (err) {
-    console.error("🔥 Error in /api/bills/fetch:", err);
     return res.status(500).json({ error: err.message || "Internal server error" });
   }
 }

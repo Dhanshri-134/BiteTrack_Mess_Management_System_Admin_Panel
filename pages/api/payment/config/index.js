@@ -54,12 +54,6 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
       const { upi_id, receiver_name } = req.body;
 
-      if (!upi_id || !receiver_name) {
-        return res.status(400).json({
-          error: "upi_id and receiver_name are required",
-        });
-      }
-
       const existing = await pgPool.query(
         `
         SELECT id FROM payment_config

@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       SELECT 
         m.id,
         m.name,
-        m.owner_photo
+        m.image as owner_photo
       FROM messes m
       WHERE m.id = $1
       LIMIT 1
