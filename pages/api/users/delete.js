@@ -67,7 +67,6 @@ export default async function handler(req, res) {
       "notifications",
       "parents",
       "password_reset_codes",
-      "payment_history",
       "payment_verifications",
       "ratings",
       "user_cravings",
