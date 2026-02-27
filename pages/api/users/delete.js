@@ -78,7 +78,6 @@ export default async function handler(req, res) {
       await client.query(`DELETE FROM "${table}" WHERE user_id = $1`, [id]);
     }
 
-    // ✅ Soft delete user instead of hard delete
     await client.query(
       `UPDATE users SET is_active = false WHERE id = $1`,
       [id]
