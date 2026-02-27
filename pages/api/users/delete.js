@@ -1,28 +1,3 @@
-// import { pgPool } from "../../../lib/db";
-
-// export default async function handler(req, res) {
-//   if (req.method !== "DELETE") return res.status(405).end();
-
-//   const { id } = req.body;
-
-//   if (!id) return res.status(400).json({ error: "Missing user ID" });
-
-//   try {
-//     const result = await pgPool.query(
-//       `DELETE FROM users WHERE id = $1 RETURNING *;`, // ✅ correct SQL
-//       [id] // ✅ pass id as parameter
-//     );
-
-//     if (result.rows.length === 0)
-//       return res.status(404).json({ error: "User not found" });
-
-//     res.status(200).json({ ok: true, deletedUser: result.rows[0] });
-//   } catch (err) {
-//     console.error("Error deleting user:", err);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// }
-
 import { pgPool } from "../../../lib/db";
 import jwt from "jsonwebtoken";
 
@@ -58,22 +33,71 @@ export default async function handler(req, res) {
   const { id } = req.body;
   if (!id) return res.status(400).json({ error: "Missing user ID" });
 
+ try {
+  const client = await pgPool.connect();
+
   try {
-    // ✅ Only delete user from the same mess
-    const result = await pgPool.query(
-      `DELETE FROM users 
-       WHERE id = $1 AND mess_id = $2 
-       RETURNING *;`,
+    await client.query("BEGIN");
+
+    // ✅ Verify user belongs to this mess
+    const userCheck = await client.query(
+      `SELECT id FROM users WHERE id = $1 AND mess_id = $2`,
       [id, messId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "User not found or not in your mess" });
+    if (userCheck.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "User not found in your mess" });
     }
 
-    res.status(200).json({ ok: true, deletedUser: result.rows[0] });
+    // 🔥 DELETE FROM ALL REFERENCING TABLES
+
+    const tables = [
+      "account_deletion_requests",
+      "attendance",
+      "authentication",
+      "bills",
+      "cash_payments",
+      "daily_payment_requests",
+      "fasting_requests",
+      "feedback",
+      "function_bookings",
+      "leave_requests",
+      "monthly_attendance",
+      "notifications",
+      "parents",
+      "password_reset_codes",
+      "payment_history",
+      "payment_verifications",
+      "ratings",
+      "user_cravings",
+      "verification_codes",
+      "Owner_Marked_attendance"
+    ];
+
+    for (const table of tables) {
+      await client.query(`DELETE FROM "${table}" WHERE user_id = $1`, [id]);
+    }
+
+    // ✅ Soft delete user instead of hard delete
+    await client.query(
+      `UPDATE users SET is_active = false WHERE id = $1`,
+      [id]
+    );
+
+    await client.query("COMMIT");
+
+    res.status(200).json({ ok: true });
+
   } catch (err) {
-    console.error("Error deleting user:", err);
-    res.status(500).json({ error: "Internal server error" });
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
   }
+
+} catch (err) {
+  console.error("Error clearing user data:", err);
+  res.status(500).json({ error: "Internal server error" });
+}
 }
