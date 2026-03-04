@@ -55,6 +55,7 @@ export default async function handler(req, res) {
   u.date_of_joining,
   u.verified,
   u.created_at,
+  u.status,
 
   ma.first_attendance_date,
 

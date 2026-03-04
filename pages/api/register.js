@@ -95,18 +95,17 @@ export default async function handler(req, res) {
   let tokenMessId = null;
   const token = req.headers.authorization?.split(" ")[1];
 
-  if (token) {
-    try {
-      const decoded = await verifyToken(token);
-      tokenMessId = decoded?.mess_id || null;
-    } catch (e) {
-      console.log("Token invalid, ignoring token mess_id");
-    }
+if (token) {
+  try {
+    const decoded = jwt.decode(token);
+    tokenMessId = decoded?.messId || null;
+  } catch (e) {
+    console.log("Token decode failed");
   }
+}
 
   // FINAL mess_id logic
   // priority: token → frontend → default(1)
-  const finalMessId = tokenMessId || bodyMessId || 1;
 
   const client = await pgPool.connect();
   try {
@@ -117,7 +116,7 @@ export default async function handler(req, res) {
        VALUES ($1,$2,$3,$4,TRUE)
        ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name
        RETURNING id`,
-      [name, email, phone || null, finalMessId]
+      [name, email, phone || null, tokenMessId]
     );
 
     const userId = insert.rows[0].id;

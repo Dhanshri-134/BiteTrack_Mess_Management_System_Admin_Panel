@@ -95,6 +95,7 @@ export default async function handler(req, res) {
 
     const client = await pgPool.connect();
     try {
+      console.log("Hit 1")
       await client.query("BEGIN");
 
       // ensure user belongs to mess
@@ -109,6 +110,7 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: "Forbidden: user not in your mess" });
       }
 
+      console.log("Hit 2")
       // determine relevant paid-record: either provided month/year OR the most recent paid payment_history entry
       let paidCheckQ = `
         SELECT month, year, payment_date, status
@@ -116,6 +118,7 @@ export default async function handler(req, res) {
         WHERE user_id = $1 AND mess_id = $2 AND status = 'paid'
       `;
       const paidParams = [userId, messId];
+      console.log("Hit 3")
       if (billMonth && billYear) {
         paidCheckQ += " AND month = $3 AND year = $4";
         paidParams.push(String(billMonth), billYear);
@@ -131,7 +134,7 @@ export default async function handler(req, res) {
           await client.query("ROLLBACK");
           return res.status(400).json({ error: "Cannot freeze: payment for billing period not found/paid" });
         }
-
+console.log("Hit 4")
         // mark user frozen
         const updUserQ = `
           UPDATE users
@@ -142,6 +145,7 @@ export default async function handler(req, res) {
         const { rows: updUserRows } = await client.query(updUserQ, [userId]);
         const updatedUser = updUserRows[0];
 
+        console.log("Hit 6")
         // compute freeze year/month from today's date
         const nowDate = new Date();
         const freezeYear = nowDate.getFullYear();
@@ -174,6 +178,7 @@ WHERE ma.user_id = $1
         await client.query(updateAttendanceQ, [userId, messId, freezeYear, freezeDateText, freezeMonth]);
 
         await client.query("COMMIT");
+        console.log("Hit 7")
         return res.status(200).json({ ok: true, action: "freeze", user: updatedUser });
 
       } else if (action === "unfreeze") {
@@ -187,6 +192,7 @@ WHERE ma.user_id = $1
         const { rows: updUserRows } = await client.query(updUserQ, [userId]);
         const updatedUser = updUserRows[0];
 
+        console.log("Hit 8")
         // upsert monthly_attendance for current month/year: set first_attendance_date = current_date
         const nowDate = new Date();
         const curYear = nowDate.getFullYear();
@@ -201,6 +207,7 @@ WHERE ma.user_id = $1
         `;
         await client.query(upsertMA, [userId, curYear, curMonth, curDateText, messId]);
 
+        console.log("Hit 9")
         await client.query("COMMIT");
         return res.status(200).json({ ok: true, action: "unfreeze", user: updatedUser });
       } else {
