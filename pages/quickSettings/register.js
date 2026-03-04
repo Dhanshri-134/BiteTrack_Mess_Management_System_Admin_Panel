@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Sidebar from "../../components/Sidebar";
 import styles from "../../styles/register.module.css";
 import Layout from "../../components/Layout";
 import toast from "react-hot-toast";
@@ -75,7 +74,10 @@ const getToken = () => localStorage.getItem("token");
         },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
+      let data = {};
+try {
+  data = await res.json();
+} catch {}
       if (res.ok) {
         toast.success("✅ Registered! Please check your email for the code.");
       } else {
@@ -89,8 +91,6 @@ const getToken = () => localStorage.getItem("token");
 
   return (
 <Layout>
-  
-
     <div className={styles.container}>
       <h1 className={styles.title}>Register User</h1>
       <div className={styles.formWrapper}>
@@ -205,8 +205,6 @@ const getToken = () => localStorage.getItem("token");
           </button>
         </form>
 
-
-        {message && <p className={styles.message}>{message}</p>}
       </div>
     </div>
                 </Layout>
