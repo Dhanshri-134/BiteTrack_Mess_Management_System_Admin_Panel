@@ -122,7 +122,7 @@ export default async function handler(req, res) {
        VALUES ($1,$2,$3,$4,TRUE)
        ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name
        RETURNING id`,
-      [name, email, phone || null, 5]
+      [name, email, phone || null, messId]
     );
 
     const userId = insert.rows[0].id;
