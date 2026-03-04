@@ -93,19 +93,19 @@ export default async function handler(req, res) {
 
   // ⬅️ Extract mess_id from token (if token exists)
 
-  // const auth = req.headers.authorization;
-  // if (!auth) {
-  //   return res.status(401).json({ error: "Unauthorized: token required" });
-  // }
+  const auth = req.headers.authorization;
+  if (!auth) {
+    return res.status(401).json({ error: "Unauthorized: token required" });
+  }
 
-  // let decoded;
-  // try {
-  //   const token = auth.split(" ")[1];
-  //   decoded = jwt.verify(token, process.env.JWT_SECRET);
-  // } catch (err) {
-  //   console.warn("Invalid token:", err.message);
-  //   return res.status(401).json({ error: "Invalid or expired token" });
-  // }
+  let decoded;
+  try {
+    const token = auth.split(" ")[1];
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    console.warn("Invalid token:", err.message);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
 
   const messId = decoded.messId;
 

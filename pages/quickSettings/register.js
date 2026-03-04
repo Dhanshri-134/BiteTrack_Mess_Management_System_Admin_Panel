@@ -67,7 +67,9 @@ export default function Register() {
     try {
       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/register/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+          headers: { Authorization: `Bearer ${token}` } 
+        },
         body: JSON.stringify(form),
       });
       const data = await res.json();
