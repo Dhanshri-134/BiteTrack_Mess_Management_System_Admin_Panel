@@ -53,7 +53,8 @@ export default function Register() {
     fetchMeta();
   }, []);
 
-
+const getToken = () => localStorage.getItem("token");
+  
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -65,6 +66,8 @@ export default function Register() {
 
 
     try {
+
+      const token = getToken();
       const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json",
