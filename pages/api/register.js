@@ -92,18 +92,21 @@ export default async function handler(req, res) {
   if (!name || !email) return res.status(400).json({ error: 'Missing fields' });
 
   // ⬅️ Extract mess_id from token (if token exists)
-  let tokenMessId = null;
-  const token = req.headers.authorization?.split(" ")[1];
-
-if (token) {
-  try {
-    const decoded = jwt.decode(token);
-    tokenMessId = decoded?.messId || null;
-  } catch (e) {
-    console.log("Token decode failed");
+  const auth = req.headers.authorization;
+  if (!auth) {
+    return res.status(401).json({ error: "Unauthorized: token required" });
   }
-}
 
+  let decoded;
+  try {
+    const token = auth.split(" ")[1];
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    console.warn("Invalid token:", err.message);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  const messId = decoded.messId;
   // FINAL mess_id logic
   // priority: token → frontend → default(1)
 
@@ -116,7 +119,7 @@ if (token) {
        VALUES ($1,$2,$3,$4,TRUE)
        ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name
        RETURNING id`,
-      [name, email, phone || null, tokenMessId]
+      [name, email, phone || null, messId]
     );
 
     const userId = insert.rows[0].id;
