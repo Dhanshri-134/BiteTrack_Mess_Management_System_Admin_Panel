@@ -76,7 +76,7 @@
 
 
 import { pgPool } from '../../lib/db';
-import { verifyToken } from '../../lib/auth';   // ⬅️ using your existing token verify
+import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
