@@ -64,11 +64,11 @@ export default function Users() {
         const [vRes, uRes] = await Promise.all([
           fetch(
             
-            "/api/users/verified/",
+            `${API_BASE}/api/users/verified/`,
             { headers: authHeaders() }
           ),
           fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/users/unverified/",
+            `${API_BASE}/api/users/unverified/`,
             { headers: authHeaders() }
           )
           ]);
@@ -107,7 +107,7 @@ export default function Users() {
   const handleUpdate = async () => {
     try {
       const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/update/",
+        `${API_BASE}/api/update/`,
         {
           method: "PUT",
           headers: authHeaders(),
@@ -253,7 +253,7 @@ export default function Users() {
 
     try {
       const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/users/delete/",
+        `${API_BASE}/api/users/delete/`,
         {
           method: "DELETE",
           headers: authHeaders(),
@@ -282,7 +282,7 @@ export default function Users() {
 
     try {
       const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/users/changeDOJ/",
+        `${API_BASE}/api/users/changeDOJ/`,
         {
           method: "PUT",
           headers: authHeaders(),
@@ -463,7 +463,7 @@ const isOpen = openAccordionId === user.id;
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `/api/bills/toggle-freeze/`,
+      `${API_BASE}/api/bills/toggle-freeze/`,
       {
         method: "POST",
         headers: {
