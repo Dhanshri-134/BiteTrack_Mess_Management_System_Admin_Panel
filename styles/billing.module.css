@@ -128,16 +128,13 @@
   border: none;
   font-size: 0.8rem;
   font-weight: 600;
+  background-color: #007171;
+  color: #fff;
 }
 
 /* Paid / Unpaid */
 .btnPaid { background: #06ac00; color: #fff; }
-.btnPaidDisabled { background: var(--muted); cursor: not-allowed; }
-
-/* Freeze / Unfreeze */
-.btnFreeze { background: #ff0000; color: #fff; }
-.btnUnfreeze { background: #00782e; color: #fff; }
-.btnDisabled { background: gray; cursor: not-allowed; opacity: 0.6; color: white;}
+.btnPaidDisabled { background: gray !important; cursor: not-allowed; }
 
 /* Calendar */
 .btnCalendar { background:rgb(0, 115, 222); color: #fff; }
@@ -172,8 +169,13 @@
   text-align: left;
 }
 
+.table tbody tr:nth-child(even):hover,
+.table tbody tr:nth-child(odd):hover{
+  background-color: #cdcdcd78;
+}
+
 .table tbody tr:nth-child(even) {
-  background: rgba(191, 218, 220, 0.448);
+  background: rgba(222, 238, 239, 0.448);
 }
 
 .actionsCell {
@@ -667,4 +669,197 @@
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.btnAdvance{
+  background:transparent;
+  border:none;
+  /* padding:6px 8px; */
+  border-radius:6px;
+  color:#007171;
+  cursor:pointer;
+}
+
+.inlineAdvance{
+  margin-left:8px;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+}
+
+.advanceBalance{
+  background:#f1f5f9;
+  padding:10px;
+  border-radius:6px;
+  margin-bottom:10px;
+  font-weight:600;
+}
+
+.btnDanger{
+  background:#ef4444;
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+}
+
+.modalTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.modalTable th,
+.modalTable td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.modalTable th {
+  background: #f7f7f7;
+  font-weight: 600;
+}
+
+.mobileHistory {
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.mobileHistoryItem {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.mobilerow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.mobilerow span {
+  color: #666;
+}
+
+.btnMsg{
+  background-color: #00ff5e !important;
+  color: #fff;
+}
+
+.btnPayHist{
+  background-color: rgb(144, 0, 255);
+  color: #fff; 
+}
+
+.btnAdv{
+  background-color: #ffff00;
+  color: #fff;
+}
+
+.actionMenuWrapper{
+  position:relative;
+  display:inline-block;
+}
+
+.btnMore{
+  background:#18aeaec5;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  color: #004848;
+}
+
+.actionDropdown{
+  position:absolute;
+  right:0;
+  top:34px;
+  background:linear-gradient(rgba(0, 79, 79, 0.902),rgb(6, 206, 206));
+  color:#fff; 
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  display:flex;
+  flex-direction:column;
+  min-width:180px;
+  z-index:100;
+}
+
+.actionDropdown button{
+  background:none;
+  border:none;
+  padding:10px 14px;
+  text-align:left;
+  cursor:pointer;
+  color: #fff;
+}
+
+.actionDropdown button:hover{
+  background:#00a2a2;
+}
+
+
+
+.waOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.waModal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 420px;
+  max-width: 95%;
+}
+
+.waUser{
+  margin-bottom:10px;
+  margin-top:10px;
+}
+
+.waTextarea{
+  width:100%;
+  height:120px;
+  padding:10px;
+  border:1px solid #ddd;
+  border-radius:6px;
+  resize:none;
+  font-size:14px;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.waButtons{
+  margin-top:15px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.waSend{
+  background:#25D366;
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.waCancel{
+  background:#eee;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
 }

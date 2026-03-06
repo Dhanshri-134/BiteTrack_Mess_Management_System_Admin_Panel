@@ -1,0 +1,415 @@
+.active {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.inactive {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.primaryBtn {
+  background: #2563eb;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+.dangerBtn {
+  background: #ef4444;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-left: 10px;
+}
+
+
+.form {
+  max-width: 500px;
+}
+
+.formGroup {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup input,
+.formGroup select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.container {
+  padding: 20px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+
+/* GRID */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+
+/* CARD */
+
+.card {
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #2a2a2a;
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: #3b82f6;
+}
+
+.cardTitle {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.card h3 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+
+/* QUICK ACTIONS */
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: #1d4ed8;
+}
+
+.dateRow {
+  margin-bottom: 20px;
+}
+
+.dateRow input {
+  margin-left: 10px;
+  padding: 6px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.attendanceTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendanceTable th,
+.attendanceTable td {
+  border: 1px solid #2a2a2a;
+  padding: 10px;
+  text-align: center;
+}
+
+.attendanceTable th {
+  background: #1f2937;
+}
+
+.attendanceTable input {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+}
+
+.saveBtn {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.saveBtn:hover {
+  background: #15803d;
+}
+
+.late {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.filterRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filterRow select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+}
+
+.container {
+  padding: 20px;
+}
+
+/* PAGE TITLE */
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* ================= DASHBOARD ================= */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.card {
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #2a2a2a;
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: #3b82f6;
+}
+
+.cardTitle {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.card h3 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ================= QUICK ACTIONS ================= */
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.actionBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: #1d4ed8;
+}
+
+/* ================= FORM ================= */
+
+.form {
+  max-width: 500px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.formGroup label {
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.formGroup input,
+.formGroup select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+}
+
+/* ================= DATE ROW ================= */
+
+.dateRow {
+  margin-bottom: 15px;
+}
+
+.dateRow input {
+  margin-left: 10px;
+  padding: 6px;
+}
+
+/* ================= FILTER ================= */
+
+.filterRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.filterRow select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+}
+
+/* ================= TABLE ================= */
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.attendanceTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.attendanceTable th,
+.attendanceTable td {
+  border: 1px solid #2a2a2a;
+  padding: 10px;
+  text-align: center;
+}
+
+.attendanceTable th {
+  background: #1f2937;
+}
+
+.attendanceTable input {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+  width: 80px;
+}
+
+/* ================= BUTTONS ================= */
+
+.saveBtn {
+  background: #16a34a;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.saveBtn:hover {
+  background: #15803d;
+}
+
+/* ================= STATUS ================= */
+
+.late {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
+
+@media (max-width: 768px) {
+
+  .container {
+    padding: 14px;
+  }
+
+  .pageTitle {
+    font-size: 18px;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card h3 {
+    font-size: 20px;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .actionBtn {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .filterRow {
+    flex-direction: column;
+  }
+
+  .attendanceTable input {
+    width: 65px;
+  }
+}
+
+/* EXTRA SMALL MOBILE */
+
+@media (max-width: 480px) {
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+}

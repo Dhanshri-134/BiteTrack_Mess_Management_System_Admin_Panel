@@ -16,11 +16,13 @@ import {
   ChevronDown,
   ChevronRight,
   Settings,
+  User,
 } from "lucide-react";
 import styles from "../styles/Sidebar.module.css";
 import HardwareScanner from "./HardwareScanner";
 import { useLanguage } from "../context/LanguageContext";
 import { offlineFetch } from "@/lib/offlineFetch";
+import { API_BASE } from "../lib/api";
 
 
 function decodeToken(token) {
@@ -34,7 +36,7 @@ function decodeToken(token) {
   }
 }
 
-export default function Sidebar({ closeSidebar }) {
+export default function Sidebar({ closeSidebar, isDesktop }) {
   const router = useRouter();
   const { t } = useLanguage();
   const sectionRefs = useRef({});
@@ -69,7 +71,7 @@ const [loadingAccess, setLoadingAccess] = useState(true);
     try {
       const data = await offlineFetch("mess-access", async () => {
         const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/mess/access/",
+          `${API_BASE}/api/mess/access/`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -97,7 +99,7 @@ useEffect(() => {
     try {
       const data = await offlineFetch("mess-profile", async () => {
         const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/mess/profile/",
+          `${API_BASE}/api/mess/profile/`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch profile");
@@ -126,50 +128,7 @@ useEffect(() => {
     router.replace("/login/");
   };
 
-  // ✅ UPDATED SECTION (ACCORDION)
-//   const Section = ({ title, icon, openKey, children }) => {
-//     const isOpen = openSection === openKey;
-
-//      useEffect(() => {
-//     if (isOpen && sectionRefs.current[openKey]) {
-//       sectionRefs.current[openKey].scrollIntoView({
-//         behavior: "smooth",
-//         block: "nearest",
-//       });
-//     }
-//   }, [isOpen, openKey]);
-//     return (
-//       <>
-//         <button
-//           className={`${styles.sectionHeader} ${
-//     isOpen ? styles.sectionHeaderActive : ""
-//   }`}
-//           aria-expanded={isOpen}
-//           onClick={() => toggle(openKey)}
-//         >
-//           <span className={styles.sectionTitle}>
-//             {icon} {title}
-//           </span>
-//           <ChevronDown
-//   size={18}
-//   className={isOpen ? styles.arrowOpen : styles.arrow}
-// />
-
-//           {/* {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />} */}
-//         </button>
-
-//         <div
-//           className={`${styles.sectionBody} ${
-//             isOpen ? styles.sectionOpen : styles.sectionClosed
-//           }`}
-//         >
-//           {children}
-//         </div>
-//       </>
-//     );
-//   };
-
-
+ 
 const Section = ({ title, icon, openKey, children }) => {
   const isOpen = openSection === openKey;
 
@@ -215,7 +174,185 @@ const Section = ({ title, icon, openKey, children }) => {
 };
 
 
-  return (
+  return isDesktop ? (
+
+     <aside className={styles.sidebar}>
+        <div
+          className={styles.profileBar}
+        >
+          <div className={styles.avatarWrapper}>
+            {loadingProfile ? (
+              <div className={styles.avatarSkeleton} />
+            ) : (
+              <img
+                src={profile?.owner_photo || "/Assets/logo_Bite_Track.png"}
+
+                alt="Profile"
+                className={styles.avatar}
+                onError={(e) => {
+                  e.target.src = "/Assets/logo_Bite_Track.png";
+                }}
+              />
+            )}
+          </div>
+
+          <div className={styles.profileInfo}>
+            <p className={styles.profileName}>
+              { profile?.name || "My Mess"}
+            </p>
+            <span className={styles.profileRole}>
+              { profile?.secret_key} 
+              <br></br>
+              {role === "STAFF" ? t("staff") : t("owner")}
+            </span>
+          </div>
+        </div>
+
+        {/* NAV */}
+        <nav className={styles.nav}>
+          {/* COMMON */}
+          <Link href="/dashboard/" onClick={closeSidebar}>
+            <BarChart3 /> {t("dashboard")}
+          </Link>
+
+
+    <Link href="/attendance/" onClick={closeSidebar}>
+      <ClipboardList /> {t("attendance")}
+    </Link>
+
+
+{role === "STAFF" && (
+  <>
+    <Link href="/menu/" onClick={closeSidebar}>
+      <BookImageIcon /> {t("menu")}
+    </Link>
+
+    <Link href="/suggestions/" onClick={closeSidebar}>
+      <MessageSquare /> {t("suggestions")}
+    </Link>
+  </>
+)}
+
+
+          {/* OWNER */}
+          {role !== "STAFF" && (
+            <>
+              <Section
+                title={t("management")}
+                icon={<Users size={22} />}
+                openKey="management"
+              >
+                <Link href="/users/" onClick={closeSidebar}>
+                  {t("users")}
+                </Link>
+                <Link href="/menu/" onClick={closeSidebar}>
+                  {t("menu")}
+                </Link>
+                {messAccess?.leaves !== false && (
+  <Link href="/requests/leave/" onClick={closeSidebar}>
+    {t("leaves")}
+  </Link>
+)}
+              </Section>
+
+              <Section
+                title={t("billing")}
+                icon={<CreditCard size={22} />}
+                openKey="billing"
+              >
+                <Link href="/billing/" onClick={closeSidebar}>
+                  {t("userBilling")}
+                </Link>
+                <Link href="/BillingMess/" onClick={closeSidebar}>
+                  {t("billingMess")}
+                </Link>
+              </Section>
+
+              <Section
+                title={t("requests")}
+                icon={<BookImageIcon size={22} />}
+                openKey="requests"
+              >
+                <Link href="/requests/cash-payments/" onClick={closeSidebar}>
+                  {t("payments")}
+                </Link>
+                <Link href="/requests/bookingRequests/" onClick={closeSidebar}>
+                  {t("bookingRequests")}
+                </Link>
+                <Link href="/requests/DeleteAccRequest/" onClick={closeSidebar}>
+                  {t("deleteAccount")}
+                </Link>
+              </Section>
+
+              <Link href="/suggestions/" onClick={closeSidebar}>
+                <MessageSquare /> {t("suggestions")}
+              </Link>
+    <Link href="/quickSettings/" onClick={closeSidebar}>
+     <Zap /> {t("quickActions")}
+    </Link>
+{/*               
+
+  {messAccess?.staff !== false && (
+                <Section
+                title={t("staff")}
+                icon={<User size={22} />}
+                openKey="staff">
+                 <Link href="/staff/dashboard/" onClick={closeSidebar}>
+      {t("staffDashboard")}
+    </Link>
+
+    <Link href="/staff/list/" onClick={closeSidebar}>
+      {t("staffList")}
+    </Link>
+
+    <Link href="/staff/attendance/" onClick={closeSidebar}>
+      {t("staffAttendance")}
+    </Link>
+
+    <Link href="/staff/attendance-history/" onClick={closeSidebar}>
+      {t("attendanceHistory")}
+    </Link>
+    </Section>
+               )} */}
+
+               <Section
+                title={t("settings")}
+                icon={<BookImageIcon size={22} />}
+                openKey="settings"
+              >
+
+                <Link href="/settings/" onClick={closeSidebar}>
+                   {t("mess_settings")}
+                </Link>
+                 <Link href="/settings/app_settings" className={styles.item}>
+                  {t("appSettings")}
+
+                 </Link>
+        
+              </Section>
+            </>
+          )}
+
+
+      
+          {/* FOOTER */}
+          <div className={styles.footer}>
+            <div className={styles.logoutWrapper}>
+              <button className={styles.logoutBtn} onClick={handleLogout}>
+                <LogOutIcon size={18} /> {t("logout")}
+              </button>
+            </div>
+
+            {role !== "STAFF" && <HardwareScanner />}
+
+            <p className={styles.messageBanner}>
+              BiteTrack 
+              <br></br> Powered By Shris Tech
+            </p>
+          </div>
+        </nav>
+  </aside>
+) : (
     <div className={styles.overlay} onClick={closeSidebar}>
       <aside className={styles.sidebar} onClick={(e) => e.stopPropagation()}>
         {/* PROFILE BAR */}

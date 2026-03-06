@@ -1,4 +1,5 @@
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import CountUp from "react-countup";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -11,13 +12,14 @@ import { Eye, EyeOff, CalendarDays, Wallet } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar} from "recharts";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import Link from "next/link";
+import { API_BASE } from "../lib/api";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
     totalMembers: 0,
     todayAttendance: 0,
-    monthlyRevenue: 0,
-    totalRevenue: 0,
+    monthlyPayable: 0,
+    monthlyCollected: 0,
   });
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
@@ -73,15 +75,24 @@ export default function Dashboard() {
   }, []);
 
   const getToken = () => localStorage.getItem("token");
+  
+  const getMessIdFromToken = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  return payload.messId;
+};
 
   const fetchFastingStats = async () => {
     try {
       const token = getToken();
       if (!token) return;
+      const messId = getMessIdFromToken();
 
-      const data = await offlineFetch("fasting-requests", async () => {
+
+      const data = await offlineFetch(`fasting-${messId}`, async () => {
         const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/menu/fasting/fetch/",
+          `${API_BASE}/api/menu/fasting/fetch/`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -108,9 +119,11 @@ export default function Dashboard() {
         console.warn("No token present — cannot fetch food stats");
         return;
       }
+      const messId = getMessIdFromToken();
 
-      const data = await offlineFetch("food-preference", async () => {
-        const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/foodPreference/", {
+
+      const data = await offlineFetch(`food-pref-${messId}`, async () => {
+        const res = await fetch(`${API_BASE}/api/users/foodPreference/`, {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -132,10 +145,12 @@ export default function Dashboard() {
   const fetchMessInfo = async () => {
     try {
       const token = getToken();
-      const data = await offlineFetch("mess-info", async () => {
+      const messId = getMessIdFromToken();
+
+      const data = await offlineFetch(`mess-info-${messId}`, async () => {
         if (!token) return console.warn("Session expired! Please login again.");
 
-        const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/mess/info/", {
+        const res = await fetch(`${API_BASE}/api/mess/info/`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -163,247 +178,213 @@ export default function Dashboard() {
     users: [],
   });
 
-  const fetchStats = async () => {
-    try {
-      const now = new Date();
-      const month = now.getMonth() + 1; 
-      const year = now.getFullYear();
+const fetchStats = async () => {
+  const token = getToken();
+  const messId = getMessIdFromToken();
 
-      const token = getToken();
-      if (!token) return;
+  if (!token || !messId) return;
 
-      const usersData = await offlineFetch("users-count", async () => {
-        const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/users/count/",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+  try {
+    setLoading(true);
+
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+
+    // ---------------- USERS ----------------
+    const usersData =
+      await offlineFetch(`users-count-${messId}`, async () => {
+        const res = await fetch(`${API_BASE}/api/users/count/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error("users/count failed");
         return res.json();
       }) ?? { count: 0 };
 
-      const attendanceData = await offlineFetch("attendance-fetch", async () => {
-        const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/attendance/fetch/",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+    // ---------------- ATTENDANCE ----------------
+    const attendanceData =
+      (await offlineFetch(`attendance-${messId}`, async () => {
+        const res = await fetch(`${API_BASE}/api/attendance/fetch/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error("attendance/fetch failed");
         return res.json();
-      }) || [];
+      })) || [];
 
-      const billsAllData = await offlineFetch("bills-all", async () => {
-        const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/bills/all/",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+    // ---------------- BILLS ----------------
+    const billsAllData =
+      (await offlineFetch(`bills-all-${messId}`, async () => {
+        const res = await fetch(`${API_BASE}/api/bills/all/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error("bills/all failed");
         return res.json();
-      }) || [];
+      })) || [];
 
-      const billsMonthlyData = await offlineFetch(
-        `dashboard-bills-${month}-${year}`,
-        async () => {
-          const res = await fetch(
-            `https://bite-track-mess-management-system-a.vercel.app/api/bills/fetch/?month=${month}&year=${year}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (!res.ok) throw new Error("bills/fetch failed");
-          return res.json();
-        }
-      ) || [];
+    // ---------------- TODAY ATTENDANCE ----------------
+    const todayCount = attendanceData.filter(
+      (r) => r.att_date === today
+    ).length;
 
-      const getDateFromObj = (obj) => {
-        if (!obj) return null;
+    // ---------------- MONTHLY PAYABLE / COLLECTED ----------------
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
 
-        if (obj.end_date) return new Date(obj.end_date);
-        if (obj.start_date) return new Date(obj.start_date);
+    const monthlyPayable = billsAllData
+      .filter(
+        (b) =>
+          Number(b.month) === currentMonth &&
+          Number(b.year) === currentYear
+      )
+      .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
 
-        const keys = ["generated_at", "bill_date", "date", "created_at"];
-        for (const k of keys) {
-          if (obj[k]) {
-            const d = new Date(obj[k]);
-            if (!isNaN(d)) return d;
-          }
-        }
-        return null;
+    const monthlyCollected = billsAllData
+      .filter(
+        (b) =>
+          b.status?.trim().toUpperCase() === "PAID" &&
+          Number(b.month) === currentMonth &&
+          Number(b.year) === currentYear
+      )
+      .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+
+    // ---------------- DATE HELPER ----------------
+    const getDateFromObj = (obj) => {
+      if (!obj) return null;
+      if (obj.att_date) return new Date(obj.att_date);
+      if (obj.generated_at) return new Date(obj.generated_at);
+      if (obj.created_at) return new Date(obj.created_at);
+      return null;
+    };
+
+    // ---------------- DAILY TREND ----------------
+    const dailyTrend = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const key = d.toISOString().slice(0, 10);
+
+      const count = attendanceData.filter(
+        (r) => r.att_date === key
+      ).length;
+
+      return {
+        label: d.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+        }),
+        rawDate: key,
+        attendance: count,
       };
+    });
 
-      const today = new Date().toISOString().slice(0, 10);
-      const todayCount = attendanceData.filter((r) => {
-        const att = r.att_date ? new Date(r.att_date).toISOString().slice(0, 10) : null;
-        return att === today;
+    // ---------------- MONTHLY TREND ----------------
+    const monthlyTrend = [...Array(6)].map((_, i) => {
+      const d = new Date();
+      d.setMonth(d.getMonth() - (5 - i));
+
+      const m = d.getMonth();
+      const y = d.getFullYear();
+
+      const count = attendanceData.filter((r) => {
+        const dt = getDateFromObj(r);
+        return dt && dt.getMonth() === m && dt.getFullYear() === y;
       }).length;
 
-      const totalRevenue = billsAllData.reduce(
-        (sum, b) => sum + Number(b.total_amount || b.amount || 0),
-        0
-      );
+      return {
+        label: d.toLocaleDateString("en-IN", { month: "short" }),
+        attendance: count,
+      };
+    });
 
-      const monthlyRevenue = billsMonthlyData.reduce(
-        (sum, b) => sum + Number(b.total_amount || b.amount || 0),
-        0
-      );
+    // ---------------- YEARLY TREND ----------------
+    const yearlyTrend = [...Array(3)].map((_, i) => {
+      const y = now.getFullYear() - (2 - i);
 
-      const uniqueUsers = [...new Set(attendanceData.map((r) => r.user_id))];
-      const inactiveCount = uniqueUsers.filter((uid) => {
-        const records = attendanceData.filter((r) => r.user_id === uid);
-        const lastSeenMs = Math.max(
-          ...records.map((r) => {
-            const d = getDateFromObj(r);
-            return d ? d.getTime() : 0;
-          })
-        );
-        if (lastSeenMs === 0) return true; // never seen -> consider inactive
-        return (new Date() - new Date(lastSeenMs)) / (1000 * 60 * 60 * 24) > 10;
+      const count = attendanceData.filter((r) => {
+        const dt = getDateFromObj(r);
+        return dt && dt.getFullYear() === y;
       }).length;
 
-      const alertsList =
-        inactiveCount > 0
-          ? [`⚠️ ${inactiveCount} members inactive for 10+ days`]
-          : [];
-
-      const buildTrends = (data) => {
-        const now = new Date();
-        const getDateKey = (r) => {
-          if (!r) return null;
-          if (r.att_date) return new Date(r.att_date);
-          return getDateFromObj(r);
-        };
-
-        const dailyTrend = [...Array(7)].map((_, i) => {
-          const d = new Date();
-          d.setDate(d.getDate() - (6 - i));
-          const dayKey = d.toISOString().slice(0, 10);
-          const count = data.filter((r) => {
-            const dt = getDateKey(r);
-            return dt && dt.toISOString().slice(0, 10) === dayKey;
-          }).length;
-          return {
-            label: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
-            attendance: count,
-          };
-        });
-
-        const monthlyTrend = [...Array(6)].map((_, i) => {
-          const d = new Date();
-          d.setMonth(d.getMonth() - (5 - i));
-          const month = d.getMonth();
-          const year = d.getFullYear();
-          const count = data.filter((r) => {
-            const dt = getDateKey(r);
-            return dt && dt.getMonth() === month && dt.getFullYear() === year;
-          }).length;
-          return {
-            label: d.toLocaleDateString("en-IN", { month: "short" }),
-            attendance: count,
-          };
-        });
-
-        const yearlyTrend = [...Array(3)].map((_, i) => {
-          const year = now.getFullYear() - (2 - i);
-          const count = data.filter((r) => {
-            const dt = getDateKey(r);
-            return dt && dt.getFullYear() === year;
-          }).length;
-          return { label: `${year}`, attendance: count };
-        });
-
-        return { dailyTrend, monthlyTrend, yearlyTrend };
+      return {
+        label: `${y}`,
+        attendance: count,
       };
+    });
 
-      const { dailyTrend, monthlyTrend, yearlyTrend } = buildTrends(attendanceData);
-      setAttendanceTrend({ dailyTrend, monthlyTrend, yearlyTrend });
+// ---------------- REVENUE TREND (PAYABLE) ----------------
+const revenueTrend = [...Array(6)].map((_, i) => {
+  const d = new Date();
+  d.setMonth(d.getMonth() - (5 - i));
 
-      // --- Monthly Revenue Trend ---
-      const revTrend = [...Array(6)].map((_, i) => {
-        const d = new Date();
-        d.setMonth(d.getMonth() - (5 - i));
-        const month = d.getMonth();
-        const year = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const y = d.getFullYear();
 
-        const revenue = billsAllData
-          .filter((b) => {
-            const billDate = getDateFromObj(b);
-            return billDate && billDate.getMonth() === month && billDate.getFullYear() === year;
-          })
-          .reduce((sum, b) => sum + Number(b.total_amount || b.amount || 0), 0);
+  const revenue = billsAllData
+    .filter(
+      (b) =>
+        Number(b.month) === m &&
+        Number(b.year) === y
+    )
+    .reduce(
+      (sum, b) => sum + Number(b.total_amount || 0),
+      0
+    );
 
-        return {
-          month: d.toLocaleDateString("en-IN", { month: "short" }),
-          revenue: parseFloat(revenue.toFixed(2)),
-        };
-      });
-
-      const buildRevenueTrend = (bills) => {
-        if (!bills || bills.length === 0) return [];
-
-        const monthsSet = new Set();
-        bills.forEach(b => {
-          if (b.year && b.month != null) {
-            monthsSet.add(`${b.year}-${b.month}`);
-          }
-        });
-
-        const monthsArray = Array.from(monthsSet)
-          .map(m => {
-            const [year, month] = m.split("-").map(Number);
-            return { year, month };
-          })
-          .sort((a, b) => a.year - b.year || a.month - b.month);
-
-        const trend = monthsArray.map(({ year, month }) => {
-          const revenue = bills
-            .filter(b => b.year === year && b.month === month)
-            .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
-
-          const monthLabel = new Date(year, month - 1).toLocaleString("en-IN", { month: "short", year: "numeric" });
-
-          return { month: monthLabel, revenue: parseFloat(revenue.toFixed(2)) };
-        });
-
-        return trend;
-      };
-
-      setRevenueTrend(buildRevenueTrend(billsAllData));
-
-      setStats({
-        totalMembers: usersData.count || 0,
-        todayAttendance: todayCount,
-        monthlyRevenue: parseFloat(monthlyRevenue.toFixed(2)),
-        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-      });
-
-      setRawAttendance(attendanceData);
-
-
-      setAlerts(alertsList);
-    } catch (err) {
-      console.error("Error fetching stats:", err);
-
-      setAttendanceTrend({
-        dailyTrend: [],
-        monthlyTrend: [],
-        yearlyTrend: [],
-      });
-
-      setRevenueTrend([]);
-      setStats({
-        totalMembers: 0,
-        todayAttendance: 0,
-        monthlyRevenue: 0,
-        totalRevenue: 0,
-      });
-    }
+  return {
+    month: d.toLocaleDateString("en-IN", { month: "short" }),
+    revenue: parseFloat(revenue.toFixed(2)),
   };
+});
+    // ---------------- SET STATE ----------------
+    setAttendanceTrend({
+      dailyTrend,
+      monthlyTrend,
+      yearlyTrend,
+    });
+
+    setRevenueTrend(revenueTrend);
+
+    setStats({
+      totalMembers: usersData.count || 0,
+      todayAttendance: todayCount,
+      monthlyPayable: parseFloat(monthlyPayable.toFixed(2)),
+      monthlyCollected: parseFloat(monthlyCollected.toFixed(2)),
+    });
+
+    setRawAttendance(attendanceData);
+
+  } catch (err) {
+    console.error("Dashboard error:", err);
+
+    setAttendanceTrend({
+      dailyTrend: [],
+      monthlyTrend: [],
+      yearlyTrend: [],
+    });
+
+    setRevenueTrend([]);
+
+    setStats({
+      totalMembers: 0,
+      todayAttendance: 0,
+      monthlyPayable: 0,
+      monthlyCollected: 0,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     if (!token) return;
+    const messId = getMessIdFromToken();
+
 
     const fetchAccess = async () => {
       try {
-        const data = await offlineFetch("mess-access", async () => {
+        const data = await offlineFetch(`mess-access-${messId}`, async () => {
           const res = await fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/mess/access/",
+            `${API_BASE}/api/mess/access/`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch access");
@@ -480,16 +461,30 @@ export default function Dashboard() {
             <div className={styles.cards}>
               {role !== "STAFF" ? (
                 <Link href="/users/">
-                  <Card title={t("totalMembers")} value={stats.totalMembers} />
+                  <Card title={t("totalMembers")} value={<CountUp
+      end={stats.totalMembers || 0}
+      duration={1.5}
+      separator=","
+    />} />
                 </Link>
               ) : (
-                <Card title={t("totalMembers")} value={stats.totalMembers} />
+                <Card title={t("totalMembers")} value={
+                  <CountUp
+      end={stats.totalMembers || 0}
+      duration={1.5}
+      separator=","
+    />} />
               )}
 
               <Link href="/attendance/">
                 <Card
                   title={t("todaysAttendance")}
-                  value={stats.todayAttendance}
+                  value={
+                    <CountUp
+      end={stats.todayAttendance || 0}
+      duration={1.5}
+      separator=","
+    />}
                 />
               </Link>
 
@@ -497,12 +492,17 @@ export default function Dashboard() {
                 <Link href="/menu?tab=FastingRequests">
                   <Card
                     title={t("fastingRequests")}
-                    value={fastingStats.today}
+                    value={
+                      <CountUp
+      end={fastingStats.today || 0}
+      duration={1.5}
+      separator=","
+    />}
                   />
                 </Link>
               )}
 
-              <Card
+              {/* <Card
                 title={
                   <span className={styles.cardTitleWithIcon}>
                     {t("monthlyRevenue")}
@@ -525,7 +525,31 @@ export default function Dashboard() {
                     </span>
                   )
                 }
-              />
+              /> */}
+
+              <Card
+  title={t("TotalPayable")}
+  value={<CountUp
+      end={stats.monthlyPayable || 0}
+      duration={1.5}
+      separator=","
+      prefix="₹ "
+      decimals={2}
+    />}
+ />
+
+<Card
+  title={t("TotalCollected")}
+  value={ <CountUp
+      end={stats.monthlyCollected || 0}
+      duration={1.5}
+      separator=","
+      prefix="₹ "
+      decimals={2}
+    />}
+ />
+
+
 
               {/*
 
@@ -588,7 +612,9 @@ export default function Dashboard() {
             </div>
 
 
-            {attendanceData?.length > 0 ? (
+            {loading ? (
+  <div className={styles.skeletonChart}></div>
+) : attendanceData?.length > 0 ? (
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart
                   data={
@@ -605,30 +631,26 @@ export default function Dashboard() {
                   <YAxis />
                   <Tooltip />
                   <Bar
-  dataKey="attendance"
-  fill="#0f766e"
-  radius={[10, 10, 0, 0]}
-  onClick={(data, index) => {
-    if (trendType !== "daily") return;
+                    dataKey="attendance"
+                    fill="#0f766e"
+                    radius={[10, 10, 0, 0]}
+                  onClick={(barData) => {
+                    if (trendType !== "daily") return;
 
-    const selectedDate = new Date();
-    selectedDate.setDate(selectedDate.getDate() - (6 - index));
-    const dateStr = selectedDate.toISOString().slice(0, 10);
+                    const dateStr = barData?.payload?.rawDate;
+                    if (!dateStr) return;
 
-    const users = rawAttendance.filter(r => {
-      const att = r.att_date
-        ? new Date(r.att_date).toISOString().slice(0, 10)
-        : null;
-      return att === dateStr;
-    });
+                    const users = rawAttendance.filter(
+                      (r) => r.att_date === dateStr
+                    );
 
-    setAttendanceModal({
-      open: true,
-      date: dateStr,
-      users,
-    });
-  }}
-/>
+                    setAttendanceModal({
+                      open: true,
+                      date: new Date(dateStr).toLocaleDateString("en-IN"),
+                      users,
+                    });
+                  }}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -641,7 +663,9 @@ export default function Dashboard() {
             <h2 className={styles.sectionTitle}>
               {t("revenueTrendLast6Months")}
             </h2>
-            {revenueTrend?.length > 0 ? (
+            {loading ? (
+  <div className={styles.skeletonChart}></div>
+) : revenueTrend?.length > 0 ? (
               <ResponsiveContainer
                 width="100%"
                 height={300}
@@ -735,7 +759,7 @@ export default function Dashboard() {
   className={styles.summaryCount}
   style={{ cursor: "pointer" }}
   onClick={() => {
-    const vegUsers = foodUsers.filter(u => u.food_preference === "veg");
+    const vegUsers = foodUsers.filter(u => u.food_preference?.toLowerCase() === "veg");
 
 setFoodModal({
   open: true,
@@ -769,7 +793,7 @@ setFoodSearch("");
   className={styles.summaryCount}
   style={{ cursor: "pointer" }}
   onClick={() => {
-    const nonVegUsers = foodUsers.filter(u => u.food_preference === "nonveg");
+    const nonVegUsers = foodUsers.filter(u => u.food_preference?.toLowerCase() === "nonveg");
 
     setFoodModal({
       open: true,

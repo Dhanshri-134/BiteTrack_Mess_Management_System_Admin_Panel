@@ -173,13 +173,12 @@ export default function MenuManagement() {
               >
                 {t("add")}
               </button>
+              <button onClick={handleSave} className={styles.addDishBtn}>
+                {t("save")}
+              </button>
             </div>
           </div>
         ))}
-
-        <button onClick={handleSave} className={styles.saveDayBtn}>
-          {t("saveMenu")}
-        </button>
       </div>
     ))}
   </div>

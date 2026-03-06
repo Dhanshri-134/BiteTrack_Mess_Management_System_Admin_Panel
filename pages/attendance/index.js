@@ -590,6 +590,14 @@ useEffect(() => {
                               <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
                                 {r.paid ? "Paid" : "Unpaid"}
                               </span>
+                              {r.source_type === "owner" && (
+                            <button
+                              className={styles.deleteBtn}
+                              onClick={() => handleDelete(r)}
+                            >
+                              {t("Delete")}
+                            </button>
+                          )}
                             </td>
 
                           </tr>

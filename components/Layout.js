@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import BottomNav from "./Footer";
 import useAuth from "../hooks/useAuth";
 import styles from "../styles/layout.module.css";
+import { API_BASE } from "../lib/api";
 
 export default function Layout({ children }) {
   useAuth(); 
@@ -15,6 +16,19 @@ export default function Layout({ children }) {
   const [checking, setChecking] = useState(true);
   const [expired, setExpired] = useState(false);
 
+const [isDesktop, setIsDesktop] = useState(false);
+
+useEffect(() => {
+  const handleResize = () => {
+    const desktop = window.innerWidth >= 768;
+    setIsDesktop(desktop);
+    setSidebarOpen(desktop); // always open on desktop
+  };
+
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
   // ✅ Subscription check (run once, guarded)
   useEffect(() => {
     // 🚫 Skip check on auth pages
@@ -35,7 +49,7 @@ export default function Layout({ children }) {
       }
 
       try {
-        const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/subscription/check/", {
+        const res = await fetch(`${API_BASE}/api/subscription/check/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -84,14 +98,20 @@ export default function Layout({ children }) {
       <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className={styles.body}>
-        {sidebarOpen && (
-          <Sidebar closeSidebar={() => setSidebarOpen(false)} />
+        {(isDesktop || sidebarOpen) && (
+          <Sidebar
+            closeSidebar={() => {
+              if (!isDesktop) setSidebarOpen(false);
+            }}
+            isDesktop={isDesktop}
+          />
         )}
 
         <main className={styles.main}>{children}</main>
 
       </div>
-        <BottomNav />
+      {!isDesktop && <BottomNav />}
+
     </div>
   );
 }

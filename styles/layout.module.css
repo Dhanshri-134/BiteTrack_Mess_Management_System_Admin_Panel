@@ -17,7 +17,7 @@
   padding: 1.5rem;
   padding-top: calc(1.5rem + 64px); /* navbar */
   padding-bottom: calc(1.5rem + 80px); /* footer */
-
+  
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
@@ -30,7 +30,12 @@
   margin-left: 60px;
 }
 
+@media (min-width: 768px) {
+  .main{
 
+    margin-left:260px;
+  }
+}
 
 .pullLoader {
   position: fixed;

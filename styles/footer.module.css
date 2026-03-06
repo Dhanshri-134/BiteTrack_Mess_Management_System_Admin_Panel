@@ -18,6 +18,12 @@
   overflow: hidden;
 }
 
+@media (min-width: 768px) {
+  .footer{
+
+    margin-left:260px;
+  }
+}
 
 .item {
   flex: 1;
