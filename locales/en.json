@@ -654,10 +654,56 @@
   "owner_contact_details": "Owner Contact Details",
   "contact_name": "Contact Name",
   "allStatus": "All Status",
+  
   "notePlaceholder": "Enter note here...",
   "phone_number": "Phone Number",
   "leave_days": "Leave Days",
   "LatestFirst":"Latest First",
   "OldestFirst":"Oldest First",
-  "GroupByUser":"Group By User"
+  "GroupByUser":"Group By User",
+  "averageRating":"Average Rating",
+  "totalFeedback":"Total Feedback",
+  "allMonths": "All Months",
+  "allYears": "All Years",
+  
+  "billingType": "Billing Type",
+  "dailyBilling": "Daily Billing",
+  "monthlyBilling": "Monthly Billing",
+  "payable": "Payable",
+  "advance": "Advance",
+  "pending": "Pending",
+  "clear": "Clear",
+  "totalPayable": "Total Payable",
+
+  "clickHere": "Click Here",
+  "addAdvance": "Add Advance",
+  "paymentStatus": "Payment Status",
+  "monthLabel": "Month",
+  "amountLabel": "Amount",
+  "billingLabel": "Billing",
+  "statusLabel": "Status",
+
+  "enterAmount": "Enter amount",
+  "advanceUpdated": "Advance updated",
+  "enterValidAmount": "Enter a valid amount",
+  "selectPaymentMethod": "Select payment method",
+  "paymentRecorded": "Payment recorded successfully!",
+  "somethingWrong": "Something went wrong",
+  "tryAgain": "Something went wrong. Please try again.",
+  "selectMonthYear": "Please select month and year.",
+
+  "advancePayment": "Advance Payment",
+  "currentBalance": "Current Balance",
+  "paymentMethod": "Payment Method",
+  "notes": "Notes",
+  "select": "Select",
+  "deduct": "Deduct",
+
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "close": "Close",
+  "sendWhatsApp":" Send WhatsApp Message",
+  "sendToStudent":"Send To Student",
+  "sendToParent":" Send To Parent"
+
 }

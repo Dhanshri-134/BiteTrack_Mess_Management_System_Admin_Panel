@@ -717,5 +717,36 @@
   "leave_days":"सुट्टीचे दिवस",
   "LatestFirst":"नवीन",
   "OldestFirst":"जुने",
-  "GroupByUser":"गटबद्ध"
+  "GroupByUser":"गटबद्ध",
+  "settings":"सेटिंग्ज",
+  "clickHere": "इथे क्लिक करा",
+  "addAdvance": "अॅडव्हान्स जोडा",
+  "paymentStatus": "पेमेंट स्थिती",
+  "monthLabel": "महिना",
+  "amountLabel": "रक्कम",
+  "billingLabel": "बिलिंग",
+  "statusLabel": "स्थिती",
+
+  "enterAmount": "रक्कम भरा",
+  "advanceUpdated": "अॅडव्हान्स अपडेट झाला",
+  "enterValidAmount": "योग्य रक्कम भरा",
+  "selectPaymentMethod": "पेमेंट पद्धत निवडा",
+  "paymentRecorded": "पेमेंट यशस्वीरीत्या नोंदवले गेले!",
+  "somethingWrong": "काहीतरी चूक झाली",
+  "tryAgain": "काहीतरी चूक झाली. पुन्हा प्रयत्न करा.",
+  "selectMonthYear": "कृपया महिना आणि वर्ष निवडा.",
+
+  "advancePayment": "अॅडव्हान्स पेमेंट",
+  "currentBalance": "सध्याचा शिल्लक",
+  "paymentMethod": "पेमेंट पद्धत",
+  "notes": "नोंदी",
+  "select": "निवडा",
+  "deduct": "वजा करा",
+
+  "startDate": "सुरुवातीची तारीख",
+  "endDate": "शेवटची तारीख",
+  "close": "बंद करा",
+  "sendWhatsApp": "व्हॉट्सअॅप पाठवा",
+"sendToStudent": "विद्यार्थ्याला पाठवा",
+"sendToParent": "पालकांना पाठवा"
 }
