@@ -5,11 +5,11 @@ import Sidebar from "../../components/Sidebar";
 import styles from "../../styles/users.module.css";
 import Link from "next/link";
 import Layout from "../../components/Layout";
-
+import { API_BASE } from "../../lib/api";
 import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
-import { ChevronDown, ChevronUp, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, MoreVertical, Pen, Trash2Icon, X } from "lucide-react";
+import { ChevronDown, ChevronUp, CloudAlert, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, FireExtinguisher, LucideCircleStop, MoreVertical, Pen, StopCircle, Trash2Icon, X } from "lucide-react";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 
 
@@ -28,6 +28,8 @@ export default function Users() {
   const [newDOJ, setNewDOJ] = useState("");
   const [activeTab, setActiveTab] = useState("verified"); 
   const [openAccordionId, setOpenAccordionId] = useState(null);
+   const [freezeModal, setFreezeModal] = useState(null);
+   
 
 
   const authHeaders = () => {
@@ -61,7 +63,8 @@ export default function Users() {
       const data = await offlineFetch("users-tabs", async () => {
         const [vRes, uRes] = await Promise.all([
           fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/users/verified/",
+            
+            "/api/users/verified/",
             { headers: authHeaders() }
           ),
           fetch(
@@ -176,15 +179,12 @@ export default function Users() {
 
   const tableColumns = [
     { key: "name", label: t("name") },
-    { key: "first_name", label: t("firstName") },
-    { key: "last_name", label: t("lastName") },
     { key: "email", label: t("email") },
     { key: "phone", label: t("phone") },
     { key: "room_no", label: t("roomNo") },
     { key: "hostel_name", label: t("hostel") },
     { key: "course", label: t("course") },
     { key: "date_of_joining", label: t("dateOfJoining") },
-    { key: "first_attendance_date", label: t("firstAttendanceDate") },
     {
       key: "parents",
       label: t("parents"),
@@ -335,7 +335,7 @@ const isOpen = openAccordionId === user.id;
             </button>
 
             {menuOpen && (
-              <div className={styles.moreMenu}>
+              <div className={styles.moreMenu} onClick={(e) => e.stopPropagation()}>
                 {actions.map((a, i) => (
                   <button
                     key={i}
@@ -458,6 +458,61 @@ const isOpen = openAccordionId === user.id;
     );
   }
 
+ const toggleFreeze = async (userId, action) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `/api/bills/toggle-freeze/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, action }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return toast.error(t("somethingWentWrong"));
+    }
+
+    // ✅ Update UI status
+    setVerified((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? { ...u, status: action === "freeze" ? "Inactive" : "Active" }
+          : u
+      )
+    );
+
+    setUnverified((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? { ...u, status: action === "freeze" ? "Inactive" : "Active" }
+          : u
+      )
+    );
+
+    // ✅ OPEN MODAL HERE
+    setFreezeModal({
+      action,
+      message:
+        action === "freeze"
+          ? "User has been frozen. Billing stopped from freeze date."
+          : "User has been unfrozen. Billing resumed.",
+      user: data.user || null, // if backend returns user
+    });
+
+  } catch (err) {
+    console.error(err);
+    toast.error(t("somethingWentWrong"));
+  }
+};
+
  useEffect(() => {
     const onEsc = (e) => {
       if (e.key !== "Escape") return;
@@ -559,6 +614,17 @@ const isOpen = openAccordionId === user.id;
                           },
                           {
                             label: (
+                              <span className={`${styles.menuItem}`}>
+                                <LucideCircleStop size={16} />{u.status === "Active" ? t("freeze") : t("unfreeze")}
+                              </span>
+                            ),
+                            onClick: () => {
+                              const action = u.status === "Active" ? "freeze" : "unfreeze";
+                              toggleFreeze(u.id, action);
+                            },
+                          },
+                          {
+                            label: (
                               <span className={`${styles.menuItem} ${styles.menuItemDOJ}`}>
                                 <DatabaseIcon size={16} /> {t("changeDOJ")}
                               </span>
@@ -572,15 +638,26 @@ const isOpen = openAccordionId === user.id;
                     renderTable(verified, tableColumns, {
                       label: t("update"),
                       render: (u) => (
-                        <div className={styles.cardActions}>
+                        <div className={`${styles.cardActions} ${styles.actionbtn}`}>
                           <button className={`${styles.button} ${styles.btnEdit}`} onClick={() => openModal(u)}>
-                            <Edit2Icon size={20} />
+                            {t(" Edit")}
                           </button>
                           <button className={`${styles.button} ${styles.btnDel}`} onClick={() => requestDeleteUser(u)}>
-                            <Trash2Icon size={20} />
+                            {t("delete")}
                           </button>
                           <button className={`${styles.button} ${styles.btnDOJ}`} onClick={() => requestChangeDOJ(u)}>
-                            <DatabaseIcon size={20} />
+                            {t("changeDOJ")}
+                          </button>
+                          <button
+                            className={`${styles.button} ${
+                              u.status === "Active" ? styles.btnFreeze : styles.btnUnfreeze
+                            }`}
+                            onClick={() => {
+                              const action = u.status === "Active" ? "freeze" : "unfreeze";
+                              toggleFreeze(u.id, action);
+                            }}
+                          >
+                            {u.status === "Active" ? t("freeze") : t("unfreeze")}
                           </button>
                         </div>
                       ),
@@ -618,6 +695,7 @@ setOpenAccordionId={setOpenAccordionId}
                           >
                            {t("delete")}
                           </button>
+                          
                           </div>
                         }
                       />
@@ -788,6 +866,60 @@ setOpenAccordionId={setOpenAccordionId}
               </div>
             </div>
           )}
+
+
+ {freezeModal && (
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.6)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 9999,
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#fff",
+                      padding: "24px",
+                      borderRadius: "12px",
+                      minWidth: "320px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <h3>{freezeModal.action === "freeze" ? t("userFrozen") : t("userUnfrozen")}</h3>
+                    <p style={{ marginTop: 8 }}>{freezeModal.message}</p>
+
+                    {freezeModal.user && (
+                      <div style={{ textAlign: "left", marginTop: 12 }}>
+                        <strong>{freezeModal.user.name}</strong>
+                        <div>{t("status")}: {freezeModal.user.status}</div>
+                        {freezeModal.user.freeze_date && <div>{t("freezeDate")}: {new Date(freezeModal.user.freeze_date).toISOString().slice(0, 10)}</div>}
+                        {freezeModal.user.unfreeze_date && <div>{t("unfreezeDate")}: {new Date(freezeModal.user.unfreeze_date).toISOString().slice(0, 10)}</div>}
+                      </div>
+                    )}
+
+                    <button
+                      style={{
+                        marginTop: "16px",
+                        background: "#2563EB",
+                        color: "#fff",
+                        padding: "8px 16px",
+                        borderRadius: "6px",
+                        border: "none",
+                      }}
+                      onClick={() => setFreezeModal(null)}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              )}
 
 
 
