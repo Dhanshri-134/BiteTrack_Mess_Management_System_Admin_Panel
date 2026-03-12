@@ -31,33 +31,6 @@ export default async function handler(req, res) {
 
   res.json(rows);
 
-    // const { rows } = await pgPool.query(query, [messId]);
-
-    // const bills = rows.map(r => ({
-    //   user_id: r.user_id,
-    //   name: r.name,
-    //   email: r.email,
-    //   status: r.status ?? "Active",
-    //   mobile: r.mobile,
-    //   parent_mobile: r.parent_mobile,
-
-    //   year: r.year,
-    //   month: r.month,
-
-    //   days_billed: r.days_billed,
-    //   chosen_per_day_rate: Number(r.chosen_per_day_rate),
-
-    //   total_amount: Number(r.total_amount),
-
-    //   paid: r.payment_status === "paid",
-    //   note: r.note || null,
-
-    //   attendance_map: r.attendance_map ?? {},
-    //   owner_marked_dates: r.owner_marked_dates ?? []
-    // }));
-
-    // return res.json(bills);
-
   } catch (err) {
     console.error("Billing API error:", err);
     return res.status(500).json({ error: err.message });
