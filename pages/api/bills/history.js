@@ -40,7 +40,8 @@ export default async function handler(req, res) {
               'payment_method', ph.payment_method,
               'transaction_id', ph.transaction_id,
               'billing_start_date', ph.billing_start_date,
-              'billing_end_date', ph.billing_end_date
+              'billing_end_date', ph.billing_end_date,
+              'receipt_pdf_url',ph.receipt_pdf_url
             )
             FROM payment_history ph
             WHERE ph.user_id = u.id
@@ -83,7 +84,8 @@ export default async function handler(req, res) {
         billing_start_date,
         billing_end_date,
         leave_days,
-        note
+        note,
+        receipt_pdf_url
       FROM payment_history
       WHERE mess_id = $1
         AND user_id = $2
