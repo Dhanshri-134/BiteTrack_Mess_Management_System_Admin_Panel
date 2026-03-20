@@ -5,9 +5,12 @@ import styles from "../../styles/changeemail.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { API_BASE } from "../../lib/api";
+import { useLanguage } from "../../context/LanguageContext";
 
 
 export default function ChangeEmail() {
+  const { t } = useLanguage();
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
@@ -32,7 +35,7 @@ const fetchData = async () => {
 
     const data = await offlineFetch("users-list", async () => {
       const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/users/list/",
+        `${API_BASE}/api/users/list/`,
         { headers: authHeaders() }
       );
       if (!res.ok) throw new Error("Failed to fetch users");
@@ -61,11 +64,11 @@ const fetchData = async () => {
   );
 
   const handleUpdateEmail = async () => {
-    if (!selectedUser || !newEmail.trim()) return alert("Select a user and enter new email");
+    if (!selectedUser || !newEmail.trim()) return alert(t("selectUserAndEnterEmail"));
 
     try {
       setLoading(true);
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/update-email/", {
+      const res = await fetch(`${API_BASE}/api/users/update-email/`, {
         method: "PUT",
         headers: authHeaders(),
         body: JSON.stringify({
@@ -76,16 +79,16 @@ const fetchData = async () => {
         }),
       });
       const data = await res.json();
-      if (!res.ok) return alert(data.error || "Failed to update email");
+      if (!res.ok) return alert(data.error || t("updateFailed"));
 
-      toast.success("Email updated successfully!");
+      toast.success(t("emailUpdatedSuccessfully"));
       setSelectedUser(null);
       setNewEmail("");
       setSearchTerm("");
       fetchData();
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("somethingWentWrong"));
     } finally {
       setLoading(false);
     }
@@ -96,11 +99,11 @@ const fetchData = async () => {
 
   <div className={styles.container}>
     <main className={styles.main}>
-      <h1>Change User Email</h1>
+      <h1>{t("changeEmail")}</h1>
 
       <input
         type="text"
-        placeholder="Search user by name, email, or mobile"
+        placeholder={t("searchUserByNameEmailMobile")}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className={styles.searchInput}
@@ -123,16 +126,16 @@ const fetchData = async () => {
       {selectedUser && (
         <div className={styles.changeEmailForm}>
           <p>
-            Changing email for: <strong>{selectedUser.name || `${selectedUser.first_name} ${selectedUser.last_name}`}</strong>
+            {t("changingEmailFor")}: <strong>{selectedUser.name || `${selectedUser.first_name} ${selectedUser.last_name}`}</strong>
           </p>
           <input
             type="email"
-            placeholder="Enter new email"
+            placeholder={t("enterNewEmail")}
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             />
           <button onClick={handleUpdateEmail} disabled={loading}>
-            {loading ? "Updating..." : "Update Email"}
+            {loading ? t("updating") : t("updateEmail")}
           </button>
         </div>
       )}

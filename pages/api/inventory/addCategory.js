@@ -21,9 +21,11 @@ error:"Token required"
 
 jwt.verify(token,process.env.JWT_SECRET);
 
-const {category_name,description} = req.body;
+const {category_name,description} = req.body || {};
+const cleanName = category_name?.trim();
+const cleanDescription = description?.trim() || null;
 
-if(!category_name){
+if(!cleanName){
 return res.status(400).json({
 success:false,
 error:"Category name required"
@@ -34,7 +36,7 @@ const existing = await pgPool.query(
 `SELECT id FROM inventory_categories
 WHERE LOWER(category_name)=LOWER($1)
 LIMIT 1`,
-[category_name]
+[cleanName]
 );
 
 if(existing.rows.length>0){
@@ -52,7 +54,7 @@ const result = await pgPool.query(
 (category_name,description)
 VALUES($1,$2)
 RETURNING id,category_name,description`,
-[category_name,description || null]
+[cleanName,cleanDescription]
 );
 
 res.json({

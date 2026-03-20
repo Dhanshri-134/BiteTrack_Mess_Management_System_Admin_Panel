@@ -4,6 +4,7 @@ import styles from "../styles/menu.module.css";
 import toast from "react-hot-toast";
 import { offlineFetch } from "@/lib/offlineFetch";
 import { queueAction } from "@/lib/queueAction";
+import { API_BASE } from "../lib/api";
 
 export default function MenuPage() {
   const [menu, setMenu] = useState({});
@@ -32,7 +33,7 @@ export default function MenuPage() {
     const fetchMenu = async () => {
       try {
         const data = await offlineFetch("menu-weekly", async () => {
-        const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/");
+        const res = await fetch(`${API_BASE}/api/menu/fetch/`);
         if (!res.ok) throw new Error("menu fetch failed");
       return res.json();
     });
@@ -51,7 +52,7 @@ export default function MenuPage() {
   const fetchRatings = async () => {
     try {
        const data = await offlineFetch("menu-ratings", async () => {
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/ratings/fetch/");
+      const res = await fetch(`${API_BASE}/api/menu/ratings/fetch/`);
        if (!res.ok) throw new Error("ratings fetch failed");
       return res.json();
     });
@@ -65,7 +66,7 @@ export default function MenuPage() {
     const fetchVotes = async () => {
       try {
         const data = await offlineFetch("menu-votes", async () => {
-        const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/votes/fetch/");
+        const res = await fetch(`${API_BASE}/api/menu/votes/fetch/`);
         if (!res.ok) throw new Error("votes fetch failed");
       return res.json();
     });
@@ -104,7 +105,7 @@ export default function MenuPage() {
 
     setMenu(updatedMenu);
 
-    const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/menu/update/", {
+    const res = await fetch(`${API_BASE}/api/menu/update/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ menu: updatedMenu }),

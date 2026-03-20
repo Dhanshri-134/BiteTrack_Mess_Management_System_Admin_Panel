@@ -184,20 +184,23 @@ export default async function handler(req, res) {
 
 
 const userId = insert.rows[0].id;
-await client.query(
-  `INSERT INTO parents (user_id, name, contact, address)
-   VALUES ($1,$2,$3,$4)`,
-  [
-    userId,
-    req.body.parent_name || null,
-    req.body.parent_contact || null,
-    req.body.parent_address || null
-  ]
-);
+await client.query(`DELETE FROM parents WHERE user_id = $1`, [userId]);
+if (req.body.parent_name || req.body.parent_contact || req.body.parent_address) {
+  await client.query(
+    `INSERT INTO parents (user_id, name, contact, address)
+     VALUES ($1,$2,$3,$4)`,
+    [
+      userId,
+      req.body.parent_name || null,
+      req.body.parent_contact || null,
+      req.body.parent_address || null
+    ]
+  );
+}
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60);
 
-
+    await client.query(`DELETE FROM verification_codes WHERE user_id = $1`, [userId]);
 
     await client.query(
       `INSERT INTO verification_codes (user_id, code, expires_at)

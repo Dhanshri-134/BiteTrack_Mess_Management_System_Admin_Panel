@@ -6,6 +6,7 @@ import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import {useAppRefresh} from "@/lib/useAppRefresh"
+import { API_BASE } from "../../lib/api";
 export default function MenuPreview() {
   const [menuData, setMenuData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ export default function MenuPreview() {
         
         const data = await offlineFetch("menuPreview", async () => {
           const res = await fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/",
+            `${API_BASE}/api/menu/fetch/`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch menu");

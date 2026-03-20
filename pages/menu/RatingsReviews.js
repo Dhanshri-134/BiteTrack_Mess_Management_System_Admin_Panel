@@ -5,6 +5,7 @@ import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { API_BASE } from "../../lib/api";
 
 
 export default function RatingsReviews() {
@@ -20,7 +21,7 @@ export default function RatingsReviews() {
       
       const data = await offlineFetch("menu-reviews", async () => {
         const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/menu/ratings/fetch/",
+          `${API_BASE}/api/menu/ratings/fetch/`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch reviews");
@@ -40,6 +41,8 @@ export default function RatingsReviews() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useAppRefresh(fetchData);
   
   return (
     <div className={styles.container}>

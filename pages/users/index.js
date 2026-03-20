@@ -1,5 +1,5 @@
 
-
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import styles from "../../styles/users.module.css";
@@ -11,13 +11,20 @@ import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { ChevronDown, ChevronUp, CloudAlert, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, FireExtinguisher, LucideCircleStop, MoreVertical, Pen, StopCircle, Trash2Icon, X } from "lucide-react";
 import { useAppRefresh } from "@/lib/useAppRefresh";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { FileOpener } from "@capacitor-community/file-opener";
+import { Capacitor } from "@capacitor/core";
+import  GlobalLoader from "../../components/GlobalLoader"
 
 export default function Users() {
+  const router = useRouter();
   const { t } = useLanguage();
   const [verified, setVerified] = useState([]);
   const [unverified, setUnverified] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [messInfo, setMessInfo] = useState(null);
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [modalUser, setModalUser] = useState(null);
@@ -26,11 +33,21 @@ export default function Users() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [dojTarget, setDojTarget] = useState(null);
   const [newDOJ, setNewDOJ] = useState("");
-  const [activeTab, setActiveTab] = useState("verified"); 
+  const [activeTab, setActiveTab] = useState("verified");
   const [openAccordionId, setOpenAccordionId] = useState(null);
-   const [freezeModal, setFreezeModal] = useState(null);
-   
+  const [freezeModal, setFreezeModal] = useState(null);
+  const [freezeTarget, setFreezeTarget] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
+  const goToBilling = (user) => {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+
+    router.push(
+      `/billing?userId=${user.id}&month=${month}&year=${year}`
+    );
+  };
 
   const authHeaders = () => {
     const token = localStorage.getItem("token");
@@ -57,47 +74,81 @@ export default function Users() {
       parent_address: parent?.address || "",
     });
   };
-  
+
   const fetchData = async () => {
     try {
+
+      const token = localStorage.getItem("token");
+
+      const messRes = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/mess/details/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (messRes.ok) {
+        const mess = await messRes.json();
+        setMessInfo(mess);
+      }
+
       const data = await offlineFetch("users-tabs", async () => {
         const [vRes, uRes] = await Promise.all([
           fetch(
-            
-            `${API_BASE}/api/users/verified/`,
+
+            `https://bite-track-mess-management-system-a.vercel.app/api/users/verified/`,
             { headers: authHeaders() }
           ),
           fetch(
-            `${API_BASE}/api/users/unverified/`,
+            `https://bite-track-mess-management-system-a.vercel.app/api/users/unverified/`,
             { headers: authHeaders() }
           )
-          ]);
+        ]);
 
-          if (!vRes.ok || !uRes.ok ) {
-            throw new Error("Failed to fetch users");
-          }
-          
-          const [vData, uData] = await Promise.all([
-            vRes.json(),
-            uRes.json(),
-          ]);
-          
-          return {
-            verified: Array.isArray(vData) ? vData : [],
-            unverified: Array.isArray(uData) ? uData : [],
-          };
-        });
+        if (!vRes.ok || !uRes.ok) {
+          throw new Error("Failed to fetch users");
+        }
 
-        setVerified(data.verified || []);
-        setUnverified(data.unverified || []);
-      } catch (err) {
-        console.error(err);
-        setVerified([]);
-        setUnverified([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+        const [vData, uData] = await Promise.all([
+          vRes.json(),
+          uRes.json(),
+        ]);
+
+        return {
+          verified: Array.isArray(vData) ? vData : [],
+          unverified: Array.isArray(uData) ? uData : [],
+        };
+      });
+
+      setVerified(data.verified || []);
+      setUnverified(data.unverified || []);
+    } catch (err) {
+      console.error(err);
+      setVerified([]);
+      setUnverified([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const loadImageAsBase64 = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = url;
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        resolve(canvas.toDataURL("image/png"));
+      };
+
+      img.onerror = reject;
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,7 +158,7 @@ export default function Users() {
   const handleUpdate = async () => {
     try {
       const res = await fetch(
-        `${API_BASE}/api/update/`,
+        `https://bite-track-mess-management-system-a.vercel.app/api/update/`,
         {
           method: "PUT",
           headers: authHeaders(),
@@ -143,34 +194,67 @@ export default function Users() {
     }
   };
 
-  const filterAndSort = (users) => {
-    let filtered = users;
-    if (search) {
-      filtered = filtered.filter(
-        (u) =>
-          u.name?.toLowerCase().includes(search.toLowerCase()) ||
-          u.email?.toLowerCase().includes(search.toLowerCase()) ||
-          u.phone?.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-    if (sortConfig.key) {
-      filtered = [...filtered].sort((a, b) => {
-        const aVal = a[sortConfig.key] || "";
-        const bVal = b[sortConfig.key] || "";
-        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-    return filtered;
-  };
 
-  const requestSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc")
-      direction = "desc";
-    setSortConfig({ key, direction });
-  };
+  const confirmFreezeUser = async () => {
+
+  if (!freezeTarget) return;
+
+  const { user, action } = freezeTarget;
+
+  await toggleFreeze(user.id, action);
+
+  setFreezeTarget(null);
+};
+
+  const filterAndSort = (users) => {
+  let filtered = users;
+
+  if (search) {
+    filtered = filtered.filter(
+      (u) =>
+        u.name?.toLowerCase().includes(search.toLowerCase()) ||
+        u.email?.toLowerCase().includes(search.toLowerCase()) ||
+        u.phone?.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+
+  if (sortConfig.key) {
+    filtered = [...filtered].sort((a, b) => {
+      let aVal;
+      let bVal;
+
+      if (sortConfig.key === "hostel_room") {
+        aVal = `${a.hostel_name || ""} ${a.course || ""} ${a.room_no || ""}`;
+        bVal = `${b.hostel_name || ""} ${b.course || ""} ${b.room_no || ""}`;
+      } else if (sortConfig.key === "name_email") {
+        aVal = a.name || "";
+        bVal = b.name || "";
+      }  else if (sortConfig.key === "parents") {
+      aVal = a.parents?.[0]?.name || "";
+      bVal = b.parents?.[0]?.name || "";
+      }  else {
+        aVal = a[sortConfig.key] || "";
+        bVal = b[sortConfig.key] || "";
+      }
+
+      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+
+      return 0;
+    });
+  }
+
+  return filtered;
+};
+
+const requestSort = (key) => {
+let direction = "asc";
+
+if (sortConfig.key === key && sortConfig.direction === "asc")
+direction = "desc";
+
+setSortConfig({ key, direction });
+};
 
   const renderSortArrow = (key) => {
     if (sortConfig.key !== key) return null;
@@ -178,30 +262,110 @@ export default function Users() {
   };
 
   const tableColumns = [
-    { key: "name", label: t("name") },
-    { key: "email", label: t("email") },
-    { key: "phone", label: t("phone") },
-    { key: "room_no", label: t("roomNo") },
-    { key: "hostel_name", label: t("hostel") },
-    { key: "course", label: t("course") },
-    { key: "date_of_joining", label: t("dateOfJoining") },
-    {
-      key: "parents",
-      label: t("parents"),
-      render: (u) =>
-        u.parents && u.parents.length > 0 ? (
-          u.parents.map((p, i) => (
-            <div key={i} style={{ marginBottom: "0.5rem" }}>
-              <strong>{p.name}</strong> ({p.contact})
-              <br />
-              {p.address}
+  {
+    key: "name_email",
+    label: t("name"),
+    render: (u) => (
+      <div>
+        <strong
+          style={{ cursor: "pointer" }}
+          onClick={() => goToBilling(u)}
+        >
+          {u.name}
+        </strong>
+        <div style={{ fontSize: "12px", color: "#6b7280" }}>
+          {u.email}
+        </div>
+        <div style={{ fontSize: "12px", color: "#6b7280" }}>
+          {u.phone}
+        </div>
+
+      </div>
+    ),
+  },
+
+  {
+    key: "hostel_room",
+    label: t("hostel"),
+    render: (u) => (
+      <div>
+        {u.course}
+        <br></br>
+        <div style={{ fontSize: "12px", color: "#6b7280" }}>
+        {u.hostel_name || "-"}
+        <br></br>
+        {u.room_no || "-"}
+        </div>
+      </div>
+    ),
+  },
+
+  {
+    key: "date_of_joining",
+    label: t("dateOfJoining"),
+    render: (u) =>
+      u.date_of_joining
+        ? new Date(u.date_of_joining).toLocaleDateString("en-IN")
+        : "-",
+  },
+
+  {
+    key: "parents",
+    label: t("parents"),
+    render: (u) =>
+      u.parents?.length ? (
+        u.parents.map((p, i) => (
+          <div key={i}>
+            <strong>{p.name}</strong>
+            <div style={{ fontSize: "12px", color: "#6b7280" }}>
+              {p.contact}
+              <div
+            style={{
+              fontSize: "12px",
+              color: "#6b7280",
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              maxWidth: "200px"
+            }}
+          >
+            {p.address}
+          </div>
             </div>
-          ))
-        ) : (
-          <span style={{ color: "#6b7280" }}>{t("noParents")}</span>
-        ),
-    },
-  ];
+          </div>
+        ))
+      ) : (
+        <span style={{ color: "#9CA3AF" }}>—</span>
+      ),
+  },
+  {
+  key: "actions",
+  label: "Actions",
+  render: (u) => {
+     if (activeTab !== "verified") return null;
+    <div className={styles.actionWrapper}>
+      <span className={styles.actionTrigger}>Click Here</span>
+
+      <div className={styles.actionMenu}>
+        <button onClick={() => openModal(u)}>Edit</button>
+        <button onClick={() => requestDeleteUser(u)}>Delete</button>
+        <button onClick={() => requestChangeDOJ(u)}>Change DOJ</button>
+        <button
+          onClick={() => {
+  const action = u.status === "Active" ? "freeze" : "unfreeze";
+
+  setFreezeTarget({
+    user: u,
+    action
+  });
+}}
+        >
+          {u.status === "Active" ? "Freeze" : "Unfreeze"}
+        </button>
+      </div>
+    </div>
+  }
+}
+];
 
   const renderTable = (users, columns, actions = null) => (
     <div className={styles.tableContainer}>
@@ -226,8 +390,25 @@ export default function Users() {
               {columns.map((col) => (
                 <td key={col.key} data-label={col.label}>
                   {(() => {
-                    const value = u[col.key];
-                    if (!value) return "";
+                    if (col.render) {
+  return col.render(u);
+}
+
+const value = u[col.key];
+if (!value) return "";
+return value;
+
+                    if (col.key === "name") {
+                      return (
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => goToBilling(u)}
+                        >
+                          {value}
+                        </span>
+                      );
+                    }
+
                     if (col.key === "date_of_joining" || col.key === "created_at" || col.key === "first_attendance_date") {
                       const date = new Date(value);
                       return date.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
@@ -253,7 +434,7 @@ export default function Users() {
 
     try {
       const res = await fetch(
-        `${API_BASE}/api/users/delete/`,
+        `https://bite-track-mess-management-system-a.vercel.app/api/users/delete/`,
         {
           method: "DELETE",
           headers: authHeaders(),
@@ -282,7 +463,7 @@ export default function Users() {
 
     try {
       const res = await fetch(
-        `${API_BASE}/api/users/changeDOJ/`,
+        `https://bite-track-mess-management-system-a.vercel.app/api/users/changeDOJ/`,
         {
           method: "PUT",
           headers: authHeaders(),
@@ -308,20 +489,24 @@ export default function Users() {
   const limitedColumns = tableColumns.filter(
     (col) =>
       col.key !== "parents" &&
-      col.key !== "first_attendance_date"
+      col.key !== "first_attendance_date" &&
+      col.key !== "actions"
   );
 
-  function MobileUserCard({ user, actions, t, openAccordionId, setOpenAccordionId  }) {
-const isOpen = openAccordionId === user.id;
+  function MobileUserCard({ user, actions, t, openAccordionId, setOpenAccordionId }) {
+    const isOpen = openAccordionId === user.id;
 
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
-      <div className={styles.userCard}>
+      <div className={styles.userCard} >
         {/* Top row */}
-        <div className={styles.cardTop}>
+        <div className={styles.cardTop} >
           <div>
-            <strong>{user.name}</strong>
+            <strong style={{ cursor: "pointer" }}
+        onClick={() => goToBilling(user)}>
+              {user.name}
+            </strong>
             <div className={styles.subText}>{user.email}</div>
           </div>
 
@@ -359,9 +544,9 @@ const isOpen = openAccordionId === user.id;
           <button
             className={styles.expandBtn}
             onClick={() => setOpenAccordionId(openAccordionId === user.id ? null : user.id)
-}
+            }
           >
-            {isOpen  ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
         </div>
 
@@ -392,8 +577,8 @@ const isOpen = openAccordionId === user.id;
     );
   }
 
-  function ReviewCard({ user, actionButton, t, openAccordionId, setOpenAccordionId  }) {
-const isOpen = openAccordionId === user.id;
+  function ReviewCard({ user, actionButton, t, openAccordionId, setOpenAccordionId }) {
+    const isOpen = openAccordionId === user.id;
 
     return (
       <div className={` ${styles.reviewCard} ${styles.userCard}`}>
@@ -404,10 +589,10 @@ const isOpen = openAccordionId === user.id;
           <button
             className={styles.expandBtnr}
             onClick={() => setOpenAccordionId(openAccordionId === user.id ? null : user.id)
-}
+            }
             aria-label="Toggle details"
           >
-            {isOpen  ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
 
         </div>
@@ -418,7 +603,7 @@ const isOpen = openAccordionId === user.id;
 
         {/* 🔽 DROPDOWN CONTENT */}
         {openAccordionId === user.id && (
-          <div className={`${styles.details} ${isOpen  ? styles.detailsOpen : styles.detailsClosed}`}>
+          <div className={`${styles.details} ${isOpen ? styles.detailsOpen : styles.detailsClosed}`}>
             {/* ✅ ORIGINAL GRID – ALWAYS VISIBLE */}
             <div className={styles.reviewGrid}>
               <div>
@@ -458,62 +643,214 @@ const isOpen = openAccordionId === user.id;
     );
   }
 
- const toggleFreeze = async (userId, action) => {
-  try {
-    const token = localStorage.getItem("token");
+  const toggleFreeze = async (userId, action) => {
+    try {
+      const token = localStorage.getItem("token");
 
-    const res = await fetch(
-      `${API_BASE}/api/bills/toggle-freeze/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ userId, action }),
+      const res = await fetch(
+        `https://bite-track-mess-management-system-a.vercel.app/api/bills/toggle-freeze/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ userId, action }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return toast.error(t("somethingWentWrong"));
       }
-    );
 
-    const data = await res.json();
+      // ✅ Update UI status
+      setVerified((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, status: action === "freeze" ? "Inactive" : "Active" }
+            : u
+        )
+      );
 
-    if (!res.ok) {
-      return toast.error(t("somethingWentWrong"));
+      setUnverified((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, status: action === "freeze" ? "Inactive" : "Active" }
+            : u
+        )
+      );
+
+      // ✅ OPEN MODAL HERE
+      setFreezeModal({
+        action,
+        message:
+          action === "freeze"
+            ? "User has been frozen. Billing stopped from freeze date."
+            : "User has been unfrozen. Billing resumed.",
+        user: data.user || null, // if backend returns user
+      });
+
+    } catch (err) {
+      console.error(err);
+      toast.error(t("somethingWentWrong"));
     }
+  };
 
-    // ✅ Update UI status
-    setVerified((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? { ...u, status: action === "freeze" ? "Inactive" : "Active" }
-          : u
-      )
-    );
+  const handleExportUsersPDF = async () => {
+    try {
+      setExporting(true);
+      const token = localStorage.getItem("token");
 
-    setUnverified((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? { ...u, status: action === "freeze" ? "Inactive" : "Active" }
-          : u
-      )
-    );
+      const messRes = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/mess/details/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    // ✅ OPEN MODAL HERE
-    setFreezeModal({
-      action,
-      message:
-        action === "freeze"
-          ? "User has been frozen. Billing stopped from freeze date."
-          : "User has been unfrozen. Billing resumed.",
-      user: data.user || null, // if backend returns user
-    });
+      const mess = await messRes.json();
 
-  } catch (err) {
-    console.error(err);
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      let logoUrl = mess.logo || "/Assets/logo_Bite_Track.png";
+
+      let logoBase64 = null;
+      try {
+        logoBase64 = await loadImageAsBase64(logoUrl);
+      } catch {
+        logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
+      }
+
+      // Header background
+      doc.setFillColor(0, 113, 112);
+      doc.rect(0, 0, pageWidth, 40, "F");
+
+      if (logoBase64) {
+        doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
+      }
+
+      // Mess Name
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+
+      doc.text(
+        mess.name,
+        pageWidth - 14,
+        15,
+        { align: "right" }
+      );
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(mess.location || "", pageWidth - 14, 22, { align: "right" });
+      doc.text(mess.email || "", pageWidth - 14, 28, { align: "right" });
+      doc.text(mess.contact_info || "", pageWidth - 14, 33, { align: "right" });
+
+      const now = new Date();
+      const month = now.toLocaleString("en-IN", { month: "long" });
+      const year = now.getFullYear();
+
+      doc.setFontSize(9);
+      doc.text(
+        `Generated: ${month} ${year}`,
+        pageWidth - 14,
+        38,
+        { align: "right" }
+      );
+
+      doc.setTextColor(0, 0, 0);
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(14, 55, pageWidth - 14, 55);
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Users List", 14, 50);
+
+      // Alphabetical order
+
+
+      const sortedUsers = [...verified].sort((a, b) =>
+        (a.name || "").localeCompare(b.name || "")
+      );
+
+      autoTable(doc, {
+        startY: 60,
+
+        head: [["Name / Email", "Phone", "Course", "Hostel / Room", "DOJ"]],
+
+        body: sortedUsers.map((u) => [
+          `${u.name || "-"}\n${u.email || ""}`,
+          u.phone || "-",
+          u.course || "-",
+          `${u.hostel_name || "-"}\nRoom: ${u.room_no || "-"}`,
+          u.date_of_joining
+            ? new Date(u.date_of_joining).toLocaleDateString("en-IN")
+            : "-"
+        ]),
+
+        headStyles: {
+          fillColor: [0, 113, 112],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          halign: "center",
+        },
+
+        styles: {
+          fontSize: 9,
+          cellPadding: 4,
+          valign: "middle",
+        },
+
+        columnStyles: {
+          0: { cellWidth: 55 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 45 },
+          4: { cellWidth: 30 }
+        },
+
+        alternateRowStyles: {
+          fillColor: [240, 250, 250]
+        }
+      });
+
+      const fileName = `${mess.name.replace(/\s+/g, "_")}_Users.pdf`;
+
+      const pdfBase64 = doc.output("datauristring").split(",")[1];
+
+      if (Capacitor.isNativePlatform()) {
+
+        const savedFile = await Filesystem.writeFile({
+          path: fileName,
+          data: pdfBase64,
+          directory: Directory.Documents
+        });
+
+        await FileOpener.open({
+          filePath: savedFile.uri,
+          contentType: "application/pdf"
+        });
+
+      } else {
+
+        doc.save(fileName);
+
+      }
+
+    } catch (err) {
+      console.error(err);
     toast.error(t("somethingWentWrong"));
-  }
-};
+    } finally{
+      setExporting(false);
+    }
+  };
 
- useEffect(() => {
+
+
+  useEffect(() => {
     const onEsc = (e) => {
       if (e.key !== "Escape") return;
       setModalUser(null);
@@ -526,7 +863,7 @@ const isOpen = openAccordionId === user.id;
   }, []);
 
   useAppRefresh(fetchData);
-  
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -542,14 +879,17 @@ const isOpen = openAccordionId === user.id;
     return () => window.removeEventListener("resize", check);
   }, []);
 
-    const filteredVerified = filterAndSort(verified);
+  const filteredVerified = filterAndSort(verified);
   const filteredUnverified = filterAndSort(unverified);
 
+  if (exporting) return <GlobalLoader/>;
   return (
+
     <Layout>
       <div className={styles.container}>
         <main className={styles.main}>
           <h1>{t("userManagement")}</h1>
+        <div>
 
           <input
             type="text"
@@ -557,8 +897,16 @@ const isOpen = openAccordionId === user.id;
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className={styles.search}
-          />
+            />
+            </div>
 
+          <button
+            className={styles.exportBtn}
+            onClick={handleExportUsersPDF}
+            disabled={exporting}
+          >
+             {exporting ? t("exporting") : t("exportPDF")}
+          </button>
           <div className={styles.tabs}>
             <button
               className={`${styles.tabBtn} ${activeTab === "verified" ? styles.activeTab : ""}`}
@@ -574,7 +922,7 @@ const isOpen = openAccordionId === user.id;
               {t("pendingVerification")} ({unverified.length})
             </button>
 
-         
+
           </div>
 
           {loading ? (
@@ -592,7 +940,7 @@ const isOpen = openAccordionId === user.id;
                         user={u}
                         t={t}
                         openAccordionId={openAccordionId}
-  setOpenAccordionId={setOpenAccordionId}
+                        setOpenAccordionId={setOpenAccordionId}
 
                         actions={[
                           {
@@ -619,9 +967,13 @@ const isOpen = openAccordionId === user.id;
                               </span>
                             ),
                             onClick: () => {
-                              const action = u.status === "Active" ? "freeze" : "unfreeze";
-                              toggleFreeze(u.id, action);
-                            },
+  const action = u.status === "Active" ? "freeze" : "unfreeze";
+
+  setFreezeTarget({
+    user: u,
+    action
+  });
+},
                           },
                           {
                             label: (
@@ -635,33 +987,7 @@ const isOpen = openAccordionId === user.id;
                       />
                     ))
                   ) : (
-                    renderTable(verified, tableColumns, {
-                      label: t("update"),
-                      render: (u) => (
-                        <div className={`${styles.cardActions} ${styles.actionbtn}`}>
-                          <button className={`${styles.button} ${styles.btnEdit}`} onClick={() => openModal(u)}>
-                            {t(" Edit")}
-                          </button>
-                          <button className={`${styles.button} ${styles.btnDel}`} onClick={() => requestDeleteUser(u)}>
-                            {t("delete")}
-                          </button>
-                          <button className={`${styles.button} ${styles.btnDOJ}`} onClick={() => requestChangeDOJ(u)}>
-                            {t("changeDOJ")}
-                          </button>
-                          <button
-                            className={`${styles.button} ${
-                              u.status === "Active" ? styles.btnFreeze : styles.btnUnfreeze
-                            }`}
-                            onClick={() => {
-                              const action = u.status === "Active" ? "freeze" : "unfreeze";
-                              toggleFreeze(u.id, action);
-                            }}
-                          >
-                            {u.status === "Active" ? t("freeze") : t("unfreeze")}
-                          </button>
-                        </div>
-                      ),
-                    })
+                    renderTable(verified, tableColumns)
                   )}
                 </div>
               )}
@@ -676,26 +1002,26 @@ const isOpen = openAccordionId === user.id;
                         key={u.id}
                         user={u}
                         openAccordionId={openAccordionId}
-setOpenAccordionId={setOpenAccordionId}
+                        setOpenAccordionId={setOpenAccordionId}
 
                         t={t}
                         actionButton={
                           <div className={styles.cardActions}>
-                          <Link
-                            href={`/quickSettings/verify?email=${encodeURIComponent(u.email)}`}
-                            className={styles.link}
-                          >
-                            <button className={`${styles.cardbtn} ${styles.button}`}>
-                              {t("verify")}
+                            <Link
+                              href={`/quickSettings/verify?email=${encodeURIComponent(u.email)}`}
+                              className={styles.link}
+                            >
+                              <button className={`${styles.cardbtn} ${styles.button}`}>
+                                {t("verify")}
+                              </button>
+                            </Link>
+                            <button
+                              className={`${styles.cardbtn} ${styles.delBtn}`}
+                              onClick={() => requestDeleteUser(u)}
+                            >
+                              {t("delete")}
                             </button>
-                          </Link>
-                          <button
-                            className={`${styles.cardbtn} ${styles.delBtn}`}
-                            onClick={() => requestDeleteUser(u)}
-                          >
-                           {t("delete")}
-                          </button>
-                          
+
                           </div>
                         }
                       />
@@ -706,20 +1032,20 @@ setOpenAccordionId={setOpenAccordionId}
                       label: t("verify"),
                       render: (u) => (
                         <div className={styles.cardActions}>
-                        <Link
-                          href={`/quickSettings/verify?email=${encodeURIComponent(u.email)}`}
-                          className={styles.link}
-                        >
-                          <button className={styles.button}>{t("verify")}</button>
-                        </Link>
+                          <Link
+                            href={`/quickSettings/verify?email=${encodeURIComponent(u.email)}`}
+                            className={styles.link}
+                          >
+                            <button className={styles.button}>{t("verify")}</button>
+                          </Link>
 
-                        <button
-                          className={`${styles.button} ${styles.btnDel}`}
-                          onClick={() => requestDeleteUser(u)}
-                        >
-                          {t("Delete")}
-                        </button>
-                      </div>
+                          <button
+                            className={`${styles.button} ${styles.btnDel}`}
+                            onClick={() => requestDeleteUser(u)}
+                          >
+                            {t("Delete")}
+                          </button>
+                        </div>
                       ),
                     }))
                 ))}
@@ -868,58 +1194,106 @@ setOpenAccordionId={setOpenAccordionId}
           )}
 
 
- {freezeModal && (
-                <div
-                  style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100vw",
-                    height: "100vh",
-                    background: "rgba(0,0,0,0.6)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 9999,
-                  }}
-                >
-                  <div
-                    style={{
-                      background: "#fff",
-                      padding: "24px",
-                      borderRadius: "12px",
-                      minWidth: "320px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <h3>{freezeModal.action === "freeze" ? t("userFrozen") : t("userUnfrozen")}</h3>
-                    <p style={{ marginTop: 8 }}>{freezeModal.message}</p>
+          {freezeModal && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                background: "rgba(0,0,0,0.6)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 9999,
+              }}
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  padding: "24px",
+                  borderRadius: "12px",
+                  minWidth: "320px",
+                  textAlign: "center",
+                }}
+              >
+                <h3>{freezeModal.action === "freeze" ? t("userFrozen") : t("userUnfrozen")}</h3>
+                <p style={{ marginTop: 8 }}>{freezeModal.message}</p>
 
-                    {freezeModal.user && (
-                      <div style={{ textAlign: "left", marginTop: 12 }}>
-                        <strong>{freezeModal.user.name}</strong>
-                        <div>{t("status")}: {freezeModal.user.status}</div>
-                        {freezeModal.user.freeze_date && <div>{t("freezeDate")}: {new Date(freezeModal.user.freeze_date).toISOString().slice(0, 10)}</div>}
-                        {freezeModal.user.unfreeze_date && <div>{t("unfreezeDate")}: {new Date(freezeModal.user.unfreeze_date).toISOString().slice(0, 10)}</div>}
-                      </div>
-                    )}
-
-                    <button
-                      style={{
-                        marginTop: "16px",
-                        background: "#2563EB",
-                        color: "#fff",
-                        padding: "8px 16px",
-                        borderRadius: "6px",
-                        border: "none",
-                      }}
-                      onClick={() => setFreezeModal(null)}
-                    >
-                      OK
-                    </button>
+                {freezeModal.user && (
+                  <div style={{ textAlign: "left", marginTop: 12 }}>
+                    <strong>{freezeModal.user.name}</strong>
+                    <div>{t("status")}: {freezeModal.user.status}</div>
+                    {freezeModal.user.freeze_date && <div>{t("freezeDate")}: {new Date(freezeModal.user.freeze_date).toISOString().slice(0, 10)}</div>}
+                    {freezeModal.user.unfreeze_date && <div>{t("unfreezeDate")}: {new Date(freezeModal.user.unfreeze_date).toISOString().slice(0, 10)}</div>}
                   </div>
-                </div>
-              )}
+                )}
+
+                <button
+                  style={{
+                    marginTop: "16px",
+                    background: "#2563EB",
+                    color: "#fff",
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    border: "none",
+                  }}
+                  onClick={() => setFreezeModal(null)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
+
+
+          {freezeTarget && (
+  <div
+    className={styles.modalOverlay}
+    onClick={() => setFreezeTarget(null)}
+  >
+    <div
+      className={styles.confirmModal}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3>
+        {freezeTarget.action === "freeze"
+          ? t("confirmFreeze")
+          : t("confirmUnfreeze")}
+      </h3>
+
+      <p>
+        {freezeTarget.action === "freeze"
+          ? t("confirmFreezeUser")
+          : t("confirmUnfreezeUser")}{" "}
+        <strong>{freezeTarget.user.name}</strong> ?
+      </p>
+
+      <div className={styles.modalActions}>
+        <button
+          className={`${styles.button} ${
+            freezeTarget.action === "freeze"
+              ? styles.btnFreeze
+              : styles.btnUnfreeze
+          }`}
+          onClick={confirmFreezeUser}
+        >
+          {freezeTarget.action === "freeze"
+            ? t("freeze")
+            : t("unfreeze")}
+        </button>
+
+        <button
+          className={styles.buttonCancel}
+          onClick={() => setFreezeTarget(null)}
+        >
+          {t("cancel")}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 
 

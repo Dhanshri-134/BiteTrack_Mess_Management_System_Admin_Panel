@@ -1,10 +1,10 @@
 // pages/notifications.js
 import { useState, useEffect } from "react";
-import Layout from "../components/Layout";
-import styles from "../styles/notification.module.css";
+import Layout from "../../components/Layout";
+import styles from "../../styles/notification.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
-import { useLanguage } from "../context/LanguageContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 function decodeToken(token) {
   if (!token || typeof token !== "string") return null;
@@ -178,7 +178,7 @@ export default function Notifications() {
 
     try {
       const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/notifications/delete-group/",
+        "https://bite-track-mess-management-system-a.vercel.app/api/notifications/delete-groups/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json", ...tokenHeader() },

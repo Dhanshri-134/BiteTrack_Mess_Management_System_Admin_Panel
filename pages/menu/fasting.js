@@ -6,6 +6,7 @@ import { useAppRefresh } from "@/lib/useAppRefresh";
 import { offlineFetch } from "../../lib/offlineFetch";
 import { useLanguage } from "../../context/LanguageContext";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { API_BASE } from "../../lib/api";
 
 
 function FastingRequests() {
@@ -27,7 +28,7 @@ function FastingRequests() {
       try {
         const data = await offlineFetch("fasting-requests", async () => {
           const res = await fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/menu/fasting/fetch/",
+            `${API_BASE}/api/menu/fasting/fetch/`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           
@@ -42,9 +43,9 @@ setTodayCount(data.todayCount || 0);
 console.log(data);
       } catch (err) {
         console.error("Error fetching fasting requests:", err);
-      setGroupedRequests(data.groupedRequests || {});
-setTotalRequests(data.totalRequests || 0);
-setTodayCount(data.todayCount || 0);
+        setGroupedRequests({});
+        setTotalRequests(0);
+        setTodayCount(0);
       }
     
 

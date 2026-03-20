@@ -1,0 +1,42 @@
+ SELECT u.id AS user_id,
+    u.mess_id,
+    u.name,
+    u.email,
+    COALESCE(u.status, 'Active'::text) AS status,
+    u.phone AS mobile,
+    p.contact AS parent_mobile,
+    mab.year,
+    mab.month,
+    to_char(make_date(mab.year, mab.month, 1)::timestamp with time zone, 'YYYY-MM-DD'::text) AS start_date,
+    to_char(make_date(mab.year, mab.month, 1) + '1 mon'::interval - '1 day'::interval, 'YYYY-MM-DD'::text) AS end_date,
+    mab.days_billed,
+    COALESCE(mab.attendance_map, '{}'::jsonb) AS attendance_map,
+    m.per_day_rate AS chosen_per_day_rate,
+    m.monthly_price,
+    round(mab.days_billed * m.per_day_rate, 2) AS total_amount,
+    COALESCE(adv.advance_amount, 0::numeric) AS advance_amount,
+    COALESCE(ph.paid, false) AS paid,
+    ph.note,
+    ( SELECT json_agg(o.att_date) AS json_agg
+           FROM "Owner_Marked_attendance" o
+          WHERE o.user_id = u.id AND o.mess_id = u.mess_id AND o.att_date >= make_date(mab.year, mab.month, 1) AND o.att_date <= (make_date(mab.year, mab.month, 1) + '1 mon'::interval - '1 day'::interval)) AS owner_marked_dates
+   FROM monthly_attendance_billing mab
+     JOIN users u ON u.id = mab.user_id
+     JOIN messes m ON m.id = u.mess_id
+     LEFT JOIN parents p ON p.user_id = u.id AND p.mess_id = u.mess_id
+     LEFT JOIN ( SELECT ap.mess_user_id AS user_id,
+            ap.mess_id,
+            sum(ap.advance_amount) AS advance_amount
+           FROM advance_payments ap
+          GROUP BY ap.mess_user_id, ap.mess_id) adv ON adv.user_id = u.id AND adv.mess_id = u.mess_id
+     LEFT JOIN ( SELECT ph_1.user_id,
+            ph_1.mess_id,
+            ph_1.year,
+                CASE
+                    WHEN ph_1.month ~ '^[0-9]+$'::text THEN ph_1.month::integer::numeric
+                    ELSE EXTRACT(month FROM to_date(ph_1.month, 'Month'::text))
+                END AS month,
+            bool_or(ph_1.status = 'paid'::text) AS paid,
+            max(ph_1.note) AS note
+           FROM payment_history ph_1
+          GROUP BY ph_1.user_id, ph_1.mess_id, ph_1.year, ph_1.month) ph ON ph.user_id = mab.user_id AND ph.mess_id = u.mess_id AND ph.year = mab.year AND ph.month = mab.month::numeric;

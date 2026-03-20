@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import styles from "../../styles/verify.module.css";
 import Layout from "../../components/Layout";
+import { API_BASE } from "../../lib/api";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Verify() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { email: queryEmail } = router.query;
 
   const [form, setForm] = useState({ email: "", code: "" });
@@ -21,10 +24,10 @@ export default function Verify() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("Verifying...");
+    setMessage(t("verifying"));
 
     try {
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/verify/", {
+      const res = await fetch(`${API_BASE}/api/verify/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

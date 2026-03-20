@@ -25,7 +25,7 @@ export default function AttendancePage() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
   const [searchAttendance, setSearchAttendance] = useState("");
-
+  const [attendanceTab, setAttendanceTab] = useState("present");
   const [role, setRole] = useState(null);
 
 useEffect(() => {
@@ -45,7 +45,20 @@ useEffect(() => {
       r.att_date === today &&
     r.user_name?.toLowerCase().includes(searchAttendance.toLowerCase())
   );
-  const chunks = splitRecords(todayRecords, 3);
+
+  const presentUserIds = todayRecords.map(r => r.user_id);
+
+const absentUsers = allUsers.filter(
+  (u) => !presentUserIds.includes(u.id)
+);
+
+const filteredAbsentUsers = absentUsers.filter(
+  (u) =>
+    u.name?.toLowerCase().includes(searchAttendance.toLowerCase()) ||
+    u.phone?.toLowerCase().includes(searchAttendance.toLowerCase())
+);
+  const currentRecords = attendanceTab === "present" ? todayRecords : filteredAbsentUsers;
+  const chunks = splitRecords(currentRecords, 3);
 
 
   const filteredUsers = allUsers.filter((u) =>
@@ -395,6 +408,7 @@ useEffect(() => {
 
   useEffect(() => {
     fetchAttendance();
+    fetchUsersForAttendance(); 
   }, []);
 
 
@@ -471,6 +485,25 @@ useEffect(() => {
             <h2>
               {t("attendanceRecord")} ({today})
             </h2>
+            <div className={styles.attendanceTabs}>
+  <button
+    className={`${styles.tabBtn} ${
+      attendanceTab === "present" ? styles.tabActive : ""
+    }`}
+    onClick={() => setAttendanceTab("present")}
+  >
+    {t("present")} ({todayRecords.length})
+  </button>
+
+  <button
+    className={`${styles.tabBtn} ${
+      attendanceTab === "absent" ? styles.tabActive : ""
+    }`}
+    onClick={() => setAttendanceTab("absent")}
+  >
+    {t("absent")} ({absentUsers.length})
+  </button>
+</div>
             <input
               type="text"
               placeholder="Search by name"
@@ -483,7 +516,9 @@ useEffect(() => {
               <div className={styles.loading}>
                 {t("loading")}
               </div>
-            ) : todayRecords.length === 0 ? (
+            ) : (attendanceTab === "present"
+  ? todayRecords.length === 0
+  : filteredAbsentUsers.length === 0) ? (
               <div className={styles.empty}>
                 {t("noRecords")}
               </div>
@@ -498,7 +533,7 @@ useEffect(() => {
                     </tr>
                   </thead>
                   <tbody>
-                    {todayRecords.map((r, idx) => (
+                    {(attendanceTab === "present" ? todayRecords : filteredAbsentUsers).map((r, idx) => (
                       <tr key={r.id}>
                         <td>{idx + 1}</td>
                         <td
@@ -512,34 +547,36 @@ useEffect(() => {
                             const year = today.getFullYear();
 
                             router.push(
-                              `/billing?search=${encodeURIComponent(r.user_name)}`
+                              `/billing?search=${encodeURIComponent(attendanceTab === "present" ? r.user_name : r.name)}`
                             );
                           }}
                         >
-                            {r.user_name}
+                            {attendanceTab === "present" ? r.user_name : r.name}
                           </span>
-                          <div className={styles.user}>
-                          {r.source_type === "owner" && (
-                            <span className={styles.ownerBadge}>Owner</span>
-                          )}
-                          <span
-                            className={
-                              r.paid
-                                ? styles.badgePaid
-                                : styles.badgeUnpaid
-                            }
-                          >
-                            {r.paid ? "Paid" : "Unpaid"}
-                          </span>
-                          {r.source_type === "owner" && (
-                            <button
-                              className={styles.deleteBtn}
-                              onClick={() => handleDelete(r)}
+                          {attendanceTab === "present" && (
+                            <div className={styles.user}>
+                            {r.source_type === "owner" && (
+                              <span className={styles.ownerBadge}>Owner</span>
+                            )}
+                            <span
+                              className={
+                                r.paid
+                                  ? styles.badgePaid
+                                  : styles.badgeUnpaid
+                              }
                             >
-                              Delete
-                            </button>
+                              {r.paid ? "Paid" : "Unpaid"}
+                            </span>
+                            {r.source_type === "owner" && (
+                              <button
+                                className={styles.deleteBtn}
+                                onClick={() => handleDelete(r)}
+                              >
+                                Delete
+                              </button>
+                            )}
+                            </div>
                           )}
-                          </div>
 
                         </td>
                       </tr>
@@ -555,8 +592,8 @@ useEffect(() => {
                       <thead>
                         <tr className={styles.tableHeader}>
                           <th>{t("srNo")}</th>
-                          <th>{t("status")}</th>
                           <th>{t("name")}</th>
+                          {attendanceTab === "present" && <th>{t("status")}</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -565,7 +602,7 @@ useEffect(() => {
                             <td>
                               {idx +
                                 colIdx *
-                                Math.ceil(todayRecords.length / 3) +
+                                Math.ceil(currentRecords.length / 3) +
                                 1}
                             </td>
                             <td
@@ -577,28 +614,30 @@ useEffect(() => {
                                 const year = today.getFullYear();
 
                                 router.push(
-                                  `/billing?userId=${r.user_id}&month=${month}&year=${year}`
+                                  `/billing?userId=${attendanceTab === "present" ? r.user_id : r.id}&month=${month}&year=${year}`
                                 );
                               }}
                             >
-                              {r.user_name}
+                              {attendanceTab === "present" ? r.user_name : r.name}
                             </td>
-                            <td>
-                              {r.source_type === "owner" && (
-                                <span className={styles.ownerBadge}>Owner</span>
-                              )}
-                              <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
-                                {r.paid ? "Paid" : "Unpaid"}
-                              </span>
-                              {r.source_type === "owner" && (
-                            <button
-                              className={styles.deleteBtn}
-                              onClick={() => handleDelete(r)}
-                            >
-                              {t("Delete")}
-                            </button>
-                          )}
-                            </td>
+                            {attendanceTab === "present" && (
+                              <td>
+                                {r.source_type === "owner" && (
+                                  <span className={styles.ownerBadge}>Owner</span>
+                                )}
+                                <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
+                                  {r.paid ? "Paid" : "Unpaid"}
+                                </span>
+                                {r.source_type === "owner" && (
+                              <button
+                                className={styles.deleteBtn}
+                                onClick={() => handleDelete(r)}
+                              >
+                                {t("Delete")}
+                              </button>
+                            )}
+                              </td>
+                            )}
 
                           </tr>
                         ))}

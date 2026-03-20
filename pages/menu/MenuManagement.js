@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import DayDropdown from "../../components/DayDropdown";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { API_BASE } from "../../lib/api";
 
 
 export default function MenuManagement() {
@@ -38,7 +39,7 @@ export default function MenuManagement() {
         
         const data = await offlineFetch("menuData", async () => {
           const res = await fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/menu/fetch/",
+            `${API_BASE}/api/menu/fetch/`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch menu");
@@ -59,6 +60,8 @@ export default function MenuManagement() {
   useEffect(() =>{
     fetchMenu();
   }, []);
+
+  useAppRefresh(fetchMenu);
   
   const handleAddDish = (day, mealType) => {
     setMenuData({
@@ -94,7 +97,7 @@ export default function MenuManagement() {
       if (!token) throw new Error("Unauthorized — login required");
 
       const res = await fetch(
-        "https://bite-track-mess-management-system-a.vercel.app/api/menu/update/",
+        `${API_BASE}/api/menu/update/`,
         {
           method: "POST",
           headers: {

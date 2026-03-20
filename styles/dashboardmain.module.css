@@ -455,3 +455,53 @@ justify-content: space-between;
   0% { background-position: 100% 0 }
   100% { background-position: 0 0 }
 }
+
+.splitCard{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:28px;
+width:100%;
+}
+
+.splitItem{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+font-size:0.9rem;
+min-width:80px;
+}
+
+.splitLabel{
+font-size:0.4rem;
+color:#64748b;
+margin-top:2px;
+}
+
+.splitDivider{
+width:1px;
+height:32px;
+background:#e2e8f0;
+}
+
+.attendanceTabs{
+display:flex;
+gap:6px;
+margin:10px 0 15px 0;
+}
+
+.tabBtn{
+flex:1;
+padding:6px 10px;
+border:none;
+background:#f1f5f9;
+border-radius:6px;
+cursor:pointer;
+font-size:13px;
+}
+
+.tabActive{
+background:#0f766e;
+color:white;
+}

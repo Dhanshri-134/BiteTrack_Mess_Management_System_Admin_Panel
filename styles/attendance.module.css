@@ -436,3 +436,25 @@
 .user{
   margin-top: 5px;
 }
+
+
+.attendanceTabs{
+display:flex;
+gap:8px;
+margin-bottom:10px;
+}
+
+.tabBtn{
+flex:1;
+padding:6px 10px;
+border:none;
+background:#f1f5f9;
+border-radius:6px;
+cursor:pointer;
+font-size:13px;
+}
+
+.tabActive{
+background:#0f766e;
+color:white;
+}

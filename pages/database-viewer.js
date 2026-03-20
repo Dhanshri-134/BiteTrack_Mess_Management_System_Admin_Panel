@@ -1,56 +1,73 @@
-import { useState, useEffect } from 'react';
-import styles from '../styles/database-viewer.module.css';
+import { useState, useEffect } from "react";
+import styles from "../styles/database-viewer.module.css";
+import { offlineFetch } from "../lib/offlineFetch";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+import { API_BASE } from "../lib/api";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function DatabaseViewer() {
+  const { t } = useLanguage();
   const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState('');
+  const [selectedTable, setSelectedTable] = useState("");
   const [tableData, setTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  // Fetch all tables
   useEffect(() => {
     fetchTables();
-    
   }, []);
 
   const fetchTables = async () => {
     try {
-      const response = await fetch('/api/database/tables/');
-      const data = await response.json();
-      if (response.ok) {
-        setTables(data.tables);
-      } else {
-        setError(data.error);
-      }
+      const data = await offlineFetch("database-tables", async () => {
+        const response = await fetch(`${API_BASE}/api/database/tables/`);
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || t("failedToFetchTables"));
+        }
+        return payload;
+      });
+      setTables(data?.tables || []);
     } catch (err) {
-      setError('Failed to fetch tables');
+      setError(err.message || t("failedToFetchTables"));
     }
   };
 
   const fetchTableData = async (tableName) => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const response = await fetch(`/api/database/table-data?table=${tableName}/`);
-      const data = await response.json();
-      if (response.ok) {
-        setTableData(data.data);
-        setColumns(data.columns);
-      } else {
-        setError(data.error);
-      }
+      const data = await offlineFetch(`database-table-${tableName}`, async () => {
+        const response = await fetch(
+          `${API_BASE}/api/database/table-data/?table=${encodeURIComponent(tableName)}`
+        );
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || t("failedToFetchTableData"));
+        }
+        return payload;
+      });
+      setTableData(data?.data || []);
+      setColumns(data?.columns || []);
     } catch (err) {
-      setError('Failed to fetch table data');
+      setError(err.message || t("failedToFetchTableData"));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleTableSelect = (tableName) => {
     setSelectedTable(tableName);
     fetchTableData(tableName);
   };
+
+  useAppRefresh(() => {
+    fetchTables();
+    if (selectedTable) {
+      fetchTableData(selectedTable);
+    }
+  });
 
   return (
     <div className={styles.container}>

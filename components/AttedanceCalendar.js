@@ -96,7 +96,7 @@ else {
     t("jul"), t("aug"), t("sep"), t("oct"), t("nov"), t("dec")
   ];
   console.log("attendanceMap:", attendanceMap);
-console.log("ownerMarkedDates:", ownerMarkedDates);
+  console.log("ownerMarkedDates:", ownerMarkedDates);
 
   return (
     <div className={styles.calendar}>

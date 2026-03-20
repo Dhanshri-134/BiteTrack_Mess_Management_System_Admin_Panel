@@ -38,10 +38,10 @@ export default function App({ Component, pageProps }) {
     };
   }, [router]);
 
-useEffect(() => {
-    // 🔥 ANDROID FIX: prevent system UI overlap
-    StatusBar.setOverlaysWebView({ overlay: false });
-  }, []);
+// useEffect(() => {
+//     // 🔥 ANDROID FIX: prevent system UI overlap
+//     StatusBar.setOverlaysWebView({ overlay: false });
+//   }, []);
 
   useEffect(() => {
   let startY = 0;
@@ -177,6 +177,7 @@ useEffect(() => {
 />
         {/* Theme color */}
         <meta name="theme-color" content="#007171" />
+        <title>BiteTrack - Owner App</title>
       </Head>
 
     {loading && <GlobalLoader />}

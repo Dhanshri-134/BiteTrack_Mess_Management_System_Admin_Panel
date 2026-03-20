@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useLanguage } from "../context/LanguageContext";
 import { ChevronDown } from "lucide-react";
 import { offlineFetch } from "@/lib/offlineFetch";
+import { Download, Eye } from "lucide-react";
 
 import GlobalLoader from "../components/GlobalLoader";
 
@@ -15,131 +16,132 @@ export default function PaymentHistory({ token }) {
     const [historyMap, setHistoryMap] = useState({});
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
+    const [receiptModal, setReceiptModal] = useState(null);
 
     const authHeaders = {
         Authorization: `Bearer ${token}`,
     };
 
     /* ================= LOAD USERS (PAID ONLY) ================= */
-  useEffect(() => {
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoading(true);
 
-      const data =
-        (await offlineFetch("payment-history-users", async () => {
-          const res = await fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/bills/history/",
-            { headers: authHeaders }
-          );
-          if (!res.ok) throw new Error("history users fetch failed");
-          return res.json();
-        })) ?? { users: [] };
+                const data =
+                    (await offlineFetch("payment-history-users", async () => {
+                        const res = await fetch(
+                            "https://bite-track-mess-management-system-a.vercel.app/api/bills/history/",
+                            { headers: authHeaders }
+                        );
+                        if (!res.ok) throw new Error("history users fetch failed");
+                        return res.json();
+                    })) ?? { users: [] };
 
-      setUsers(data.users || []);
-    } catch (err) {
-      console.error(err);
-      toast.error(t("failedToLoad"));
-    } finally {
-      setLoading(false);
-    }
-  };
+                setUsers(data.users || []);
+            } catch (err) {
+                console.error(err);
+                toast.error(t("failedToLoad"));
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  fetchUsers();
-}, []);
+        fetchUsers();
+    }, []);
 
 
 
 
     /* ================= LOAD HISTORY (LAZY) ================= */
-  const loadHistory = async (userId) => {
-  if (historyMap[userId]) return;
+    const loadHistory = async (userId) => {
+        if (historyMap[userId]) return;
 
-  try {
-    // setLoading(true);
+        try {
+            // setLoading(true);
 
-    const data =
-      (await offlineFetch(`payment-history-${userId}`, async () => {
-        const res = await fetch(
-          `https://bite-track-mess-management-system-a.vercel.app/api/bills/history/?user_id=${userId}`,
-          { headers: authHeaders }
-        );
-        if (!res.ok) throw new Error("history fetch failed");
-        return res.json();
-      })) ?? { history: [] };
+            const data =
+                (await offlineFetch(`payment-history-${userId}`, async () => {
+                    const res = await fetch(
+                        `https://bite-track-mess-management-system-a.vercel.app/api/bills/history/?user_id=${userId}`,
+                        { headers: authHeaders }
+                    );
+                    if (!res.ok) throw new Error("history fetch failed");
+                    return res.json();
+                })) ?? { history: [] };
 
-    setHistoryMap(prev => ({
-      ...prev,
-      [userId]: data.history || [],
-    }));
-  } catch (err) {
-    console.error(err);
-    toast.error(t("failedToLoad"));
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-   const TooltipText = ({ value }) => {
-  const [pos, setPos] = useState({ x: 0, y: 0, show: false });
-
-  useEffect(() => {
-    if (!pos.show) return;
-
-    const hide = () => setPos(p => ({ ...p, show: false }));
-
-    window.addEventListener("scroll", hide, { passive: true });
-    window.addEventListener("resize", hide);
-    window.addEventListener("touchstart", hide);
-
-    return () => {
-      window.removeEventListener("scroll", hide);
-      window.removeEventListener("resize", hide);
-      window.removeEventListener("touchstart", hide);
+            setHistoryMap(prev => ({
+                ...prev,
+                [userId]: data.history || [],
+            }));
+        } catch (err) {
+            console.error(err);
+            toast.error(t("failedToLoad"));
+        } finally {
+            setLoading(false);
+        }
     };
-  }, [pos.show]);
 
-  const showTooltip = (e) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const tooltipWidth = 220;
-    const padding = 8;
 
-    let x = r.left + r.width / 2 - tooltipWidth / 2;
-    let y = r.top - 10;
 
-    if (x < padding) x = padding;
-    if (x + tooltipWidth > window.innerWidth - padding) {
-      x = window.innerWidth - tooltipWidth - padding;
-    }
-    if (y < padding) y = r.bottom + 10;
+    const TooltipText = ({ value }) => {
+        const [pos, setPos] = useState({ x: 0, y: 0, show: false });
 
-    setPos({ x, y, show: true });
-  };
+        useEffect(() => {
+            if (!pos.show) return;
 
-  return (
-    <span
-      className={styles.truncate}
-      tabIndex={0}
-      onMouseEnter={showTooltip}
-      onFocus={showTooltip}
-      onMouseLeave={() => setPos(p => ({ ...p, show: false }))}
-      onBlur={() => setPos(p => ({ ...p, show: false }))}
-    >
-      {value}
+            const hide = () => setPos(p => ({ ...p, show: false }));
 
-      {pos.show && (
-        <span
-          className={styles.tooltip}
-          style={{ left: pos.x, top: pos.y, width: 220 }}
-        >
-          {value}
-        </span>
-      )}
-    </span>
-  );
-};
+            window.addEventListener("scroll", hide, { passive: true });
+            window.addEventListener("resize", hide);
+            window.addEventListener("touchstart", hide);
+
+            return () => {
+                window.removeEventListener("scroll", hide);
+                window.removeEventListener("resize", hide);
+                window.removeEventListener("touchstart", hide);
+            };
+        }, [pos.show]);
+
+        const showTooltip = (e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            const tooltipWidth = 220;
+            const padding = 8;
+
+            let x = r.left + r.width / 2 - tooltipWidth / 2;
+            let y = r.top - 10;
+
+            if (x < padding) x = padding;
+            if (x + tooltipWidth > window.innerWidth - padding) {
+                x = window.innerWidth - tooltipWidth - padding;
+            }
+            if (y < padding) y = r.bottom + 10;
+
+            setPos({ x, y, show: true });
+        };
+
+        return (
+            <span
+                className={styles.truncate}
+                tabIndex={0}
+                onMouseEnter={showTooltip}
+                onFocus={showTooltip}
+                onMouseLeave={() => setPos(p => ({ ...p, show: false }))}
+                onBlur={() => setPos(p => ({ ...p, show: false }))}
+            >
+                {value}
+
+                {pos.show && (
+                    <span
+                        className={styles.tooltip}
+                        style={{ left: pos.x, top: pos.y, width: 220 }}
+                    >
+                        {value}
+                    </span>
+                )}
+            </span>
+        );
+    };
 
 
 
@@ -151,6 +153,36 @@ export default function PaymentHistory({ token }) {
             `${u.name} ${u.email}`.toLowerCase().includes(search.toLowerCase())
         );
     }, [users, search]);
+
+
+    const ReceiptModal = () => {
+        if (!receiptModal) return null;
+
+        return (
+            <div className={styles.receiptModalOverlay} onClick={() => setReceiptModal(null)}>
+                <div className={styles.receiptModal} onClick={(e) => e.stopPropagation()}>
+
+                    <div className={styles.receiptHeader}>
+                        <h3>{t("receiptPreview")}</h3>
+
+                        <button
+                            className={styles.downloadBtn}
+                            onClick={() => window.open(receiptModal, "_blank")}
+                        >
+                            <Download size={18} />
+                        </button>
+                    </div>
+
+                    <iframe
+                        src={receiptModal}
+                        className={styles.receiptFrame}
+                        title="Receipt"
+                    />
+
+                </div>
+            </div>
+        );
+    };
 
     return (
         <>
@@ -189,7 +221,7 @@ export default function PaymentHistory({ token }) {
                             if (!p) return null;
 
                             return (
-                                <>
+                                <table>
                                     <tr key={u.id}>
                                         <td>{u.name}</td>
                                         <td>{u.email}</td>
@@ -283,6 +315,23 @@ export default function PaymentHistory({ token }) {
                                                                     <div className={styles.historyValue}>{h.note}</div>
                                                                 </>
                                                             )}
+                                                            {h.receipt_pdf_url && (
+                                                                <div className={styles.mobilerow}>
+                                                                    <button
+                                                                        className={styles.btnReceipt}
+                                                                        onClick={() => setReceiptModal(h.receipt_pdf_url)}
+                                                                    >
+                                                                        <Eye size={16} /> {t("view")}
+                                                                    </button>
+
+                                                                    <button
+                                                                        className={styles.downloadIcon}
+                                                                        onClick={() => window.open(h.receipt_pdf_url, "_blank")}
+                                                                    >
+                                                                        <Download size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
@@ -291,7 +340,7 @@ export default function PaymentHistory({ token }) {
 
                                         </tr>
                                     )}
-                                </>
+                                </table>
                             );
                         })}
                     </tbody>
@@ -312,7 +361,7 @@ export default function PaymentHistory({ token }) {
                                 <span className={styles.user}>{u.name}</span>
                                 <button
                                     className={styles.btnActionPH}
-                                   
+
                                     onClick={async () => {
                                         if (expandedUser === u.id) {
                                             setExpandedUser(null);           // ✅ collapse
@@ -381,7 +430,23 @@ export default function PaymentHistory({ token }) {
 
                                 </strong>
                             </div>
+                            {p.receipt_pdf_url && (
+                                <div className={styles.mobilerow}>
+                                    <button
+                                        className={styles.btnReceipt}
+                                        onClick={() => setReceiptModal(p.receipt_pdf_url)}
+                                    >
+                                        <Eye size={16} /> {t("view")}
+                                    </button>
 
+                                    <button
+                                        className={styles.downloadIcon}
+                                        onClick={() => window.open(p.receipt_pdf_url, "_blank")}
+                                    >
+                                        <Download size={16} />
+                                    </button>
+                                </div>
+                            )}
 
                             {/* EXPANDED HISTORY */}
                             {expandedUser === u.id && (
@@ -396,10 +461,27 @@ export default function PaymentHistory({ token }) {
                                             <div className={styles.mobilerow}><span>{t("amount")} </span>  ₹{Number(h.amount).toFixed(2)}</div>
                                             <div className={styles.mobilerow}><span>{t("type")} </span> {h.payment_type} </div>
                                             <div className={styles.mobilerow}><span>{t("method")} </span> {h.payment_method}</div>
-                                            {h.transaction_id && <div className={`${styles.mobilerow}`}><span>{t("id")}</span> <TooltipText value={p.transaction_id} /></div>}
-                                            <div className={styles.mobilerow}><span>{t("billingPeriod")}</span><TooltipText value={`${p.billing_start_date} → ${p.billing_end_date}`} /></div>
+                                            {h.transaction_id && <div className={`${styles.mobilerow}`}><span>{t("id")}</span> <TooltipText value={h.transaction_id} /></div>}
+                                            <div className={styles.mobilerow}><span>{t("billingPeriod")}</span><TooltipText value={`${h.billing_start_date} → ${h.billing_end_date}`} /></div>
                                             <div className={styles.mobilerow}><span>{t("leaveDays")}</span> {h.leave_days}</div>
                                             {h.note && <div className={styles.mobilerow}><span>{t("note")} </span> {h.note}</div>}
+                                            {h.receipt_pdf_url && (
+                                                <div className={styles.mobilerow}>
+                                                    <button
+                                                        className={styles.btnReceipt}
+                                                        onClick={() => setReceiptModal(h.receipt_pdf_url)}
+                                                    >
+                                                        <Eye size={16} /> {t("view")}
+                                                    </button>
+
+                                                    <button
+                                                        className={styles.downloadIcon}
+                                                        onClick={() => window.open(h.receipt_pdf_url, "_blank")}
+                                                    >
+                                                        <Download size={16} />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -409,6 +491,34 @@ export default function PaymentHistory({ token }) {
                     );
                 })}
             </div>
+            {receiptModal && (
+  <div
+    className={styles.receiptModalOverlay}
+    onClick={() => setReceiptModal(null)}
+  >
+    <div
+      className={styles.receiptModal}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className={styles.receiptHeader}>
+        <h3>{t("receiptPreview")}</h3>
+
+        <button
+          className={styles.downloadIcon}
+          onClick={() => window.open(receiptModal, "_blank")}
+        >
+          Download
+        </button>
+      </div>
+
+      <iframe
+        src={receiptModal}
+        className={styles.receiptFrame}
+        title="Receipt"
+      />
+    </div>
+  </div>
+)}
         </>
     );
 }

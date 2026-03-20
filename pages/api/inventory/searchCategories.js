@@ -19,25 +19,26 @@ return res.status(401).json({success:false,error:"Token required"});
 
 jwt.verify(token,process.env.JWT_SECRET);
 
-const {search} = req.body;
+const {search} = req.body || {};
+const term = search?.trim() || "";
 
 let result;
 
-if(search && search.trim() !== ""){
+if(term){
 
 result = await pgPool.query(
-`SELECT id,category_name
+`SELECT id,category_name,description
 FROM inventory_categories
 WHERE LOWER(category_name) LIKE LOWER($1)
 ORDER BY category_name
 LIMIT 10`,
-[`%${search}%`]
+[`%${term}%`]
 );
 
 }else{
 
 result = await pgPool.query(
-`SELECT id,category_name
+`SELECT id,category_name,description
 FROM inventory_categories
 ORDER BY category_name
 LIMIT 10`

@@ -286,7 +286,6 @@ const confirmStatusUpdate = async () => {
                   ) : (
                     sortedFiltered.map(b => (
                       <tr key={b.id}>
-                        <td>{b.id}</td>
                         <td>{b.name}</td>
                         <td>{b.mobile_no}</td>
                         <td>{b.people_count}</td>

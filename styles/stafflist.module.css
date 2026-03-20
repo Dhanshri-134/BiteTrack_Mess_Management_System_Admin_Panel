@@ -1,0 +1,169 @@
+/* ===== Container ===== */
+.container {
+  padding: 24px;
+  background: #f6f8fb;
+  min-height: 100vh;
+}
+
+/* ===== Header ===== */
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.primaryBtn {
+  background: #007171;
+  color: white;
+  padding: 9px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* ===== Search ===== */
+.searchInput {
+  width: 280px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  margin-bottom: 16px;
+}
+
+/* ===== Table ===== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table th {
+  text-align: left;
+  padding: 14px;
+  font-size: 13px;
+  color: #6b7280;
+  background: #f9fafb;
+}
+
+.table td {
+  padding: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.table tr:hover {
+  background: #f9fafb;
+}
+
+/* ===== Status ===== */
+.active {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.inactive {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ===== Actions ===== */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.dangerBtn {
+  background: #ef4444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+/* ===== Mobile Card Layout ===== */
+
+.card {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  .table {
+    display: none;
+  }
+
+  .card {
+    display: block;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .cardName {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  /* Label Value Grid */
+  .cardGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .label {
+    font-size: 0.7rem;
+    color: #a7a7a7;
+  }
+
+  .value {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .cardActions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+}
+
+.cardActions Link{
+    background-color: #007171 !important;
+    color: #007171;
+    
+  }
+
+  .divider{
+    position: fixed;
+    top:10px;
+    left:2px;
+    width: 100px;
+    background-color: #6b7280;
+    height: 1px;
+  }
+
+}

@@ -1,27 +1,30 @@
 import { useState } from "react";
 import styles from "../styles/forgotpassword.module.css";
+import { API_BASE } from "../lib/api";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function ForgotPassword() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
-
+  
   const submit = async (e) => {
     e.preventDefault();
     setMsg("");
     setError("");
 
     try {
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/auth/forgot-password/", {
+      const res = await fetch(`${API_BASE}/api/auth/forgot-password/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || t("forgotPasswordFailed"));
 
-      setMsg("Sent mail to your registered email ID");
+      setMsg(t("forgotPasswordMailSent"));
     } catch (err) {
       setError(err.message);
     }
@@ -30,12 +33,12 @@ export default function ForgotPassword() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h2>Forgot Password</h2>
+        <h2>{t("forgotPasswordTitle")}</h2>
 
         <form onSubmit={submit}>
           <input
             type="email"
-            placeholder="Registered email"
+            placeholder={t("registeredEmailPlaceholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -45,7 +48,7 @@ export default function ForgotPassword() {
           {error && <p style={{ color: "red" }}>{error}</p>}
 
           <button type="submit" className={styles.loginBtn}>
-            Send Email
+            {t("sendEmail")}
           </button>
         </form>
       </div>

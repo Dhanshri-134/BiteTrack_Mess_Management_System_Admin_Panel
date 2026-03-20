@@ -95,7 +95,7 @@ useEffect(() => {
   // ✅ Normal layout
   return (
     <div className={styles.container}>
-      <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} isDesktop={isDesktop} />
 
       <div className={styles.body}>
         {(isDesktop || sidebarOpen) && (

@@ -9,6 +9,7 @@ import autoTable from "jspdf-autotable";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { FileOpener } from "@capacitor-community/file-opener";
 import { Capacitor } from "@capacitor/core";
+import  GlobalLoader from "../components/GlobalLoader"
 
 
 export default function Suggestions() {
@@ -18,6 +19,7 @@ export default function Suggestions() {
   const [loading, setLoading] = useState(true);
   const [avgRating, setAvgRating] = useState();
 
+  const [exporting, setExporting] = useState(false);
   const [animatedRating, setAnimatedRating] = useState(0);
 
   useEffect(() => {
@@ -83,7 +85,7 @@ export default function Suggestions() {
         return await res.json();
       });
       const messData = await offlineFetch("mess-info", async () => {
-  const messRes = await fetch("/api/mess/details", {
+  const messRes = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/mess/details", {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -93,6 +95,7 @@ export default function Suggestions() {
   }
       });
 
+      console.log(data)
       setFeedbacks(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
@@ -126,9 +129,10 @@ export default function Suggestions() {
 
 const handleExportPDF = async () => {
   try {
+    setExporting(true);
     const token = localStorage.getItem("token");
 
-    const messRes = await fetch("/api/mess/details", {
+    const messRes = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/mess/details/", {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -227,9 +231,10 @@ doc.text("Feedback Report", 14, 50);
 
     autoTable(doc, {
       startY: 60,
-      head: [["Type", "Message", "Date"]],
+      head: [["Name","Mobile", "Message", "Date"]],
       body: filteredFeedbacks.map((fb) => [
-        fb.feedback_type,
+        fb.name,
+        fb.phone,
         fb.message,
         new Date(fb.created_at).toLocaleDateString("en-IN"),
       ]),
@@ -271,6 +276,8 @@ if (Capacitor.isNativePlatform()) {
 
   } catch (err) {
     console.error(err);
+  } finally{
+    setExporting(false);
   }
 };
 
@@ -301,6 +308,7 @@ const StarRating = ({ rating }) => {
   );
 };
 
+if (exporting) return <GlobalLoader/>;
   return (
     <Layout>
       <div className={styles.container}>

@@ -181,7 +181,6 @@ body.routing {
   position: relative;
 }
 
-/* 👇 KEY LINE */
 .app-shell.is-loading {
   pointer-events: none;
   filter: blur(0.5px);

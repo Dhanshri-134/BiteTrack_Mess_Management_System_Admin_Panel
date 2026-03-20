@@ -28,11 +28,12 @@ v.vendor_name,
 v.phone,
 v.email,
 v.address,
+v.gst_number,
+v.notes,
 
 COALESCE(SUM(p.total_amount),0) AS total_purchases,
-
+COUNT(DISTINCT p.id) AS purchase_count,
 COUNT(DISTINCT pi.item_id) AS items_supplied,
-
 MAX(p.purchase_date) AS last_purchase
 
 FROM inventory_vendors v

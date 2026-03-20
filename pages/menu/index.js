@@ -9,6 +9,8 @@ import FastingRequests from "./fasting";
 import styles from "../../styles/menu.module.css";
 import { useLanguage } from "../../context/LanguageContext";
 import { offlineFetch } from "../../lib/offlineFetch";
+import MenuCalendar from "./menuCalendar";
+import { API_BASE } from "../../lib/api";
 
 export default function MenuPage() {
   const searchParams = useSearchParams();
@@ -26,6 +28,7 @@ const tabs = [
 
   
   { key: "MenuPreview", label: t("menuPreview") },
+  { key: "MonthlyMenu", label: t("monthlymenuHistory") },
   
   (hasAccess("special_menu") || hasAccess("cravings")) && {
     key: "Specials",
@@ -55,7 +58,7 @@ useEffect(() => {
     try {
       const data = await offlineFetch("mess-access", async () => {
         const res = await fetch(
-          "https://bite-track-mess-management-system-a.vercel.app/api/mess/access/",
+          `${API_BASE}/api/mess/access/`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -101,7 +104,7 @@ useEffect(() => {
             {activeTab === "Specials" && (
   <SpecialDish messAccess={messAccess} />
 )}
-            {activeTab === "RatingsReviews" && <RatingsReviews />}
+            {activeTab === "MonthlyMenu" && <MenuCalendar />}
             {activeTab === "FastingRequests" && hasAccess("fasting") && (
   <FastingRequests />
 )}

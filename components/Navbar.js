@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Menu, Bell, LogOutIcon, RefreshCcw } from "lucide-react";
+import { Menu, Bell, LogOutIcon, RefreshCcw ,Zap} from "lucide-react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import styles from "../styles/navbar.module.css";
@@ -8,7 +8,7 @@ import LanguageToggle from "./LanguageToggle";
 import { triggerRefresh } from "@/lib/refreshBus";
 import toast from "react-hot-toast";
 
-export default function Navbar({ sidebarOpen, setSidebarOpen }) {
+export default function Navbar({ sidebarOpen, setSidebarOpen,isDesktop }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
@@ -40,13 +40,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
         {/* 🌐 LANGUAGE TOGGLE */}
         <LanguageToggle />
 
-        {/* <button
-          onClick={() => router.replace(router.asPath)}
-          className={styles.refreshBtn}
-          title="Refresh"
-        >
-          <RefreshCcw size={20} />
-        </button> */}
 
 
 <button
@@ -76,6 +69,11 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
             Login
           </button>
         )} */}
+
+{isDesktop && (
+        <Link href="/quickSettings/" className={styles.iconBtn}>
+              <Zap size={20}/> 
+            </Link>)}
       </div>
     </nav>
   );

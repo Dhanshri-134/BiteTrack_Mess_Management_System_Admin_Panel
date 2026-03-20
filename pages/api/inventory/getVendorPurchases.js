@@ -23,6 +23,31 @@ const messId=decoded.messId;
 
 const {vendor_id} = req.body;
 
+const vendor = await pgPool.query(
+`
+SELECT
+v.id,
+v.vendor_name,
+v.phone,
+v.email,
+v.address,
+v.gst_number,
+v.notes
+FROM inventory_vendors v
+WHERE v.mess_id=$1
+AND v.id=$2
+LIMIT 1
+`,
+[messId,vendor_id]
+);
+
+if(vendor.rows.length===0){
+return res.status(404).json({
+success:false,
+error:"Vendor not found"
+});
+}
+
 const purchases = await pgPool.query(
 `
 SELECT
@@ -45,8 +70,26 @@ ORDER BY p.purchase_date DESC
 [messId,vendor_id]
 );
 
+const summary = await pgPool.query(
+`
+SELECT
+COALESCE(SUM(p.total_amount),0) AS total_amount,
+COUNT(*) AS purchase_count,
+COALESCE(SUM(pi.quantity),0) AS total_quantity,
+MAX(p.purchase_date) AS last_purchase
+FROM inventory_purchases p
+LEFT JOIN inventory_purchase_items pi
+ON pi.purchase_id=p.id
+WHERE p.mess_id=$1
+AND p.vendor_id=$2
+`,
+[messId,vendor_id]
+);
+
 res.json({
 success:true,
+vendor:vendor.rows[0],
+summary:summary.rows[0],
 data:purchases.rows
 });
 

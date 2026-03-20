@@ -19,7 +19,10 @@ const decoded=jwt.verify(token,process.env.JWT_SECRET);
 const messId=decoded.messId;
 
 const items=await pgPool.query(
-`SELECT COUNT(*) FROM inventory_items WHERE mess_id=$1`,
+`SELECT COUNT(*) 
+ FROM inventory_stock
+ WHERE mess_id=$1
+ AND is_active IS NOT FALSE`,
 [messId]
 );
 
@@ -29,8 +32,11 @@ const vendors=await pgPool.query(
 );
 
 const lowStock=await pgPool.query(
-`SELECT COUNT(*) FROM inventory_items
-WHERE mess_id=$1 AND current_stock<=min_stock`,
+`SELECT COUNT(*)
+ FROM inventory_stock
+ WHERE mess_id=$1
+ AND is_active IS NOT FALSE
+ AND COALESCE(total_stock,0) <= COALESCE(min_stock,0)`,
 [messId]
 );
 

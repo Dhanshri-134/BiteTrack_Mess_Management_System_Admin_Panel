@@ -1,3 +1,4 @@
+/* ================= STATUS ================= */
 .active {
   color: #16a34a;
   font-weight: 600;
@@ -8,8 +9,15 @@
   font-weight: 600;
 }
 
+.late {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ================= BUTTONS ================= */
+
 .primaryBtn {
-  background: #2563eb;
+  background: #007171;
   color: white;
   padding: 8px 14px;
   border-radius: 6px;
@@ -21,135 +29,6 @@
   padding: 6px 10px;
   border-radius: 6px;
   margin-left: 10px;
-}
-
-
-.form {
-  max-width: 500px;
-}
-
-.formGroup {
-  margin-bottom: 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-.formGroup input,
-.formGroup select {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.container {
-  padding: 20px;
-}
-
-.pageTitle {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
-
-
-/* GRID */
-
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 18px;
-  margin-bottom: 30px;
-}
-
-
-/* CARD */
-
-.card {
-  background: #1e1e1e;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid #2a2a2a;
-  transition: 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  border-color: #3b82f6;
-}
-
-.cardTitle {
-  font-size: 13px;
-  color: #9ca3af;
-  margin-bottom: 6px;
-}
-
-.card h3 {
-  font-size: 26px;
-  font-weight: 700;
-  color: #fff;
-}
-
-
-/* QUICK ACTIONS */
-
-.actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
-}
-
-.actionBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.2s ease;
-}
-
-.actionBtn:hover {
-  background: #1d4ed8;
-}
-
-.dateRow {
-  margin-bottom: 20px;
-}
-
-.dateRow input {
-  margin-left: 10px;
-  padding: 6px;
-}
-
-.tableWrapper {
-  overflow-x: auto;
-}
-
-.attendanceTable {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.attendanceTable th,
-.attendanceTable td {
-  border: 1px solid #2a2a2a;
-  padding: 10px;
-  text-align: center;
-}
-
-.attendanceTable th {
-  background: #1f2937;
-}
-
-.attendanceTable input {
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #111;
-  color: white;
 }
 
 .saveBtn {
@@ -165,30 +44,23 @@
   background: #15803d;
 }
 
-.late {
-  color: #ef4444;
-  font-weight: 600;
-}
+/* ================= CONTAINER ================= */
 
-.filterRow {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.filterRow select {
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #111;
-  color: white;
+.container{
+  padding:20px;
 }
 
 .container {
   padding: 20px;
 }
 
-/* PAGE TITLE */
+/* ================= PAGE TITLE ================= */
+
+.pageTitle{
+  font-size:22px;
+  font-weight:600;
+  margin-bottom:20px;
+}
 
 .pageTitle {
   font-size: 22px;
@@ -196,68 +68,16 @@
   margin-bottom: 20px;
 }
 
-/* ================= DASHBOARD ================= */
-
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 18px;
-  margin-bottom: 25px;
-}
-
-.card {
-  background: #1e1e1e;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid #2a2a2a;
-  transition: 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  border-color: #3b82f6;
-}
-
-.cardTitle {
-  font-size: 13px;
-  color: #9ca3af;
-}
-
-.card h3 {
-  font-size: 26px;
-  font-weight: 700;
-  color: #fff;
-}
-
-/* ================= QUICK ACTIONS ================= */
-
-.actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-
-.actionBtn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 12px;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.2s ease;
-}
-
-.actionBtn:hover {
-  background: #1d4ed8;
-}
-
 /* ================= FORM ================= */
 
 .form {
   max-width: 500px;
+}
+
+.formGroup {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
 }
 
 .formGroup {
@@ -275,15 +95,174 @@
 .formGroup select {
   padding: 8px;
   border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.formGroup input,
+.formGroup select {
+  padding: 8px;
+  border-radius: 6px;
   border: 1px solid #444;
-  background: #111;
+  background: #fff;
   color: white;
+}
+
+/* ================= DASHBOARD GRID ================= */
+
+.cardGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:18px;
+  margin-bottom:30px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+/* ================= CARD ================= */
+
+.card{
+  background: linear-gradient(#66cccc,#008e8e,#005151);
+  border-radius:14px;
+  padding:18px;
+  /* border:1px solid #2a2a2a; */
+  transition:all 0.25s ease;
+  position:relative;
+}
+
+.card:hover{
+  transform:translateY(-4px);
+  border-color:#3b82f6;
+  box-shadow:0 16px 26px rgba(0,0,0,0.3);
+}
+
+/* .card {
+  background: #007171;
+  border-radius: 12px;
+  padding: 20px;
+  transition: 0.2s ease;
+} */
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: #005151;
+}
+
+.cardHeader{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.cardIcon{
+  background:#efefef;
+  padding:6px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.cardTitle{
+  font-size:13px;
+  color:#fff;
+}
+
+
+.cardValue{
+  font-size:28px;
+  font-weight:700;
+}
+
+.card h3 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ================= SKELETON LOADER ================= */
+
+.skeleton{
+  height:28px;
+  width:60px;
+  border-radius:6px;
+  background:linear-gradient(
+    90deg,
+    #a4fcfc 25%,
+    #48c5c5 37%,
+    #429d9c 63%
+  );
+  background-size:400% 100%;
+  animation:skeletonLoading 5.4s ease infinite;
+}
+
+@keyframes skeletonLoading{
+  0%{
+    background-position:100% 50%;
+  }
+  100%{
+    background-position:0 50%;
+  }
+}
+
+/* ================= QUICK ACTION BUTTONS ================= */
+
+.actions{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.actionBtn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  border-radius:10px;
+  background:#007171;
+  color:white;
+  font-weight:500;
+  text-decoration:none;
+  transition:all 0.2s ease;
+}
+
+.actionBtn:hover{
+  background:#1d4ed8;
+  transform:translateY(-2px);
+}
+
+.actionBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: #1d4ed8;
 }
 
 /* ================= DATE ROW ================= */
 
 .dateRow {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .dateRow input {
@@ -291,12 +270,16 @@
   padding: 6px;
 }
 
+.dateRow {
+  margin-bottom: 15px;
+}
+
 /* ================= FILTER ================= */
 
 .filterRow {
   display: flex;
   gap: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .filterRow select {
@@ -307,11 +290,26 @@
   color: white;
 }
 
+.filterRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
 /* ================= TABLE ================= */
+
+.tableWrapper {
+  overflow-x: auto;
+}
 
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
+}
+
+.attendanceTable {
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .attendanceTable {
@@ -337,32 +335,42 @@
   border: 1px solid #444;
   background: #111;
   color: white;
+}
+
+.attendanceTable input {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #111;
+  color: white;
   width: 80px;
 }
 
-/* ================= BUTTONS ================= */
-
-.saveBtn {
-  background: #16a34a;
-  border: none;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.saveBtn:hover {
-  background: #15803d;
-}
-
-/* ================= STATUS ================= */
-
-.late {
-  color: #ef4444;
-  font-weight: 600;
-}
-
 /* ================= MOBILE RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+  .container{
+    padding:14px;
+  }
+
+  .pageTitle{
+    font-size:18px;
+  }
+
+  .cardGrid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .cardValue{
+    font-size:22px;
+  }
+
+  .actions{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+}
 
 @media (max-width: 768px) {
 
@@ -400,7 +408,19 @@
   }
 }
 
-/* EXTRA SMALL MOBILE */
+/* ================= EXTRA SMALL MOBILE ================= */
+
+@media(max-width:480px){
+
+  .cardGrid{
+    grid-template-columns:1fr;
+  }
+
+  .actions{
+    grid-template-columns:1fr;
+  }
+
+}
 
 @media (max-width: 480px) {
 

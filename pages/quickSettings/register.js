@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import styles from "../../styles/register.module.css";
 import Layout from "../../components/Layout";
 import toast from "react-hot-toast";
+import { API_BASE } from "../../lib/api";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function Register() {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -22,7 +25,7 @@ export default function Register() {
 
   const [hostels, setHostels] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [message, setMessage] = useState("");
+  const [, setMessage] = useState("");
 
 
   useEffect(() => {
@@ -33,11 +36,11 @@ export default function Register() {
       try {
         const [hRes, cRes] = await Promise.all([
           fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/hostels/fetch/",
+            `${API_BASE}/api/hostels/fetch/`,
             { headers: { Authorization: `Bearer ${token}` } }
           ),
           fetch(
-            "https://bite-track-mess-management-system-a.vercel.app/api/courses/fetch/",
+            `${API_BASE}/api/courses/fetch/`,
             { headers: { Authorization: `Bearer ${token}` } }
           ),
         ]);
@@ -60,14 +63,14 @@ const getToken = () => localStorage.getItem("token");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    toast("Submiting...")
+    toast(t("submitting"))
 
 
 
     try {
 
       const token = getToken();
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/register/", {
+      const res = await fetch(`${API_BASE}/api/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
            Authorization: `Bearer ${token}` 
@@ -92,49 +95,49 @@ try {
   return (
 <Layout>
     <div className={styles.container}>
-      <h1 className={styles.title}>Register User</h1>
+      <h1 className={styles.title}>{t("registerUser")}</h1>
       <div className={styles.formWrapper}>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* User Fields */}
           <div className={styles.row}>
             <div className={styles.field}>
-              <label>First Name</label>
+              <label>{t("firstName")}</label>
               <input type="text" name="first_name" onChange={handleChange} required className={styles.input} />
             </div>
             <div className={styles.field}>
-              <label>Last Name</label>
+              <label>{t("lastName")}</label>
               <input type="text" name="last_name" onChange={handleChange} required className={styles.input} />
             </div>
             <div className={styles.field}>
-              <label>Full Name</label>
+              <label>{t("fullName")}</label>
               <input type="text" name="name" onChange={handleChange} required className={styles.input} />
             </div>
           </div>
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label>Email</label>
+              <label>{t("email")}</label>
               <input type="email" name="email" onChange={handleChange} required className={styles.input} />
             </div>
             <div className={styles.field}>
-              <label>Mobile No.</label>
+              <label>{t("mobile")}</label>
               <input type="text" name="phone" onChange={handleChange} className={styles.input} />
             </div>
             <div className={styles.field}>
-              <label>Alternate Mobile No.</label>
+              <label>{t("alternateMobile")}</label>
               <input type="text" name="mobile" onChange={handleChange} className={styles.input} />
             </div>
           </div>
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label>Room No.</label>
+              <label>{t("roomNo")}</label>
               <input name="room_no" onChange={handleChange} />
             </div>
 
             <div className={styles.field}>
-              <label>Hostel Name:</label>
+              <label>{t("hostelName")}</label>
               <select name="hostel_name" required onChange={handleChange}>
                 <option value="" ></option>
                 {hostels.map((h) => (
@@ -146,7 +149,7 @@ try {
             </div>
 
             <div className={styles.field}>
-              <label>Course Name</label>
+              <label>{t("courseName")}</label>
               <select name="course" required onChange={handleChange}>
                 <option value=""></option>
                 {courses.map((c) => (
@@ -159,49 +162,49 @@ try {
           </div>
 
           <div className={styles.field}>
-            <label>Gender</label>
+            <label>{t("gender")}</label>
             <select name="gender" onChange={handleChange}>
               <option value=""></option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option value="Male">{t("male")}</option>
+              <option value="Female">{t("female")}</option>
+              <option value="Other">{t("other")}</option>
             </select>
 
 
           </div>
           <div className={styles.field}>
-            <label>Food Preference</label>
+            <label>{t("foodPreference")}</label>
             <select name="food_preference" onChange={handleChange}>
               <option value=""></option>
-              <option value="veg">Veg</option>
-              <option value="nonveg">Non-Veg</option>
+              <option value="veg">{t("veg")}</option>
+              <option value="nonveg">{t("nonVeg")}</option>
             </select>
           </div>
 
           <div className={styles.field}>
-            <label>Date of Joining</label>
+            <label>{t("dateOfJoining")}</label>
             <input type="date" name="date_of_joining" onChange={handleChange} className={styles.input} />
           </div>
 
           {/* Parent Fields */}
-          <h3 className={styles.subtitle}>Parent Details</h3>
+          <h3 className={styles.subtitle}>{t("parentDetails")}</h3>
           <div className={styles.row}>
             <div className={styles.field}>
-              <label>Parent Name</label>
+              <label>{t("parentName")}</label>
               <input type="text" name="parent_name" onChange={handleChange} required className={styles.input} />
             </div>
             <div className={styles.field}>
-              <label>Parent Contact</label>
+              <label>{t("parentContact")}</label>
               <input type="text" name="parent_contact" onChange={handleChange} className={styles.input} />
             </div>
             <div className={styles.field}>
-              <label>Parent Address</label>
+              <label>{t("parentAddress")}</label>
               <input type="text" name="parent_address" onChange={handleChange} className={styles.input} />
             </div>
           </div>
 
           <button type="submit" className={styles.button}>
-            Register
+            {t("register")}
           </button>
         </form>
 

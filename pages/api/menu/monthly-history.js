@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         menu_date,
         meal_type,
         items
-      FROM menu_daily
+      FROM menu_daily_history
       WHERE mess_id = $1
         AND EXTRACT(MONTH FROM menu_date) = $2
         AND EXTRACT(YEAR FROM menu_date) = $3

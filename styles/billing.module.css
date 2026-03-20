@@ -32,13 +32,14 @@
   gap: 12px;
   align-items: flex-end;
   margin-bottom: 1rem;
+  margin-top: 0.5rem;
 }
 
 .controlItem {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width:100%;
+  width: 100%;
   min-width: 140px;
 }
 
@@ -68,7 +69,7 @@
   font-size: 0.85rem;
   border-radius: 18px;
   border: 1px solid #cfdcdc;
-  background-color: #ffffff!important;
+  background-color: #ffffff !important;
   color: #015151;
   cursor: pointer;
   /* outline: none; */
@@ -107,7 +108,7 @@
   background: #016161;
   color: #fff;
   border: none;
-  padding:0.5rem !important;
+  padding: 0.5rem !important;
   padding-top: 1px;
   border-radius: 8px;
   font-weight: 600;
@@ -133,11 +134,21 @@
 }
 
 /* Paid / Unpaid */
-.btnPaid { background: #06ac00; color: #fff; }
-.btnPaidDisabled { background: gray !important; cursor: not-allowed; }
+.btnPaid {
+  background: #06ac00;
+  color: #fff;
+}
+
+.btnPaidDisabled {
+  background: gray !important;
+  cursor: not-allowed;
+}
 
 /* Calendar */
-.btnCalendar { background:rgb(0, 115, 222); color: #fff; }
+.btnCalendar {
+  background: #007170;
+  color: #fff;
+}
 
 /* ===========================
    Table
@@ -170,7 +181,7 @@
 }
 
 .table tbody tr:nth-child(even):hover,
-.table tbody tr:nth-child(odd):hover{
+.table tbody tr:nth-child(odd):hover {
   background-color: #cdcdcd78;
 }
 
@@ -215,14 +226,14 @@
   overflow-y: auto;
   border-radius: 16px;
   padding: 1.25rem;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom:1rem;
+  margin-bottom: 1rem;
   font-size: 1rem;
 }
 
@@ -246,7 +257,7 @@
 .formGroup label {
   margin-top: 0.5rem !important;
 
-    font-size: 0.8rem;
+  font-size: 0.8rem;
   color: #326362;
 }
 
@@ -283,6 +294,7 @@
     min-width: 900px;
   }
 }
+
 /* ===== Responsive Switch ===== */
 .mobileList {
   display: none;
@@ -292,19 +304,14 @@
   .tableWrapper {
     display: none;
   }
+
   .mobileList {
     display: block;
   }
 }
 
 /* ===== Mobile Card ===== */
-.mobileCard {
-  background: var(--card-bg, #fff);
-  border-radius: 14px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
+
 
 .cardRow {
   display: flex;
@@ -332,6 +339,7 @@
 
 .cardActions button {
   width: 100%;
+  margin: 6px;
 }
 
 
@@ -442,10 +450,10 @@
   padding-top: 0;
 }
 
-.mobilerow{
+.mobilerow {
   display: flex;
   justify-content: space-between;
-  font-weight:700;
+  font-weight: 700;
 }
 
 
@@ -486,7 +494,7 @@
   line-height: 1.3;
   z-index: 99999;
   pointer-events: none;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .tooltip::after {
@@ -516,7 +524,7 @@
 }
 
 
-.user{
+.user {
   font-weight: bold;
 }
 
@@ -535,7 +543,7 @@
   font-size: 0.75rem;
   display: flex;
   align-items: center;
-  justify-content:center;
+  justify-content: center;
 }
 
 
@@ -562,7 +570,7 @@
 .waOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: flex-end;
   z-index: 9999;
@@ -597,8 +605,13 @@
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 .mobileCard {
@@ -606,7 +619,7 @@
   border-radius: 18px;
   margin-bottom: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* .cardHeader {
@@ -618,8 +631,8 @@
   font-weight: 600;
   cursor: pointer;
   } */
-  
-  .cardBody {
+
+.cardBody {
   margin-top: 1rem;
   animation: fadeIn 0.2s ease-in;
 }
@@ -641,16 +654,22 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 
 .headerLeft {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+  /* justify-content: space-between; */
   gap: 8px;
+
 }
 
 .inlineWhatsapp {
@@ -671,36 +690,36 @@
   pointer-events: none;
 }
 
-.btnAdvance{
-  background:transparent;
-  border:none;
+.btnAdvance {
+  background: transparent;
+  border: none;
   /* padding:6px 8px; */
-  border-radius:6px;
-  color:#007171;
-  cursor:pointer;
+  border-radius: 6px;
+  color: #007171;
+  cursor: pointer;
 }
 
-.inlineAdvance{
-  margin-left:8px;
-  background:transparent;
-  border:none;
-  cursor:pointer;
+.inlineAdvance {
+  margin-left: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
-.advanceBalance{
-  background:#f1f5f9;
-  padding:10px;
-  border-radius:6px;
-  margin-bottom:10px;
-  font-weight:600;
+.advanceBalance {
+  background: #f1f5f9;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
-.btnDanger{
-  background:#ef4444;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:6px;
+.btnDanger {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
 }
 
 .modalTable {
@@ -745,61 +764,61 @@
   color: #666;
 }
 
-.btnMsg{
+.btnMsg {
   background-color: #00ff5e !important;
   color: #fff;
 }
 
-.btnPayHist{
+.btnPayHist {
   background-color: rgb(144, 0, 255);
-  color: #fff; 
+  color: #fff;
 }
 
-.btnAdv{
+.btnAdv {
   background-color: #ffff00;
   color: #fff;
 }
 
-.actionMenuWrapper{
-  position:relative;
-  display:inline-block;
+.actionMenuWrapper {
+  position: relative;
+  display: inline-block;
 }
 
-.btnMore{
-  background:#18aeaec5;
-  border:none;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
+.btnMore {
+  background: #18aeaec5;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
   color: #004848;
 }
 
-.actionDropdown{
-  position:absolute;
-  right:0;
-  top:34px;
-  background:linear-gradient(rgba(0, 79, 79, 0.902),rgb(6, 206, 206));
-  color:#fff; 
-  border:1px solid #e5e7eb;
-  border-radius:8px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
-  display:flex;
-  flex-direction:column;
-  min-width:180px;
-  z-index:100;
+.actionDropdown {
+  position: absolute;
+  right: 0;
+  top: 34px;
+  background: linear-gradient(rgba(0, 79, 79, 0.902), rgb(6, 206, 206));
+  color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  z-index: 100;
 }
 
-.actionDropdown button{
-  background:none;
-  border:none;
-  padding:10px 14px;
-  text-align:left;
-  cursor:pointer;
+.actionDropdown button {
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
   color: #fff;
 }
 
-.actionDropdown button:hover{
-  background:#00a2a2;
+.actionDropdown button:hover {
+  background: #00a2a2;
 }
 
 
@@ -807,7 +826,7 @@
 .waOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -822,44 +841,161 @@
   max-width: 95%;
 }
 
-.waUser{
-  margin-bottom:10px;
-  margin-top:10px;
+.waUser {
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
-.waTextarea{
-  width:100%;
-  height:120px;
-  padding:10px;
-  border:1px solid #ddd;
-  border-radius:6px;
-  resize:none;
-  font-size:14px;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.waTextarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  resize: none;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.waButtons{
-  margin-top:15px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+.waButtons {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
   flex-direction: row;
   justify-content: space-between;
 }
 
-.waSend{
-  background:#25D366;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:6px;
-  cursor:pointer;
+.waSend {
+  background: #25D366;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.waCancel{
-  background:#eee;
-  border:none;
-  padding:8px 12px;
-  border-radius:6px;
-  cursor:pointer;
+.waCancel {
+  background: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btnReceipt {
+  background: #007170;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnReceipt:hover {
+  background: #005e5d;
+}
+
+.receiptModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.receiptModal {
+  width: 85%;
+  height: 85%;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.receiptHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.receiptFrame {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
+.downloadIcon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.btnReceipt {
+  background: #007170;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filterHeader button {
+  background: #007171;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+
+
+}
+
+.filterHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.chartContainer {
+  width: 100%;
+  height: 320px;
+  min-height: 300px;
+}
+
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+  border: 1px solid;
+}
+
+.statusPaid {
+  background: rgb(154, 255, 154);   /* light green */
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.statusUnpaid {
+  background: #ffd0d0;   /* light red */
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+
+.mbcard{
+  display: flex;
+  justify-content: space-between;
 }

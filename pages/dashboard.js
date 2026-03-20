@@ -17,8 +17,9 @@ import { API_BASE } from "../lib/api";
 export default function Dashboard() {
   const [stats, setStats] = useState({
     totalMembers: 0,
-    todayAttendance: 0,
-    monthlyPayable: 0,
+    todayPresent: 0,
+    todayAbsent: 0,
+    monthlyExpected: 0,
     monthlyCollected: 0,
   });
   const { t } = useLanguage();
@@ -42,6 +43,7 @@ export default function Dashboard() {
     type: null,
     users: [],
   });
+  const [attendanceTab, setAttendanceTab] = useState("present");
   const [attendanceSearch, setAttendanceSearch] = useState("");
   const [revenueTrend, setRevenueTrend] = useState([]);
   const [trendType, setTrendType] = useState("daily");
@@ -220,16 +222,28 @@ const fetchStats = async () => {
         return res.json();
       })) || [];
 
+      // ---------------- PAYMENT HISTORY ----------------
+const paymentHistory =
+  (await offlineFetch(`payments-${messId}`, async () => {
+    const res = await fetch(`${API_BASE}/api/bills/history/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("payment history fetch failed");
+    return res.json();
+  })) || { users: [] };
+
     // ---------------- TODAY ATTENDANCE ----------------
-    const todayCount = attendanceData.filter(
+    const todayPresent = attendanceData.filter(
       (r) => r.att_date === today
     ).length;
+
+    const todayAbsent = (usersData.count || 0) - todayPresent;
 
     // ---------------- MONTHLY PAYABLE / COLLECTED ----------------
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    const monthlyPayable = billsAllData
+    const monthlyExpected = billsAllData
       .filter(
         (b) =>
           Number(b.month) === currentMonth &&
@@ -237,15 +251,14 @@ const fetchStats = async () => {
       )
       .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
 
-    const monthlyCollected = billsAllData
-      .filter(
-        (b) =>
-          b.status?.trim().toUpperCase() === "PAID" &&
-          Number(b.month) === currentMonth &&
-          Number(b.year) === currentYear
-      )
-      .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+      
+ const revenueRes = await fetch(`${API_BASE}/api/dashboard/collections/`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
 
+const revenue = await revenueRes.json();
+
+const monthlyCollected = Number(revenue?.monthly_collected || 0);
     // ---------------- DATE HELPER ----------------
     const getDateFromObj = (obj) => {
       if (!obj) return null;
@@ -344,8 +357,9 @@ const revenueTrend = [...Array(6)].map((_, i) => {
 
     setStats({
       totalMembers: usersData.count || 0,
-      todayAttendance: todayCount,
-      monthlyPayable: parseFloat(monthlyPayable.toFixed(2)),
+      todayPresent,
+      todayAbsent,
+      monthlyExpected: parseFloat(monthlyExpected.toFixed(2)),
       monthlyCollected: parseFloat(monthlyCollected.toFixed(2)),
     });
 
@@ -364,8 +378,9 @@ const revenueTrend = [...Array(6)].map((_, i) => {
 
     setStats({
       totalMembers: 0,
-      todayAttendance: 0,
-      monthlyPayable: 0,
+      todayAbsent:0,
+      todayPresent: 0,
+      monthlyExpected:0,
       monthlyCollected: 0,
     });
   } finally {
@@ -452,6 +467,11 @@ const revenueTrend = [...Array(6)].map((_, i) => {
     u.user_name?.toLowerCase().includes(attendanceSearch.toLowerCase())
   );
   
+  const presentUserIds = attendanceModal.users.map(u => u.user_id);
+
+const absentUsers = foodUsers.filter(
+  u => !presentUserIds.includes(u.id)
+);
   return (
     <Layout>
       <div className={styles.dashboard}>
@@ -481,7 +501,7 @@ const revenueTrend = [...Array(6)].map((_, i) => {
                   title={t("todaysAttendance")}
                   value={
                     <CountUp
-      end={stats.todayAttendance || 0}
+      end={stats.todayPresent || 0}
       duration={1.5}
       separator=","
     />}
@@ -527,27 +547,40 @@ const revenueTrend = [...Array(6)].map((_, i) => {
                 }
               /> */}
 
-              <Card
-  title={t("TotalPayable")}
-  value={<CountUp
-      end={stats.monthlyPayable || 0}
-      duration={1.5}
-      separator=","
-      prefix="₹ "
-      decimals={2}
-    />}
- />
+             <Card
+  title={t("payments")}
+  value={
+    <div className={styles.splitCard} >
+      
 
-<Card
-  title={t("TotalCollected")}
-  value={ <CountUp
-      end={stats.monthlyCollected || 0}
-      duration={1.5}
-      separator=","
-      prefix="₹ "
-      decimals={2}
-    />}
- />
+      <div className={styles.splitItem}>
+        <strong>
+          ₹{" "}
+          <CountUp
+            end={stats.monthlyCollected || 0}
+            duration={1.5}
+            separator=","
+            decimals={2}
+          />
+        </strong>
+        <span className={styles.splitLabel}>{t("collected")}</span>
+      </div>
+      <div className={styles.splitDivider}></div>
+<div className={`${styles.splitItem}`}>
+        <strong>
+          ₹{" "}
+          <CountUp
+            end={stats.monthlyExpected || 0}
+            duration={1.5}
+            separator=","
+            decimals={2}
+          />
+        </strong>
+        <span className={styles.splitLabel}>{t("expected")}</span>
+      </div>
+    </div>
+  }
+/>
 
 
 
@@ -649,6 +682,7 @@ const revenueTrend = [...Array(6)].map((_, i) => {
                       date: new Date(dateStr).toLocaleDateString("en-IN"),
                       users,
                     });
+                    setAttendanceTab("present");
                   }}
                   />
                 </BarChart>
@@ -870,6 +904,25 @@ setFoodSearch(""); // reset search
           ✕
         </button>
       </div>
+      <div className={styles.attendanceTabs}>
+  <button
+    className={`${styles.tabBtn} ${
+      attendanceTab === "present" ? styles.tabActive : ""
+    }`}
+    onClick={() => setAttendanceTab("present")}
+  >
+    Present ({attendanceModal.users.length})
+  </button>
+
+  <button
+    className={`${styles.tabBtn} ${
+      attendanceTab === "absent" ? styles.tabActive : ""
+    }`}
+    onClick={() => setAttendanceTab("absent")}
+  >
+    Absent ({absentUsers.length})
+  </button>
+</div>
       <input
   type="text"
   placeholder="Search student..."
@@ -882,11 +935,23 @@ setFoodSearch(""); // reset search
         <p>No students attended</p>
       ) : (
         <div className={styles.userList}>
-          {filteredAttendanceUsers.map((u, i) => (
-            <div key={i} className={styles.userRow}>
-              <strong>{u.user_name}</strong>
-            </div>
-          ))}
+          {attendanceTab === "present" ? (
+  filteredAttendanceUsers.map((u, i) => (
+    <div key={i} className={styles.userRow}>
+      <strong>{u.user_name}</strong>
+    </div>
+  ))
+) : (
+  absentUsers
+    .filter(u =>
+      u.name?.toLowerCase().includes(attendanceSearch.toLowerCase())
+    )
+    .map((u, i) => (
+      <div key={i} className={styles.userRow}>
+        <strong>{u.name}</strong>
+      </div>
+    ))
+)}
         </div>
       )}
     </div>
