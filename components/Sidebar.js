@@ -281,21 +281,6 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
                   {t("staffDashboard")}
                 </Link>
 
-                <Link href="/staff/list/" onClick={closeSidebar}>
-                  {t("staffList")}
-                </Link>
-
-                <Link href="/staff/attendance/" onClick={closeSidebar}>
-                  {t("staffAttendance")}
-                </Link>
-
-                <Link href="/staff/attendance-history/" onClick={closeSidebar}>
-                  {t("attendanceHistory")}
-                </Link>
-
-                <Link href="/staff/salary/">
-                  Salary
-                </Link>
                 </Section>
                )}
 
