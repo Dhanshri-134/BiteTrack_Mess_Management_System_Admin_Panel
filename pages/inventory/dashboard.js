@@ -4,11 +4,12 @@ import styles from "../../styles/inventory.module.css";
 import  Link from "next/link";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function InventoryDashboard(){
 
 const [loading,setLoading]=useState(true);
-
+const {t} = useLanguage();
 const [stats,setStats]=useState({
 totalItems:0,
 totalVendors:0,
@@ -51,9 +52,24 @@ return(
 
 <Layout title="Inventory Dashboard">
 
-<div className={styles.container}>
+{/* <div className={styles.container}> */}
 
-<h2 className={styles.title}>Inventory Dashboard</h2>
+<section className={styles.heroSection}>
+        <div>
+          <p className={styles.eyebrow}>{t("inventory")}</p>
+          <div className={styles.header}>
+
+            <h1 className={styles.heroTitle}>{t("Dashboard")}</h1>
+            <button
+              className={styles.secondaryBtn}
+              onClick={() => router.back()}
+            >
+              ← Back
+            </button>
+          </div>
+          <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p>
+        </div>
+        </section>
 
 <div className={styles.cards}>
 
@@ -122,7 +138,7 @@ View Ledger
 
 </div>
 
-</div>
+{/* </div> */}
 
 </Layout>
 

@@ -1,230 +1,139 @@
 import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
-import styles from "../../styles/staff.module.css";
+import styles from "../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
-import { offlineFetch } from "@/lib/offlineFetch";
-import { API_BASE } from "../../lib/api";
-import { useLanguage } from "../../context/LanguageContext";
+import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
+import { ArrowLeft, RefreshCw } from "lucide-react";
+
+function formatMoney(value) {
+  return `Rs ${Number(value || 0).toFixed(2)}`;
+}
 
 export default function AttendanceHistory() {
-
-  const { t } = useLanguage();
-
   const [staffList, setStaffList] = useState([]);
   const [attendance, setAttendance] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     staff_id: "",
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
   });
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     fetchStaff();
   }, []);
 
   useEffect(() => {
-    fetchAttendance();
-  }, [filters]);
+    fetchAttendance(false);
+  }, [filters.staff_id, filters.month, filters.year]);
 
   async function fetchStaff() {
-
-    const token = localStorage.getItem("token");
-
     try {
-
-      const data = await offlineFetch("staff-list", async () => {
-
-        const res = await fetch(
-          `https://bite-track-mess-management-system-a.vercel.app/api/staff/list/`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (!res.ok) throw new Error();
-
-        return res.json();
+      const data = await staffOfflineRequest("staff-list-v4", "/api/staff/list/", {
+        method: "GET",
       });
-
       setStaffList(data || []);
-
-    } catch {
-
+    } catch (error) {
       toast.error("Failed to load staff");
-
     }
   }
 
-  async function fetchAttendance() {
-
-    const token = localStorage.getItem("token");
-
+  async function fetchAttendance(forceRefresh) {
     try {
-
       setLoading(true);
-
-      const res = await fetch(
-        `https://bite-track-mess-management-system-a.vercel.app/api/staff/attendance/history/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(filters),
-        }
-      );
-
-      if (!res.ok) throw new Error();
-
-      const data = await res.json();
-
-      setAttendance(data || []);
-
-    } catch {
-
+      const cacheKey = `staff-attendance-history-${filters.staff_id || "all"}-${filters.month}-${filters.year}-v2`;
+      const response = forceRefresh
+        ? await staffRequest("/api/staff/attendance/history/", { body: filters })
+        : await staffOfflineRequest(cacheKey, "/api/staff/attendance/history/", {
+            method: "POST",
+            body: filters,
+          });
+      setAttendance(response?.data || []);
+    } catch (error) {
       toast.error("Failed to load attendance");
-
     } finally {
-
       setLoading(false);
-
     }
-  }
-
-  function handleChange(field, value) {
-
-    setFilters({
-      ...filters,
-      [field]: value,
-    });
   }
 
   return (
     <Layout title="Attendance History">
-
       <div className={styles.container}>
+        <div className={styles.pageStack}>
+          <button type="button" className={styles.backBtn} onClick={() => window.history.back()}>
+            <ArrowLeft size={16} /> Back
+          </button>
 
-        <h2 className={styles.pageTitle}>
-          {t("attendanceHistory")}
-        </h2>
+          <section className={styles.heroPanel}>
+            <p className={styles.heroKicker}>Attendance</p>
+            <h1 className={styles.heroHeading}>Attendance History</h1>
+            <p className={styles.heroText}>Review late penalties, overtime, and daily staff attendance from one filtered view.</p>
+          </section>
 
-        {/* FILTERS */}
+          <section className={styles.paymentFormCard}>
+            <div className={styles.formGridCompact}>
+              <div className={styles.formGroup}>
+                <label>Staff</label>
+                <select className={styles.formInput} value={filters.staff_id} onChange={(event) => setFilters((prev) => ({ ...prev, staff_id: event.target.value }))}>
+                  <option value="">All Staff</option>
+                  {staffList.map((row) => (
+                    <option key={row.id} value={row.id}>{row.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Month</label>
+                <select className={styles.formInput} value={filters.month} onChange={(event) => setFilters((prev) => ({ ...prev, month: Number(event.target.value) }))}>
+                  {Array.from({ length: 12 }, (_, index) => index + 1).map((month) => (
+                    <option key={month} value={month}>{month}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Year</label>
+                <select className={styles.formInput} value={filters.year} onChange={(event) => setFilters((prev) => ({ ...prev, year: Number(event.target.value) }))}>
+                  {[2025, 2026, 2027].map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Refresh</label>
+                <button type="button" className={styles.refreshBtn} onClick={() => fetchAttendance(true)}>
+                  <RefreshCw size={16} /> Refresh Data
+                </button>
+              </div>
+            </div>
+          </section>
 
-        <div className={styles.filterRow}>
-
-          <select
-            value={filters.staff_id}
-            onChange={(e) =>
-              handleChange("staff_id", e.target.value)
-            }
-          >
-            <option value="">All Staff</option>
-
-            {staffList.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
+          <section className={styles.timelineList}>
+            {loading ? <div className={styles.emptyMsg}>Loading...</div> : null}
+            {!loading && attendance.length === 0 ? <div className={styles.emptyMsg}>No attendance records found.</div> : null}
+            {!loading && attendance.map((row) => (
+              <div key={row.id} className={styles.timelineItem}>
+                <div className={styles.tlDetails}>
+                  <div className={styles.tlRow}>
+                    <strong>{row.name}</strong>
+                    <span className={`${styles.statusPill} ${styles[`status${row.attendance_type === "H" ? "HF" : row.attendance_type}`] || styles.statusOFF}`}>
+                      {row.attendance_type === "H" ? "HF" : row.attendance_type}
+                    </span>
+                  </div>
+                  <div className={styles.tlRow2}>
+                    <span>{new Date(row.attendance_date).toLocaleDateString()}</span>
+                    <span>In {row.check_in ? String(row.check_in).slice(11, 16) : "--:--"} / Out {row.check_out ? String(row.check_out).slice(11, 16) : "--:--"}</span>
+                  </div>
+                  <div className={styles.statusLegend} style={{ marginTop: "0.5rem" }}>
+                    {row.is_late ? <span className={`${styles.statusPill} ${styles.statusL}`}>Late {row.late_minutes}m</span> : null}
+                    {Number(row.overtime_hours || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>OT {row.overtime_hours}h</span> : null}
+                    <span className={styles.statusPill}>{formatMoney(row.penalty_amount)} penalty</span>
+                    <span className={styles.statusPill}>{formatMoney(row.overtime_amount)} OT pay</span>
+                  </div>
+                </div>
+              </div>
             ))}
-          </select>
-
-          <select
-            value={filters.month}
-            onChange={(e) =>
-              handleChange("month", e.target.value)
-            }
-          >
-            {[...Array(12)].map((_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filters.year}
-            onChange={(e) =>
-              handleChange("year", e.target.value)
-            }
-          >
-            {[2024, 2025, 2026, 2027].map((y) => (
-              <option key={y}>{y}</option>
-            ))}
-          </select>
-
+          </section>
         </div>
-
-
-        {/* TABLE */}
-
-        {loading ? (
-          <p>{t("loading")}...</p>
-        ) : (
-
-          <div className={styles.tableWrapper}>
-
-            <table className={styles.attendanceTable}>
-
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>{t("name")}</th>
-                  <th>Check In</th>
-                  <th>Check Out</th>
-                  <th>Late</th>
-                  <th>Overtime</th>
-                  <th>Penalty</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {attendance.length === 0 && (
-                  <tr>
-                    <td colSpan="7">No records</td>
-                  </tr>
-                )}
-
-                {attendance.map((a) => (
-
-                  <tr key={a.id}>
-
-                    <td>{a.attendance_date}</td>
-
-                    <td>{a.name}</td>
-
-                    <td>{a.check_in}</td>
-
-                    <td>{a.check_out}</td>
-
-                    <td>
-                      {a.is_late ? (
-                        <span className={styles.late}>
-                          Late
-                        </span>
-                      ) : (
-                        "No"
-                      )}
-                    </td>
-
-                    <td>{a.overtime_hours}</td>
-
-                    <td>₹{a.penalty_amount}</td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-        )}
-
       </div>
-
     </Layout>
   );
 }

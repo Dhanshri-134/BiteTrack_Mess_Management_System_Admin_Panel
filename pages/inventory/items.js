@@ -52,7 +52,16 @@ export default function Items() {
       <section className={styles.heroSection}>
         <div>
           <p className={styles.eyebrow}>{t("inventory")}</p>
+                    <div className={styles.header}>
+          
           <h1 className={styles.heroTitle}>{t("itemsLabel")}</h1>
+                      <button
+                        className={styles.secondaryBtn}
+                        onClick={() => router.back()}
+                      >
+                        ← Back
+                      </button>
+                    </div>
           <p className={styles.heroSubtitle}>{t("itemsSubtitle")}</p>
         </div>
       </section>

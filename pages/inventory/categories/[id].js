@@ -107,11 +107,21 @@ export default function CategoryItems() {
       <section className={styles.heroSection}>
         <div>
           <p className={styles.eyebrow}>{t("inventory")}</p>
+          <div className={styles.header}>
+          
           <h1 className={styles.heroTitle}>{categoryName || t("category")}</h1>
+                      {/* <h1 className={styles.heroTitle}>{t("vendors")}</h1> */}
+                      <button
+                        className={styles.secondaryBtn}
+                        onClick={() => router.back()}
+                      >
+                        ← Back
+                      </button>
+                    </div>
           <p className={styles.heroSubtitle}>{t("categoryItemsSubtitle")}</p>
         </div>
-        <button className={styles.primaryBtn} onClick={() => setShowAddItem(true)}>
-          {t("addItem")}
+        <button className={styles.addVbtn} onClick={() => setShowAddItem(true)}>
+          + {t("addItem")}
         </button>
       </section>
 

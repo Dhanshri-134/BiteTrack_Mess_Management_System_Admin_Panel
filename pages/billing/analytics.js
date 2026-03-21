@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
 
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`/api/analytics/collection/?type=${type}`, {
+      const res = await fetch(`${API_BASE}/api/analytics/collection/?type=${type}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -43,8 +43,11 @@ export default function AnalyticsPage() {
 
       const d = await res.json();
 
+      console.log("FULL API:", d);
+console.log("CHART:", d.chart);
       const formattedChart = (d.chart || []).map(item => {
 
+        console.log("ITEM:", item); 
         if (type === "daily") {
           return {
             label: new Date(item.label).toLocaleDateString("en-IN", {
@@ -55,7 +58,7 @@ export default function AnalyticsPage() {
             total: Number(item.total)
           };
         }
-
+        
         if (type === "weekly") {
           return {
             label: item.label,
@@ -63,7 +66,10 @@ export default function AnalyticsPage() {
             total: Number(item.total)
           };
         }
-
+        console.log("API RESPONSE:", "label:", item.label,
+          "rawDate: ",item.label,
+        "  total:", Number(item.total));
+        
         return {
           label: item.label,
           rawDate: item.label,
@@ -159,6 +165,11 @@ export default function AnalyticsPage() {
         {/* LOADING */}
         {loading && <p>{t("loading")}</p>}
 
+            <div className={styles.controls}>
+              <button onClick={() => setType("daily")}>{t("daily")}</button>
+              <button onClick={() => setType("weekly")}>{t("weekly")}</button>
+              <button onClick={() => setType("monthly")}>{t("monthly")}</button>
+            </div>
         {/* NO DATA */}
         {!loading && data.length === 0 && (
           <div className={styles.empty}>{t("noDataAvailable")}</div>
@@ -167,11 +178,6 @@ export default function AnalyticsPage() {
         {/* CHART */}
         {!loading && data.length > 0 && (
           <>
-            <div className={styles.controls}>
-              <button onClick={() => setType("daily")}>{t("daily")}</button>
-              <button onClick={() => setType("weekly")}>{t("weekly")}</button>
-              <button onClick={() => setType("monthly")}>{t("monthly")}</button>
-            </div>
 
             <div className={styles.chartContainer}>
               <ResponsiveContainer width="100%" height="100%">

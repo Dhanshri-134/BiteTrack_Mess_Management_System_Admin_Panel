@@ -29,9 +29,15 @@ export default async function handler(req, res) {
         name,
         phone,
         role,
+        joining_date,
+        salary_type,
         base_salary,
         overtime_rate,
         late_penalty,
+        shift_start,
+        late_after,
+        shift_end,
+        current_balance,
         is_active
       FROM staff
       WHERE mess_id = $1

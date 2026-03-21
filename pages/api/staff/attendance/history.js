@@ -30,9 +30,14 @@ export default async function handler(req, res) {
         a.attendance_date,
         a.check_in,
         a.check_out,
+        a.attendance_type,
         a.is_late,
+        a.late_minutes,
         a.overtime_hours,
+        a.overtime_amount,
         a.penalty_amount,
+        a.work_minutes,
+        a.notes,
         s.name
       FROM staff_attendance a
       JOIN staff s ON s.id = a.staff_id
@@ -52,7 +57,7 @@ export default async function handler(req, res) {
 
     const result = await pgPool.query(query, values);
 
-    res.json(result.rows);
+    res.json({ success: true, data: result.rows });
 
   } catch (err) {
 

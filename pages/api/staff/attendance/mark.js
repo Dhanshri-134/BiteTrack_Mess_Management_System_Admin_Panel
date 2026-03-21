@@ -1,5 +1,6 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
+import { calculateAttendanceMetrics } from "@/lib/staffPayroll";
 
 export default async function handler(req, res) {
 
@@ -28,21 +29,13 @@ export default async function handler(req, res) {
       attendance_date,
       check_in,
       check_out,
-      overtime_hours,
-      penalty_amount
+      attendance_type,
+      notes
     } = req.body;
-
-    const checkInTimestamp = check_in
-  ? `${attendance_date} ${check_in}`
-  : null;
-
-const checkOutTimestamp = check_out
-  ? `${attendance_date} ${check_out}`
-  : null;
     
 
     const staffRes = await pgPool.query(
-      `SELECT overtime_rate, late_after
+      `SELECT overtime_rate, late_after, late_penalty, shift_end
       FROM staff
       WHERE id=$1 AND mess_id=$2`,
       [staff_id, messId]
@@ -52,28 +45,17 @@ const checkOutTimestamp = check_out
   return res.status(404).json({ error: "Staff not found" });
 }
 
-const overtimeRate = staffRes.rows[0]?.overtime_rate || 0;
-const lateAfter = staffRes.rows[0]?.late_after;
-    const overtimeAmount =
-(Number(overtime_hours) || 0) * overtimeRate;
-    const lateLimit = new Date(`${attendance_date} ${lateAfter}`);
-const checkInTime = new Date(checkInTimestamp);
-
-let isLate = false;
-let lateMinutes = 0;
-
-if (checkInTimestamp && lateAfter) {
-
-  const lateLimit = new Date(`${attendance_date} ${lateAfter}`);
-  const checkInTime = new Date(checkInTimestamp);
-
-  isLate = checkInTime > lateLimit;
-
-  if (isLate) {
-    lateMinutes = Math.floor((checkInTime - lateLimit) / 60000);
-  }
-
-}
+const staffRow = staffRes.rows[0];
+const metrics = calculateAttendanceMetrics({
+  attendanceDate: attendance_date,
+  checkIn: check_in,
+  checkOut: check_out,
+  attendanceType: attendance_type || "P",
+  lateAfter: staffRow.late_after,
+  shiftEnd: staffRow.shift_end,
+  latePenalty: staffRow.late_penalty,
+  overtimeRate: staffRow.overtime_rate,
+});
 
     await pgPool.query(
       `INSERT INTO staff_attendance
@@ -83,33 +65,43 @@ if (checkInTimestamp && lateAfter) {
         attendance_date,
         check_in,
         check_out,
+        attendance_type,
         is_late,
         late_minutes,
-        Number(overtime_hours) || 0,,
+        overtime_hours,
         overtime_amount,
-        penalty_amount
+        penalty_amount,
+        work_minutes,
+        notes
       )
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       ON CONFLICT (staff_id, attendance_date)
       DO UPDATE SET
         check_in=$4,
         check_out=$5,
-        is_late=$6,
-        late_minutes=$7,
-        overtime_hours=$8,
-        overtime_amount=$9,
-        penalty_amount=$10`,
+        attendance_type=$6,
+        is_late=$7,
+        late_minutes=$8,
+        overtime_hours=$9,
+        overtime_amount=$10,
+        penalty_amount=$11,
+        work_minutes=$12,
+        notes=$13,
+        updated_at=NOW()`,
       [
         staff_id,
         messId,
         attendance_date,
-        checkInTimestamp,
-checkOutTimestamp,
-        isLate,
-        lateMinutes,
-        overtime_hours,
-        overtimeAmount,
-        penalty_amount
+        metrics.checkInTimestamp,
+        metrics.checkOutTimestamp,
+        metrics.attendanceType,
+        metrics.isLate,
+        metrics.lateMinutes,
+        metrics.overtimeHours,
+        metrics.overtimeAmount,
+        metrics.penaltyAmount,
+        metrics.workMinutes,
+        notes || null
       ]
     );
 

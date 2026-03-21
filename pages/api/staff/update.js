@@ -26,9 +26,15 @@ export default async function handler(req, res) {
       name,
       phone,
       role,
+      joining_date,
+      salary_type,
       base_salary,
       overtime_rate,
-      late_penalty
+      late_penalty,
+      current_balance,
+      shift_start,
+      late_after,
+      shift_end
     } = req.body;
 
     await pgPool.query(
@@ -36,18 +42,30 @@ export default async function handler(req, res) {
        SET name=$1,
            phone=$2,
            role=$3,
-           base_salary=$4,
-           overtime_rate=$5,
-           late_penalty=$6,
+           joining_date=$4,
+           salary_type=$5,
+           base_salary=$6,
+           overtime_rate=$7,
+           late_penalty=$8,
+           current_balance=$9,
+           shift_start=$10,
+           late_after=$11,
+           shift_end=$12,
            updated_at=NOW()
-       WHERE id=$7 AND mess_id=$8`,
+       WHERE id=$13 AND mess_id=$14`,
       [
         name,
-        phone,
-        role,
-        base_salary,
-        overtime_rate,
-        late_penalty,
+        phone || null,
+        role || null,
+        joining_date || null,
+        salary_type || "monthly",
+        Number(base_salary) || 0,
+        Number(overtime_rate) || 0,
+        Number(late_penalty) || 0,
+        Number(current_balance) || 0,
+        shift_start || "09:00",
+        late_after || "09:30",
+        shift_end || "18:00",
         id,
         messId
       ]

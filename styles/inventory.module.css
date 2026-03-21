@@ -13,6 +13,7 @@ display:grid;
 grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
 gap:16px;
 margin-bottom:25px;
+
 }
 
 .card{
@@ -20,6 +21,7 @@ background:white;
 padding:18px;
 border-radius:8px;
 box-shadow:0 2px 6px rgba(0,0,0,0.05);
+text-align: center;
 }
 
 .cardTitle{
@@ -78,7 +80,7 @@ flex-wrap:wrap;
 }
 
 .actionBtn{
-background:#3b82f6;
+background:#007171;
 color:white;
 padding:8px 14px;
 border-radius:6px;
@@ -95,7 +97,7 @@ margin-bottom:20px;
 }
 
 .primaryBtn{
-background:#3b82f6;
+background:#007171;
 color:white;
 border:none;
 padding:8px 14px;
@@ -145,8 +147,6 @@ align-items:flex-start;
 }
 
 }
-
-
 
 .checkboxRow{
 display:flex;
@@ -261,15 +261,6 @@ gap:10px;
 margin-top:10px;
 }
 
-.primaryBtn{
-background:#2563eb;
-color:white;
-border:none;
-padding:8px 14px;
-border-radius:6px;
-cursor:pointer;
-}
-
 .secondaryBtn{
 background:#e5e7eb;
 border:none;
@@ -353,12 +344,15 @@ padding:20px;
 border-radius:8px;
 box-shadow:0 4px 10px rgba(0,0,0,0.08);
 margin-bottom:20px;
+text-align: center;
 }
 
 .stockValue{
 font-size:28px;
 font-weight:bold;
-color:#0a7;
+color:#00aa77;
+margin:0px;
+margin-top: 10px;
 }
 
 .operations{
@@ -410,13 +404,15 @@ margin:2px 0;
 .heroSection{
 display:flex;
 justify-content:space-between;
-align-items:flex-start;
-gap:16px;
+/* align-items:flex-start; */
+flex-direction: column;
+/* gap:16px; */
 padding:24px;
 margin-bottom:20px;
 border-radius:20px;
 background:linear-gradient(135deg,#f8fafc 0%,#ecfeff 100%);
 border:1px solid #dbeafe;
+
 }
 
 .eyebrow{
@@ -425,14 +421,14 @@ font-size:12px;
 font-weight:700;
 letter-spacing:0.08em;
 text-transform:uppercase;
-color:#0f766e;
+color:#007171;
 }
 
 .heroTitle{
 margin:0;
 font-size:32px;
 line-height:1.1;
-color:#0f172a;
+color:#007171;
 }
 
 .heroSubtitle{
@@ -446,7 +442,8 @@ color:#475569;
 .toolbar{
 display:flex;
 gap:12px;
-margin-bottom:16px;
+margin-bottom:1rem;
+margin-top:1rem;
 }
 
 .formGrid{
@@ -475,6 +472,7 @@ display:flex;
 flex-wrap:wrap;
 gap:12px;
 margin-bottom:18px;
+width: 100% !important;
 }
 
 .statPill{
@@ -482,11 +480,14 @@ display:flex;
 flex-direction:column;
 gap:4px;
 padding:14px 16px;
-min-width:180px;
+min-width:280px;
 border-radius:16px;
 background:#ffffff;
 border:1px solid #e2e8f0;
 box-shadow:0 8px 24px rgba(15,23,42,0.04);
+  text-align: center;
+  color: #007171;
+
 }
 
 .statPill span{
@@ -498,7 +499,7 @@ color:#64748b;
 
 .statPill strong{
 font-size:20px;
-color:#0f172a;
+color:#005959;
 }
 
 .vendorCardLarge{
@@ -565,8 +566,9 @@ cursor:pointer;
 
 .infoGrid{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(400px,1fr));
 gap:12px;
+text-align: center;
 }
 
 .infoGrid div{
@@ -578,7 +580,7 @@ border:1px solid #e2e8f0;
 
 .infoGrid span{
 display:block;
-font-size:12px;
+font-size:0.7rem;
 text-transform:uppercase;
 letter-spacing:0.05em;
 color:#64748b;
@@ -586,8 +588,8 @@ margin-bottom:6px;
 }
 
 .infoGrid strong{
-font-size:16px;
-color:#0f172a;
+  font-size:1rem;
+  color:#007171;
 }
 
 .metaList{
@@ -674,4 +676,69 @@ flex-direction:column;
 .metaList p{
 flex-direction:column;
 }
+.statPill{
+  width: 100%;
+}
+}
+
+.header{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+
+.addVbtn{
+background:#007171;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+width: 150px;
+padding: 10px 18px !important;
+margin: auto;
+margin-right: 0px;
+
+}
+
+.stockcard{
+  display: flex;
+  flex-direction: row;
+  justify-content:space-around;
+}
+
+@media (max-width: 768px) {
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    margin-bottom: 12px;
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border: none;
+    font-size: 14px;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+  }
 }

@@ -1,14 +1,15 @@
 import { useEffect,useState } from "react";
 import Layout from "../../components/Layout";
-import styles from "../../styles/table.module.css";
+import styles from "../../styles/inventory.module.css";
 import { useRouter } from "next/router";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function PurchaseHistory(){
 
 const router = useRouter();
-
+const {t} = useLanguage();
 const [rows,setRows] = useState([]);
 const [filtered,setFiltered] = useState([]);
 const [search,setSearch] = useState("");
@@ -65,11 +66,22 @@ return(
 
 <Layout title="Purchase History">
 
-<div className={styles.pageHeader}>
+      <section className={styles.heroSection}>
+        <div>
+          <p className={styles.eyebrow}>{t("inventory")}</p>
+          <div className={styles.header}>
 
-<h2>Purchase History</h2>
-
-</div>
+            <h1 className={styles.heroTitle}>{t("purchaseHistory")}</h1>
+            <button
+              className={styles.secondaryBtn}
+              onClick={() => router.back()}
+            >
+              ← Back
+            </button>
+          </div>
+          <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p>
+        </div>
+        </section>
 
 <input
 className={styles.searchInput}

@@ -1,137 +1,136 @@
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/inventory.module.css";
-import tableStyles from "../../styles/table.module.css";
+import tableStyles from "../../styles/inventory.module.css";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "@/context/LanguageContext";
+import router from "next/router"
 
-export default function StockLedger(){
+export default function StockLedger() {
 
-const { t } = useLanguage();
-const [items,setItems] = useState([]);
-const [ledger,setLedger] = useState([]);
-const [selectedItem,setSelectedItem] = useState("");
+    const { t } = useLanguage();
+    const [items, setItems] = useState([]);
+    const [ledger, setLedger] = useState([]);
+    const [selectedItem, setSelectedItem] = useState("");
 
-useEffect(()=>{
-loadItems();
-},[]);
+    useEffect(() => {
+        loadItems();
+    }, []);
 
-useAppRefresh(()=>{
-loadItems();
-if(selectedItem){
-loadLedger(selectedItem);
-}
-});
+    useAppRefresh(() => {
+        loadItems();
+        if (selectedItem) {
+            loadLedger(selectedItem);
+        }
+    });
 
-async function loadItems(){
+    async function loadItems() {
+        const result = await inventoryOfflineRequest(
+            "inventory-active-items-v2",
+            "/api/inventory/getActiveItems/"
+        );
+        if (result.success) {
+            setItems(result.data || []);
+        }
+    }
 
-const result = await inventoryOfflineRequest(
-"inventory-active-items-v2",
-"/api/inventory/getActiveItems/"
-);
+    async function loadLedger(itemId) {
+        const result = await inventoryOfflineRequest(
+            `inventory-stock-ledger-v2-${itemId}`,
+            "/api/inventory/getStockLedger/",
+            {
+                body: {
+                    item_id: itemId
+                }
+            }
+        );
+        if (result.success) {
+            setLedger(result.data || []);
+        }
+    }
 
-if(result.success){
-setItems(result.data || []);
-}
+    function selectItem(e) {
+        const id = e.target.value;
+        setSelectedItem(id);
+        if (id) {
+            loadLedger(id);
+        }
+    }
 
-}
+    return (
+        <Layout title={t("stockLedger")}>
+            <section className={styles.heroSection}>
+                <div>
+                    <p className={styles.eyebrow}>{t("inventory")}</p>
+                    <div className={styles.header}>
 
-async function loadLedger(itemId){
+                    <h1 className={styles.heroTitle}>{t("stockLedger")}</h1>
+            <button
+              className={styles.secondaryBtn}
+              onClick={() => router.back()}
+            >
+              ← Back
+            </button>
+          </div>
+                    <p className={styles.heroSubtitle}>{t("stockLedgerSubtitle")}</p>
+                </div>
+            </section>
 
-const result = await inventoryOfflineRequest(
-`inventory-stock-ledger-v2-${itemId}`,
-"/api/inventory/getStockLedger/",
-{
-body:{
-item_id:itemId
-}
-}
-);
+            <select
+                value={selectedItem}
+                onChange={selectItem}
+                className={styles.searchInput}
+            >
 
-if(result.success){
-setLedger(result.data || []);
-}
+                <option value="">{t("selectItem")}</option>
 
-}
+                {items.map(i => (
+                    <option key={i.id} value={i.id}>
+                        {i.item_name}
+                    </option>
+                ))}
 
-function selectItem(e){
+            </select>
 
-const id = e.target.value;
+            <table className={tableStyles.table}>
 
-setSelectedItem(id);
+                <thead>
 
-if(id){
-loadLedger(id);
-}
+                    <tr>
+                        <th>{t("date")}</th>
+                        <th>{t("type")}</th>
+                        <th>{t("quantity")}</th>
+                        <th>{t("notes")}</th>
+                    </tr>
 
-}
+                </thead>
 
-return(
+                <tbody>
 
-<Layout title={t("stockLedger")}>
+                    {ledger.map(l => (
+                        <tr key={l.id}>
+                            <td data-label={t("date")}>
+                                {new Date(l.created_at).toLocaleDateString()}
+                            </td>
+                            <td data-label={t("type")}>
+                                {l.transaction_type}
+                            </td>
+                            <td data-label={t("quantity")}>
+                                {l.quantity}
+                            </td>
+                            <td data-label={t("notes")}>
+                                {l.notes || "-"}
+                            </td>
+                            </tr>
+                    ))}
 
-<section className={styles.heroSection}>
-<div>
-<p className={styles.eyebrow}>{t("inventory")}</p>
-<h1 className={styles.heroTitle}>{t("stockLedger")}</h1>
-<p className={styles.heroSubtitle}>{t("stockLedgerSubtitle")}</p>
-</div>
-</section>
+                </tbody>
 
-<select
-value={selectedItem}
-onChange={selectItem}
-className={styles.searchInput}
->
+            </table>
 
-<option value="">{t("selectItem")}</option>
+        </Layout>
 
-{items.map(i=>(
-<option key={i.id} value={i.id}>
-{i.item_name}
-</option>
-))}
-
-</select>
-
-<table className={tableStyles.table}>
-
-<thead>
-
-<tr>
-<th>{t("date")}</th>
-<th>{t("type")}</th>
-<th>{t("quantity")}</th>
-<th>{t("notes")}</th>
-</tr>
-
-</thead>
-
-<tbody>
-
-{ledger.map(l=>(
-<tr key={l.id}>
-
-<td>
-{new Date(l.created_at).toLocaleDateString()}
-</td>
-
-<td>{l.transaction_type}</td>
-
-<td>{l.quantity}</td>
-
-<td>{l.notes || "-"}</td>
-
-</tr>
-))}
-
-</tbody>
-
-</table>
-
-</Layout>
-
-);
+    );
 
 }

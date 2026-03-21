@@ -27,12 +27,19 @@ export default async function handler(req, res) {
     const result = await pgPool.query(
       `SELECT
         a.id,
+        a.staff_id,
         s.name,
+        s.phone,
         a.check_in,
         a.check_out,
+        a.attendance_type,
         a.is_late,
+        a.late_minutes,
         a.overtime_hours,
-        a.penalty_amount
+        a.overtime_amount,
+        a.penalty_amount,
+        a.work_minutes,
+        a.notes
       FROM staff_attendance a
       JOIN staff s ON s.id=a.staff_id
       WHERE a.mess_id=$1
@@ -40,7 +47,7 @@ export default async function handler(req, res) {
       [messId, today]
     );
 
-    res.json(result.rows);
+    res.json({ success: true, data: result.rows });
 
   } catch (err) {
 

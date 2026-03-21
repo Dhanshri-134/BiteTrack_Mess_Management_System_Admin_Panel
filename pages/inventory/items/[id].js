@@ -8,26 +8,19 @@ import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function ItemPage() {
-
     const router = useRouter();
     const { id } = router.query;
     const { t } = useLanguage();
-
     const [item, setItem] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     const [showAddStock, setShowAddStock] = useState(false);
     const [showUseStock, setShowUseStock] = useState(false);
     const [showAdjust, setShowAdjust] = useState(false);
-
     const [useQty, setUseQty] = useState("");
     const [useNotes, setUseNotes] = useState("");
-
-
     const [adjustQty, setAdjustQty] = useState("");
     const [adjustReason, setAdjustReason] = useState("");
-
     const [vendor, setVendor] = useState("");
     const [invoice, setInvoice] = useState("");
     const [qty, setQty] = useState("");
@@ -43,9 +36,7 @@ export default function ItemPage() {
         if (router.isReady && id) loadItem();
     });
 
-
     async function saveAdjustment() {
-
         try {
             setError("");
             await inventoryRequest("/api/inventory/adjustStock/", {
@@ -59,16 +50,12 @@ export default function ItemPage() {
             setAdjustQty("");
             setAdjustReason("");
             loadItem();
-
         } catch (err) {
             console.error(err);
             setError(err.message);
         }
-
     }
-
     async function loadItem() {
-
         try {
             setError("");
             const result = await inventoryOfflineRequest(
@@ -76,22 +63,17 @@ export default function ItemPage() {
                 "/api/inventory/getItemStock/",
                 { body: { item_id: id } }
             );
-
             if (result.success) {
                 setItem(result.data);
             }
-
         } catch (err) {
             console.error(err);
             setError(err.message);
         } finally {
             setLoading(false);
         }
-
     }
-
     async function saveUsage() {
-
         try {
             setError("");
             await inventoryRequest("/api/inventory/useStock/", {
@@ -105,16 +87,12 @@ export default function ItemPage() {
             setUseQty("");
             setUseNotes("");
             loadItem();
-
         } catch (err) {
             console.error(err);
             setError(err.message);
         }
-
     }
-
     async function saveStock() {
-
         try {
             setError("");
             await inventoryRequest("/api/inventory/addStock/", {
@@ -134,92 +112,66 @@ export default function ItemPage() {
             setPrice("");
             setNotes("");
             loadItem();
-
         } catch (err) {
             console.error(err);
             setError(err.message);
         }
-
     }
-
     if (loading) {
         return <Layout title={t("item")}><p>{t("loading")}</p></Layout>;
     }
-
     return (
-
         <Layout title={item?.item_name || t("item")}>
-
             <section className={styles.heroSection}>
-
                 <div>
                     <p className={styles.eyebrow}>{t("inventory")}</p>
-                    <h1 className={styles.heroTitle}>{item.item_name}</h1>
+                    <div className={styles.header}>
+                        <h1 className={styles.heroTitle}>{item.item_name}</h1>
+                        <button
+                            className={styles.secondaryBtn}
+                            onClick={() => router.back()}
+                        >
+                            ← Back
+                        </button>
+                    </div>
                     <p className={styles.heroSubtitle}>{t("itemDetailsSubtitle")}</p>
                 </div>
-
-                <button
-                    className={styles.secondaryBtn}
-                    onClick={() => router.back()}
-                >
-                    ← Back
-                </button>
-
             </section>
 
-            <section className={styles.infoGrid}>
-                <div>
-                    <span>{t("stock")}</span>
-                    <strong>{item.stock} {item.unit}</strong>
-                </div>
-                <div>
-                    <span>{t("unit")}</span>
-                    <strong>{item.unit}</strong>
-                </div>
-            </section>
-
+<br></br>
             {error ? <p className={styles.errorText}>{error}</p> : null}
+{/* <div className={styles.stockcard}> */}
 
             <div className={styles.stockBox}>
-
                 <h3>{t("currentStock")}</h3>
-
                 <p className={styles.stockValue}>
                     {item.stock} {item.unit}
                 </p>
-
             </div>
-
             <div className={styles.operations}>
                 <button
                     className={styles.primaryBtn}
                     onClick={() => setShowAddStock(true)}
-                >
+                    >
                     {t("addStock")}
                 </button>
-
                 <button
                     className={styles.secondaryBtn}
                     onClick={() => setShowUseStock(true)}
                 >
                     {t("useStock")}
                 </button>
-
                 <button
                     className={styles.secondaryBtn}
                     onClick={() => setShowAdjust(true)}
                 >
                     {t("adjustStock")}
                 </button>
-
-
             </div>
-
-
+            
             <StockLedger />
-
             {showAddStock && (
-
+                
                 <div className={styles.modalOverlay}>
 
                     <div className={styles.modalCard}>
@@ -328,7 +280,6 @@ export default function ItemPage() {
                 </div>
 
             )}
-
 
             {showAdjust && (
 

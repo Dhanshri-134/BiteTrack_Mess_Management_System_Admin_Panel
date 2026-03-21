@@ -34,6 +34,7 @@ export default async function handler(req, res) {
       base_salary,
       overtime_rate,
       late_penalty,
+      current_balance,
       shift_start,
       late_after,
       shift_end
@@ -63,11 +64,12 @@ export default async function handler(req, res) {
         base_salary,
         overtime_rate,
         late_penalty,
+        current_balance,
         shift_start,
         late_after,
         shift_end
       )
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       RETURNING id`,
       [
         messId,
@@ -79,6 +81,7 @@ export default async function handler(req, res) {
         Number(base_salary) || 0,
         Number(overtime_rate) || 0,
         Number(late_penalty) || 0,
+        Number(current_balance) || 0,
         shiftStart,
         lateAfter,
         shiftEnd

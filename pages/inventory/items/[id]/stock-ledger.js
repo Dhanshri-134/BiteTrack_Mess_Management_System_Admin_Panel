@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import styles from "../../../../styles/table.module.css";
+import styles from "../../../../styles/inventory.module.css";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "@/context/LanguageContext";
@@ -46,10 +46,21 @@ export default function StockLedger() {
         <tbody>
           {rows.map((row, index) => (
             <tr key={`${row.created_at}-${index}`}>
-              <td>{new Date(row.created_at).toLocaleDateString()}</td>
-              <td>{row.transaction_type}</td>
-              <td>{row.quantity}</td>
-              <td>{row.notes || "-"}</td>
+              <td data-label={t("date")}>
+  {new Date(row.created_at).toLocaleDateString()}
+</td>
+
+<td data-label={t("type")}>
+  {row.transaction_type}
+</td>
+
+<td data-label={t("quantity")}>
+  {row.quantity}
+</td>
+
+<td data-label={t("notes")}>
+  {row.notes || "-"}
+</td>
             </tr>
           ))}
         </tbody>

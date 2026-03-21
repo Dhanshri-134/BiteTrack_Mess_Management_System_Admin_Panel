@@ -9,14 +9,14 @@ import { API_BASE } from "../../lib/api";
 import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
-import { ChevronDown, ChevronUp, CloudAlert, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, FireExtinguisher, LucideCircleStop, MoreVertical, Pen, StopCircle, Trash2Icon, X } from "lucide-react";
+import { ChevronDown, ChevronUp, CloudAlert, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, FireExtinguisher, LucideCircleStop, MoreVertical, Pen, Search, StopCircle, Trash2Icon, X } from "lucide-react";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { FileOpener } from "@capacitor-community/file-opener";
 import { Capacitor } from "@capacitor/core";
-import  GlobalLoader from "../../components/GlobalLoader"
+import GlobalLoader from "../../components/GlobalLoader"
 
 export default function Users() {
   const router = useRouter();
@@ -197,64 +197,64 @@ export default function Users() {
 
   const confirmFreezeUser = async () => {
 
-  if (!freezeTarget) return;
+    if (!freezeTarget) return;
 
-  const { user, action } = freezeTarget;
+    const { user, action } = freezeTarget;
 
-  await toggleFreeze(user.id, action);
+    await toggleFreeze(user.id, action);
 
-  setFreezeTarget(null);
-};
+    setFreezeTarget(null);
+  };
 
   const filterAndSort = (users) => {
-  let filtered = users;
+    let filtered = users;
 
-  if (search) {
-    filtered = filtered.filter(
-      (u) =>
-        u.name?.toLowerCase().includes(search.toLowerCase()) ||
-        u.email?.toLowerCase().includes(search.toLowerCase()) ||
-        u.phone?.toLowerCase().includes(search.toLowerCase())
-    );
-  }
+    if (search) {
+      filtered = filtered.filter(
+        (u) =>
+          u.name?.toLowerCase().includes(search.toLowerCase()) ||
+          u.email?.toLowerCase().includes(search.toLowerCase()) ||
+          u.phone?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
 
-  if (sortConfig.key) {
-    filtered = [...filtered].sort((a, b) => {
-      let aVal;
-      let bVal;
+    if (sortConfig.key) {
+      filtered = [...filtered].sort((a, b) => {
+        let aVal;
+        let bVal;
 
-      if (sortConfig.key === "hostel_room") {
-        aVal = `${a.hostel_name || ""} ${a.course || ""} ${a.room_no || ""}`;
-        bVal = `${b.hostel_name || ""} ${b.course || ""} ${b.room_no || ""}`;
-      } else if (sortConfig.key === "name_email") {
-        aVal = a.name || "";
-        bVal = b.name || "";
-      }  else if (sortConfig.key === "parents") {
-      aVal = a.parents?.[0]?.name || "";
-      bVal = b.parents?.[0]?.name || "";
-      }  else {
-        aVal = a[sortConfig.key] || "";
-        bVal = b[sortConfig.key] || "";
-      }
+        if (sortConfig.key === "hostel_room") {
+          aVal = `${a.hostel_name || ""} ${a.course || ""} ${a.room_no || ""}`;
+          bVal = `${b.hostel_name || ""} ${b.course || ""} ${b.room_no || ""}`;
+        } else if (sortConfig.key === "name_email") {
+          aVal = a.name || "";
+          bVal = b.name || "";
+        } else if (sortConfig.key === "parents") {
+          aVal = a.parents?.[0]?.name || "";
+          bVal = b.parents?.[0]?.name || "";
+        } else {
+          aVal = a[sortConfig.key] || "";
+          bVal = b[sortConfig.key] || "";
+        }
 
-      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
 
-      return 0;
-    });
-  }
+        return 0;
+      });
+    }
 
-  return filtered;
-};
+    return filtered;
+  };
 
-const requestSort = (key) => {
-let direction = "asc";
+  const requestSort = (key) => {
+    let direction = "asc";
 
-if (sortConfig.key === key && sortConfig.direction === "asc")
-direction = "desc";
+    if (sortConfig.key === key && sortConfig.direction === "asc")
+      direction = "desc";
 
-setSortConfig({ key, direction });
-};
+    setSortConfig({ key, direction });
+  };
 
   const renderSortArrow = (key) => {
     if (sortConfig.key !== key) return null;
@@ -262,110 +262,113 @@ setSortConfig({ key, direction });
   };
 
   const tableColumns = [
-  {
-    key: "name_email",
-    label: t("name"),
-    render: (u) => (
-      <div>
-        <strong
-          style={{ cursor: "pointer" }}
-          onClick={() => goToBilling(u)}
-        >
-          {u.name}
-        </strong>
-        <div style={{ fontSize: "12px", color: "#6b7280" }}>
-          {u.email}
-        </div>
-        <div style={{ fontSize: "12px", color: "#6b7280" }}>
-          {u.phone}
-        </div>
-
-      </div>
-    ),
-  },
-
-  {
-    key: "hostel_room",
-    label: t("hostel"),
-    render: (u) => (
-      <div>
-        {u.course}
-        <br></br>
-        <div style={{ fontSize: "12px", color: "#6b7280" }}>
-        {u.hostel_name || "-"}
-        <br></br>
-        {u.room_no || "-"}
-        </div>
-      </div>
-    ),
-  },
-
-  {
-    key: "date_of_joining",
-    label: t("dateOfJoining"),
-    render: (u) =>
-      u.date_of_joining
-        ? new Date(u.date_of_joining).toLocaleDateString("en-IN")
-        : "-",
-  },
-
-  {
-    key: "parents",
-    label: t("parents"),
-    render: (u) =>
-      u.parents?.length ? (
-        u.parents.map((p, i) => (
-          <div key={i}>
-            <strong>{p.name}</strong>
-            <div style={{ fontSize: "12px", color: "#6b7280" }}>
-              {p.contact}
-              <div
-            style={{
-              fontSize: "12px",
-              color: "#6b7280",
-              whiteSpace: "normal",
-              wordBreak: "break-word",
-              maxWidth: "200px"
-            }}
+    {
+      key: "name_email",
+      label: t("name"),
+      render: (u) => (
+        <div>
+          <strong
+            style={{ cursor: "pointer" }}
+            onClick={() => goToBilling(u)}
           >
-            {p.address}
+            {u.name}
+          </strong>
+          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+            {u.email}
           </div>
-            </div>
+          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+            {u.phone}
           </div>
-        ))
-      ) : (
-        <span style={{ color: "#9CA3AF" }}>—</span>
+
+        </div>
       ),
-  },
-  {
-  key: "actions",
-  label: "Actions",
-  render: (u) => {
-     if (activeTab !== "verified") return null;
-    <div className={styles.actionWrapper}>
-      <span className={styles.actionTrigger}>Click Here</span>
+    },
 
-      <div className={styles.actionMenu}>
-        <button onClick={() => openModal(u)}>Edit</button>
-        <button onClick={() => requestDeleteUser(u)}>Delete</button>
-        <button onClick={() => requestChangeDOJ(u)}>Change DOJ</button>
-        <button
-          onClick={() => {
-  const action = u.status === "Active" ? "freeze" : "unfreeze";
+    {
+      key: "hostel_room",
+      label: t("hostel"),
+      render: (u) => (
+        <div>
+          {u.course}
+          <br></br>
+          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+            {u.hostel_name || "-"}
+            <br></br>
+            {u.room_no || "-"}
+          </div>
+        </div>
+      ),
+    },
 
-  setFreezeTarget({
-    user: u,
-    action
-  });
-}}
-        >
-          {u.status === "Active" ? "Freeze" : "Unfreeze"}
-        </button>
-      </div>
-    </div>
-  }
-}
-];
+    {
+      key: "date_of_joining",
+      label: t("dateOfJoining"),
+      render: (u) =>
+        u.date_of_joining
+          ? new Date(u.date_of_joining).toLocaleDateString("en-IN")
+          : "-",
+    },
+
+    {
+      key: "parents",
+      label: t("parents"),
+      render: (u) =>
+        u.parents?.length ? (
+          u.parents.map((p, i) => (
+            <div key={i}>
+              <strong>{p.name}</strong>
+              <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                {p.contact}
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#6b7280",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                    maxWidth: "200px"
+                  }}
+                >
+                  {p.address}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <span style={{ color: "#9CA3AF" }}>—</span>
+        ),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (u) => {
+        if (activeTab !== "verified") return null;
+
+        return (
+          <div className={styles.buttonwrapper}>
+            {/* <span className={styles.actionTrigger}>Click Here</span> */}
+
+           {/* <div className={styles.actionMenu}> */}
+              <button  className={styles.btn}onClick={() => openModal(u)}>Edit</button>
+              <button  className={styles.btn}onClick={() => requestDeleteUser(u)}>Delete</button>
+              <button  className={styles.btn}onClick={() => requestChangeDOJ(u)}>Change DOJ</button>
+              <button  className={styles.btn}
+                onClick={() => {
+                  const action = u.status === "Active" ? "freeze" : "unfreeze";
+
+                  setFreezeTarget({
+                    user: u,
+                    action
+                  });
+                }}
+              >
+                {u.status === "Active" ? "Freeze" : "Unfreeze"}
+              </button>
+           {/* </div> */}
+          </div>
+        )
+      }
+    }
+  ];
 
   const renderTable = (users, columns, actions = null) => (
     <div className={styles.tableContainer}>
@@ -391,12 +394,11 @@ setSortConfig({ key, direction });
                 <td key={col.key} data-label={col.label}>
                   {(() => {
                     if (col.render) {
-  return col.render(u);
-}
+                      return col.render(u);
+                    }
 
-const value = u[col.key];
-if (!value) return "";
-return value;
+                    const value = u[col.key];
+                    return value;
 
                     if (col.key === "name") {
                       return (
@@ -504,7 +506,7 @@ return value;
         <div className={styles.cardTop} >
           <div>
             <strong style={{ cursor: "pointer" }}
-        onClick={() => goToBilling(user)}>
+              onClick={() => goToBilling(user)}>
               {user.name}
             </strong>
             <div className={styles.subText}>{user.email}</div>
@@ -842,8 +844,8 @@ return value;
 
     } catch (err) {
       console.error(err);
-    toast.error(t("somethingWentWrong"));
-    } finally{
+      toast.error(t("somethingWentWrong"));
+    } finally {
       setExporting(false);
     }
   };
@@ -882,30 +884,32 @@ return value;
   const filteredVerified = filterAndSort(verified);
   const filteredUnverified = filterAndSort(unverified);
 
-  if (exporting) return <GlobalLoader/>;
+  if (exporting) return <GlobalLoader />;
   return (
 
     <Layout>
       <div className={styles.container}>
         <main className={styles.main}>
           <h1>{t("userManagement")}</h1>
-        <div>
-
-          <input
-            type="text"
-            placeholder={t("searchByNameOrEmail")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={styles.search}
-            />
+          <div>
+            <div className={styles.searchBox}>
+              <Search className={styles.searchIcon} size={16} />
+              <input
+                type="text"
+                placeholder={t("searchByNameOrEmail")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={styles.search}
+              />
             </div>
+          </div>
 
           <button
             className={styles.exportBtn}
             onClick={handleExportUsersPDF}
             disabled={exporting}
           >
-             {exporting ? t("exporting") : t("exportPDF")}
+            {exporting ? t("exporting") : t("exportPDF")}
           </button>
           <div className={styles.tabs}>
             <button
@@ -967,13 +971,13 @@ return value;
                               </span>
                             ),
                             onClick: () => {
-  const action = u.status === "Active" ? "freeze" : "unfreeze";
+                              const action = u.status === "Active" ? "freeze" : "unfreeze";
 
-  setFreezeTarget({
-    user: u,
-    action
-  });
-},
+                              setFreezeTarget({
+                                user: u,
+                                action
+                              });
+                            },
                           },
                           {
                             label: (
@@ -1249,51 +1253,50 @@ return value;
 
 
           {freezeTarget && (
-  <div
-    className={styles.modalOverlay}
-    onClick={() => setFreezeTarget(null)}
-  >
-    <div
-      className={styles.confirmModal}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h3>
-        {freezeTarget.action === "freeze"
-          ? t("confirmFreeze")
-          : t("confirmUnfreeze")}
-      </h3>
+            <div
+              className={styles.modalOverlay}
+              onClick={() => setFreezeTarget(null)}
+            >
+              <div
+                className={styles.confirmModal}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3>
+                  {freezeTarget.action === "freeze"
+                    ? t("confirmFreeze")
+                    : t("confirmUnfreeze")}
+                </h3>
 
-      <p>
-        {freezeTarget.action === "freeze"
-          ? t("confirmFreezeUser")
-          : t("confirmUnfreezeUser")}{" "}
-        <strong>{freezeTarget.user.name}</strong> ?
-      </p>
+                <p>
+                  {freezeTarget.action === "freeze"
+                    ? t("confirmFreezeUser")
+                    : t("confirmUnfreezeUser")}{" "}
+                  <strong>{freezeTarget.user.name}</strong> ?
+                </p>
 
-      <div className={styles.modalActions}>
-        <button
-          className={`${styles.button} ${
-            freezeTarget.action === "freeze"
-              ? styles.btnFreeze
-              : styles.btnUnfreeze
-          }`}
-          onClick={confirmFreezeUser}
-        >
-          {freezeTarget.action === "freeze"
-            ? t("freeze")
-            : t("unfreeze")}
-        </button>
+                <div className={styles.modalActions}>
+                  <button
+                    className={`${styles.button} ${freezeTarget.action === "freeze"
+                        ? styles.btnFreeze
+                        : styles.btnUnfreeze
+                      }`}
+                    onClick={confirmFreezeUser}
+                  >
+                    {freezeTarget.action === "freeze"
+                      ? t("freeze")
+                      : t("unfreeze")}
+                  </button>
 
-        <button
-          className={styles.buttonCancel}
-          onClick={() => setFreezeTarget(null)}
-        >
-          {t("cancel")}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                  <button
+                    className={styles.buttonCancel}
+                    onClick={() => setFreezeTarget(null)}
+                  >
+                    {t("cancel")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
 
 

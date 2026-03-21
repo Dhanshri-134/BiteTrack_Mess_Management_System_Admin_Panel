@@ -32,6 +32,7 @@ v.phone,
 v.email,
 v.address,
 v.gst_number,
+TO_CHAR(v.created_at, 'DD-MM-YYYY') AS created_at,
 v.notes
 FROM inventory_vendors v
 WHERE v.mess_id=$1
