@@ -18,6 +18,10 @@ export default async function handler(req, res) {
   try {
 
     const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Token required" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const messId = decoded.messId;
 
@@ -32,7 +36,7 @@ export default async function handler(req, res) {
       `SELECT COUNT(*) 
        FROM staff_attendance
        WHERE mess_id=$1 AND attendance_date=$2
-       AND attendance_type IN ('P','H','WO')`,
+       AND attendance_type IN ('P','H')`,
       [messId, today]
     );
 

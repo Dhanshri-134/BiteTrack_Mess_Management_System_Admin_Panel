@@ -4,10 +4,13 @@ import mr from "../locales/mr.json";
 
 const LanguageContext = createContext();
 
-const dictionaries = {
-  en,
-  mr,
-};
+const dictionaries = { en, mr };
+
+function getNestedValue(source, key) {
+  return String(key || "")
+    .split(".")
+    .reduce((value, part) => (value && value[part] !== undefined ? value[part] : undefined), source);
+}
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState("en");
@@ -23,8 +26,19 @@ export function LanguageProvider({ children }) {
     localStorage.setItem("lang", next);
   };
 
-  const t = (key) => {
-    return dictionaries[lang][key] || key;
+  const t = (key, params = {}) => {
+    const template =
+      getNestedValue(dictionaries[lang], key) ??
+      getNestedValue(dictionaries.en, key) ??
+      key;
+
+    if (typeof template !== "string") {
+      return template;
+    }
+
+    return Object.entries(params).reduce((message, [paramKey, value]) => {
+      return message.replaceAll(`{{${paramKey}}}`, String(value ?? ""));
+    }, template);
   };
 
   return (

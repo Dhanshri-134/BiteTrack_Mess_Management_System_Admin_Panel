@@ -9,7 +9,8 @@ const ATTENDANCE_OPTIONS = [
   { label: "P", value: "P", help: "Present" },
   { label: "HF", value: "H", help: "Half Day" },
   { label: "A", value: "A", help: "Absent" },
-  { label: "WO", value: "WO", help: "Week Off" },
+  { label: "L", value: "L", help: "Leave" },
+  { label: "OFF", value: "OFF", help: "Off" },
 ];
 
 function formatMoney(value) {
@@ -40,7 +41,7 @@ export default function StaffAttendance() {
         (data || []).map((row) => ({
           ...row,
           check_in: currentTime,
-          check_out: "",
+          check_out: String(row.shift_end || "18:00").slice(0, 5),
           attendance_type: "P",
           overtime_hours: 0,
           overtime_amount: 0,
@@ -94,8 +95,10 @@ export default function StaffAttendance() {
       }
     }
 
-    if (["attendance_type"].includes(field) && (value === "A" || value === "WO")) {
-      current.check_out = current.check_out || "";
+    if (field === "attendance_type" && (value === "A" || value === "L" || value === "OFF")) {
+      current.is_late = false;
+      current.late_minutes = 0;
+      current.penalty_amount = 0;
       current.overtime_hours = 0;
       current.overtime_amount = 0;
     }
@@ -159,7 +162,7 @@ export default function StaffAttendance() {
                   {option.label} : {option.help}
                 </span>
               ))}
-              <span className={`${styles.statusPill} ${styles.statusL}`}>L Late</span>
+              <span className={`${styles.statusPill} ${styles.statusL}`}>Late</span>
               <span className={`${styles.statusPill} ${styles.statusOT}`}>OT Overtime</span>
             </div>
           </section>

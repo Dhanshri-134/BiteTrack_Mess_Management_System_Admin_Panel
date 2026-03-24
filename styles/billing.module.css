@@ -318,6 +318,7 @@
   justify-content: space-between;
   margin-bottom: 6px;
   font-size: 0.9rem;
+  
 }
 
 .cardRow span {
@@ -616,7 +617,8 @@
 
 .mobileCard {
   background: #fff;
-  border-radius: 18px;
+  border-radius: 8px;
+  padding:5px;
   margin-bottom: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);

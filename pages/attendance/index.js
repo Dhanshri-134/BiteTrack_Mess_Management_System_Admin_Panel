@@ -418,7 +418,23 @@ const filteredAbsentUsers = absentUsers.filter(
     <Layout>
       <div className={styles.container}>
         <main className={styles.main}>
-          <h1>{t("attendance")}</h1>
+                {/* <section className={styles.heroSection}>
+        <div>
+          <p className={styles.eyebrow}>{t("users")}</p>
+          <div className={styles.header}> */}
+
+            <h1 className={styles.heroTitle}>{t("attendance")}</h1>
+            {/* <button
+              className={styles.backBtn}
+              onClick={() => router.back()}
+            >
+              ← Back
+            </button>
+          </div>
+        </div>
+      
+
+      </section> */}
 
           {/* Stats */}
           <div className={styles.stats}>

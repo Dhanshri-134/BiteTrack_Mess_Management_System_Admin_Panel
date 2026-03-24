@@ -64,14 +64,14 @@ export default function StaffReport() {
   function handleNextMonth() { setDateObj(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)); }
 
   const stats = useMemo(() => {
-    let present = 0, absent = 0, late = 0, wo = 0;
+    let present = 0, absent = 0, late = 0, off = 0;
     attendance.forEach(r => {
       if (r.attendance_type === 'P' || r.attendance_type === 'H') present++;
       if (r.attendance_type === 'A') absent++;
-      if (r.attendance_type === 'WO') wo++;
+      if (r.attendance_type === 'OFF') off++;
       if (r.is_late) late++;
     });
-    return { present, absent, late, wo };
+    return { present, absent, late, off };
   }, [attendance]);
 
   if (loading && !profile) return <Layout><div className={styles.container}>Loading...</div></Layout>;
@@ -118,8 +118,8 @@ export default function StaffReport() {
             <strong style={{ color: "#854d0e" }}>{stats.late}</strong>
           </div>
           <div className={styles.statCard}>
-            <span><CalendarDays size={14}/> WO</span>
-            <strong>{stats.wo}</strong>
+            <span><CalendarDays size={14}/> OFF</span>
+            <strong>{stats.off}</strong>
           </div>
         </div>
 

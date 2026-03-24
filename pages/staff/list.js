@@ -1,17 +1,17 @@
-import { useEffect, useState, useMemo } from "react";
-import Layout from "../../components/Layout";
-import { useRouter } from "next/router";
-import styles from "../../styles/staffMobile.module.css";
+import { useEffect, useMemo, useState } from "react";
+import { Search, UserPlus,CalendarDays, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import { offlineFetch } from "@/lib/offlineFetch";
+import Layout from "../../components/Layout";
 import { useLanguage } from "../../context/LanguageContext";
+import { offlineFetch } from "@/lib/offlineFetch";
 import { staffRequest } from "@/lib/staffClient";
-import { Search, UserPlus, CheckCircle, XCircle, Clock } from "lucide-react";
+import styles from "../../styles/staffMobile.module.css";
+import Link from "next/link";
+
+const EMPTY_STATS = { present: 0, absent: 0, leave: 0, halfDay: 0, off: 0 };
 
 export default function StaffList() {
   const { t } = useLanguage();
-  const router = useRouter();
-
   const [staff, setStaff] = useState([]);
   const [statsMap, setStatsMap] = useState({});
   const [loading, setLoading] = useState(true);
@@ -25,11 +25,10 @@ export default function StaffList() {
     try {
       setLoading(true);
 
-      const staffData = await offlineFetch("staff-list", async () => {
-        const res = await staffRequest("/api/staff/list/", { method: "GET" });
-        return res;
+      const staffData = await offlineFetch("staff-list-v2", async () => {
+        return staffRequest("/api/staff/list/", { method: "GET" });
       });
-      setStaff(staffData || []);
+      setStaff(Array.isArray(staffData) ? staffData : []);
 
       const now = new Date();
       const month = now.getMonth() + 1;
@@ -37,24 +36,29 @@ export default function StaffList() {
 
       const attendanceRes = await staffRequest("/api/staff/attendance/history/", {
         method: "POST",
-        body: { month, year }
+        body: { month, year },
       });
 
       if (attendanceRes.success) {
         const map = {};
-        attendanceRes.data.forEach(r => {
-          const sid = r.staff_id;
-          if (!map[sid]) {
-            map[sid] = { present: 0, absent: 0, late: 0 };
+        attendanceRes.data.forEach((row) => {
+          const staffId = row.staff_id;
+          const attendanceType = String(row.attendance_type || "").toUpperCase();
+
+          if (!map[staffId]) {
+            map[staffId] = { ...EMPTY_STATS };
           }
-          if (r.attendance_type === "P" || r.attendance_type === "H") map[sid].present++;
-          if (r.attendance_type === "A") map[sid].absent++;
-          if (r.is_late) map[sid].late++;
+
+          if (attendanceType === "P") map[staffId].present += 1;
+          else if (attendanceType === "A") map[staffId].absent += 1;
+          else if (attendanceType === "L") map[staffId].leave += 1;
+          else if (attendanceType === "H" || attendanceType === "HF") map[staffId].halfDay += 1;
+          else if (attendanceType === "OFF") map[staffId].off += 1;
         });
         setStatsMap(map);
       }
-
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error("Unable to load staff data");
     } finally {
       setLoading(false);
@@ -62,87 +66,81 @@ export default function StaffList() {
   }
 
   const filteredStaff = useMemo(() => {
-    return staff.filter((s) =>
-      (s.name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (s.phone || "").includes(search)
+    const query = search.toLowerCase();
+    return staff.filter((member) =>
+      (member.name || "").toLowerCase().includes(query) ||
+      (member.phone || "").includes(search)
     );
   }, [staff, search]);
 
   return (
     <Layout title="Staff List">
       <div className={styles.container}>
-        
         <section className={styles.heroPanel}>
-                    <p className={styles.heroKicker}>Staff</p>
-                    <div className={styles.header}>
-                      <h1 className={styles.heroTitle}>{t("staffList", "Staff Management")}</h1>
-                      <button
-                        className={styles.backBtn}
-                        onClick={() => router.back()}
-                      >
-                        ← Back
-                      </button>
-                    </div>
-          <button 
-            className={styles.addstaff} 
-            onClick={() => router.push("/staff/create")}
-          >
+          <p className={styles.heroKicker}>Staff</p>
+          <div className={styles.header}>
+            <h1 className={styles.heroHeading}>{t("Staff List")}</h1>
+            <button className={styles.backBtn} onClick={() => window.history.back()}>
+             <ArrowLeft size={16}/> Back
+            </button>
+          </div>
+          <div className={styles.header}>
+
+          <button className={styles.addstaff} onClick={() => (window.location.href = "/staff/create")}>
             <UserPlus size={18} /> {t("addStaff", "Add Staff")}
           </button>
+          <Link href="/staff/attendance" className={styles.actionBtn}>
+                <CalendarDays size={18} /> {t("markAttendance")}
+              </Link>
+          </div>
+        </section>
 
-                    </section>
-<br></br>
+        <br />
+
         <div className={styles.searchContainer} style={{ position: "relative" }}>
           <Search size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
           <input
             className={styles.searchInput}
             style={{ paddingLeft: "40px" }}
-            placeholder={t("searchStaff", "Search by name or phone...")}
+            placeholder={t("Search by name or phone...")}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
           />
         </div>
 
         {loading ? (
-          <p className={styles.loadingText}>{t("loading", "Loading")}...</p>
+          <p className={styles.emptyMsg}>{t("loading", "Loading")}...</p>
         ) : (
           <div className={styles.cardList}>
-            {filteredStaff.length === 0 && (
-              <div className={styles.emptyState}>{t("noData", "No staff found.")}</div>
-            )}
-            {filteredStaff.map((s) => {
-              const st = statsMap[s.id] || { present: 0, absent: 0, late: 0 };
+            {filteredStaff.length === 0 ? (
+              <div className={styles.emptyMsg}>{t("noData", "No staff found.")}</div>
+            ) : filteredStaff.map((member) => {
+              const stats = statsMap[member.id] || EMPTY_STATS;
               return (
-                <div 
-                  key={s.id} 
-                  className={styles.staffCard} 
-                  onClick={() => router.push(`/staff/profile/${s.id}`)}
+                <div
+                  key={member.id}
+                  className={styles.staffCard}
+                  onClick={() => (window.location.href = `/staff/profile/${member.id}`)}
                 >
                   <div className={styles.staffCardHeader}>
                     <div>
-                      <h3 className={styles.staffName}>{s.name}</h3>
-                      <p className={styles.staffPhone}>{s.phone || "No phone provided"}</p>
+                      <h3 className={styles.staffName}>{member.name}</h3>
+                      <p className={styles.staffPhone}>{member.phone || "No phone provided"}</p>
                     </div>
-                    <div className={styles.staffRoleBadge}>{s.role || "Staff"}</div>
+                    <div className={styles.staffRoleBadge}>{member.role || "Staff"}</div>
                   </div>
 
-                  <div className={styles.staffCardStatsRow}>
-                    <div className={styles.statPill} style={{ background: "#dcfce7", color: "#166534" }}>
-                      <CheckCircle size={14}/> {st.present} P
-                    </div>
-                    <div className={styles.statPill} style={{ background: "#fee2e2", color: "#991b1b" }}>
-                      <XCircle size={14}/> {st.absent} A
-                    </div>
-                    <div className={styles.statPill} style={{ background: "#fef9c3", color: "#854d0e" }}>
-                      <Clock size={14}/> {st.late} L
-                    </div>
-                  </div>
+                  {/* <div className={styles.staffCardStatsRow}>
+                    <div className={styles.statPill} style={{ background: "#dcfce7", color: "#166534" }}>P {stats.present}</div>
+                    <div className={styles.statPill} style={{ background: "#fee2e2", color: "#991b1b" }}>A {stats.absent}</div>
+                    <div className={styles.statPill} style={{ background: "#ffedd5", color: "#c2410c" }}>L {stats.leave}</div>
+                    <div className={styles.statPill} style={{ background: "#fef3c7", color: "#b45309" }}>HF {stats.halfDay}</div>
+                    <div className={styles.statPill} style={{ background: "#e5e7eb", color: "#4b5563" }}>OFF {stats.off}</div>
+                  </div> */}
 
                   <div className={styles.staffCardBalance}>
                     <span className={styles.balanceLabel}>Balance</span>
-                    <span className={styles.balanceAmount}>
-                      ₹ {Number(s.current_balance || 0).toLocaleString()}
-                    </span>
+                    <span className={styles.balanceAmount}> {Number(member.current_balance || 0).toLocaleString()}</span>
                   </div>
                 </div>
               );

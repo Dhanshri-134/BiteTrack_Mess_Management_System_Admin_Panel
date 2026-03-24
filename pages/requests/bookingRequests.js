@@ -1,147 +1,56 @@
-import { useAppRefresh } from "@/lib/useAppRefresh";
-
-import { useEffect, useState } from "react";
-import Layout from "../../components/Layout";
-import styles from "../../styles/bookingRequests.module.css";
-import { offlineFetch } from "../../lib/offlineFetch";
-import toast from "react-hot-toast";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import toast from "react-hot-toast";
+import Layout from "../../components/Layout";
 import DayDropdown from "../../components/DayDropdown";
 import { useLanguage } from "../../context/LanguageContext";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+import { offlineFetch } from "../../lib/offlineFetch";
+import { API_BASE } from "../../lib/api";
+import styles from "../../styles/bookingRequests.module.css";
 
-export default function bookings() {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
-  const [confirmData, setConfirmData] = useState(null);
-
-  const statusOptions = [
-  "all",
-  "pending",
-  "confirmed",
-  "rejected",
-  "completed",
+const STATUS_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "rejected", label: "Rejected" },
+  { value: "completed", label: "Completed" },
 ];
 
-  
-  const { t } = useLanguage();
-
-  // Format date properly (YYYY-MM-DD)
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toISOString().split("T")[0];
-  };
-
-  // Fetch function bookings
-  const fetchBookings = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-      console.warn("Session expired! Please login again.");
-      return;
-    }
-      const data = await offlineFetch("bookings-list", async () => {
-      const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/bookings/", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch bookings");
-      return data;
-      });
-      setBookings(data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-
-useAppRefresh(fetchBookings);
-
-
-  const formatDateOnly = (date) => {
-  if (!date) return "-";
-  return new Date(date).toISOString().split("T")[0];
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const parsed = new Date(dateString);
+  if (Number.isNaN(parsed.getTime())) return "-";
+  return parsed.toISOString().split("T")[0];
 };
 
-const openConfirmModal = (id, status) => {
-  setConfirmData({ id, status });
-};
+function getActionButtons(booking) {
+  if (booking.status === "Pending") {
+    return ["Confirmed", "Rejected"];
+  }
 
-//   const updateStatus = async (id, status) => {
-//    setConfirmData({ id, status });
+  if (booking.status === "Confirmed") {
+    return ["Completed"];
+  }
 
-//     try {
-//       const res = await fetch(`/api/bookings/${id}/`, {
-//         method: "PATCH",
-//         headers: { 
-//           "Content-Type": "application/json",
-//           "Authorization": `Bearer ${localStorage.getItem("token")}`
-//         },
-//         body: JSON.stringify({ status }),
-//       });
+  return [];
+}
 
-//       const data = await res.json();
-//       if (!res.ok) throw new Error(data.error || "Failed to update booking");
-//       toast.success(
-//   status === "Confirmed"
-//     ? t("bookingConfirmed")
-//     : status === "Rejected"
-//     ? t("bookingRejected")
-//     : t("bookingCompleted")
-// );
-
-//   fetchBookings();
-
-//     } catch (err) {
-// console.log(err)
-//       toast.error("Something went wrong. Please try again.");
-//     }
-//   };
-
-
-  const filtered =
-  filter === "all"
-    ? bookings
-    : bookings.filter(
-        (b) => b.status.toLowerCase() === filter
-      );
-
-    const sortedFiltered = [...filtered].sort((a, b) => a.id - b.id);
-
-    function MobileBookingCard({ booking, onStatusChange, t }) {
+function MobileBookingCard({ booking, onStatusChange, t }) {
   const [open, setOpen] = useState(false);
-
-  const status = booking.status;
-
-  const statusOptions =
-    status === "Pending"
-      ? ["confirmed", "rejected"]
-      : status === "Confirmed"
-      ? ["completed"]
-      : [];
+  const actions = getActionButtons(booking);
 
   return (
     <div className={styles.bookingCard}>
-        <span className={`${styles.statusBadge} ${styles[status.toLowerCase()]}`}>
-          {t(status.toLowerCase())}
-        </span>
-      {/* HEADER */}
-      <div className={styles.cardHeader}>
-      <div>
+      <span className={`${styles.statusBadge} ${styles[booking.status.toLowerCase()]}`}>
+        {t(booking.status.toLowerCase())}
+      </span>
 
-          <strong></strong>
-          <div className={styles.subText}>{booking.id}. {booking.name}</div>
-      </div>
-        
+      <div className={styles.cardHeader}>
+        <div>
+          <div className={styles.userName}>{booking.name}</div>
+          <div className={styles.subText}>{booking.mobile_no || "-"}</div>
+        </div>
 
         <button
           className={styles.expandBtn}
@@ -152,226 +61,255 @@ const openConfirmModal = (id, status) => {
         </button>
       </div>
 
-
-      {/* DROPDOWN */}
-      {open && (
+      {open ? (
         <div className={styles.details}>
           <div className={styles.grid}>
-            <div><span>{t("mobile")}</span>{booking.mobile_no}</div>
             <div><span>{t("people")}</span>{booking.people_count}</div>
-            <div><span>{t("menu")}</span>{booking.menu_preference}</div>
-            <div><span>{t("date")}</span>{formatDateOnly(booking.function_date)}</div>
-            <div><span>{t("address")}</span>{booking.address}</div>
-            <div><span>{t("requestedAt")}</span>{formatDateOnly(booking.created_at)}</div>
-           
+            <div><span>{t("menu")}</span>{booking.menu_preference || "-"}</div>
+            <div><span>{t("date")}</span>{formatDate(booking.function_date)}</div>
+            <div><span>{t("requestedAt")}</span>{formatDate(booking.created_at)}</div>
+            <div className={styles.gridWide}><span>{t("address")}</span>{booking.address || "-"}</div>
+            <div className={styles.gridWide}><span>{t("notes")}</span>{booking.notes || "-"}</div>
           </div>
 
-          {booking.notes && (
-            <div className={styles.notes}>
-              <strong>{t("notes")}:</strong> {booking.notes}
-            </div>
-          )}
-
-          {/* ACTION BUTTONS */}
-<div className={styles.cardActions}>
-  {status === "Pending" && (
-    <>
-      <button
-        className={styles.confirm}
-        onClick={() => onStatusChange(booking.id, "Confirmed")}
-      >
-        {t("confirm")}
-      </button>
-
-      <button
-        className={styles.reject}
-        onClick={() => onStatusChange(booking.id, "Rejected")}
-      >
-        {t("reject")}
-      </button>
-    </>
-  )}
-
-  {status === "Confirmed" && (
-    <button
-      className={styles.complete}
-      onClick={() => onStatusChange(booking.id, "Completed")}
-    >
-      {t("complete")}
-    </button>
-  )}
-</div>
-
+          <div className={styles.cardActions}>
+            {actions.length === 0 ? (
+              <span className={styles.noAction}>—</span>
+            ) : actions.map((action) => (
+              <button
+                key={action}
+                className={
+                  action === "Confirmed"
+                    ? styles.confirm
+                    : action === "Rejected"
+                    ? styles.reject
+                    : styles.complete
+                }
+                onClick={() => onStatusChange(booking.id, action)}
+              >
+                {action === "Confirmed"
+                  ? t("confirm")
+                  : action === "Rejected"
+                  ? t("reject")
+                  : t("complete")}
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
+export default function BookingRequests() {
+  const { t } = useLanguage();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [confirmData, setConfirmData] = useState(null);
 
-const confirmStatusUpdate = async () => {
-  if (!confirmData) return;
+  const fetchBookings = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setBookings([]);
+        return;
+      }
 
-  const { id, status } = confirmData;
+      const data = await offlineFetch("bookings-list-v2", async () => {
+        const res = await fetch(`${API_BASE}/api/bookings/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  try {
-    const res = await fetch(`https://bite-track-mess-management-system-a.vercel.app/api/bookings/${id}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify({ status }),
-    });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Failed to fetch bookings");
+        return json;
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to update booking");
+      setBookings(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load bookings");
+      setBookings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    toast.success(
-      status === "Confirmed"
-        ? t("bookingConfirmed")
-        : status === "Rejected"
-        ? t("bookingRejected")
-        : t("bookingCompleted")
-    );
-
-    setConfirmData(null);
+  useEffect(() => {
     fetchBookings();
+  }, []);
 
-  } catch (err) {
-    console.log(err);
-    toast.error("Something went wrong. Please try again.");
-    setConfirmData(null);
-  }
-};
+  useAppRefresh(fetchBookings);
 
-   return (
+  const filteredBookings = useMemo(() => {
+    const next = filter === "all"
+      ? bookings
+      : bookings.filter((booking) => String(booking.status || "").toLowerCase() === filter);
+
+    return [...next].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }, [bookings, filter]);
+
+  const openConfirmModal = (id, status) => {
+    setConfirmData({ id, status });
+  };
+
+  const confirmStatusUpdate = async () => {
+    if (!confirmData) return;
+
+    const { id, status } = confirmData;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/bookings/${id}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update booking");
+
+      toast.success(
+        status === "Confirmed"
+          ? t("bookingConfirmed")
+          : status === "Rejected"
+          ? t("bookingRejected")
+          : t("bookingCompleted")
+      );
+
+      setConfirmData(null);
+      fetchBookings();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+      setConfirmData(null);
+    }
+  };
+
+  return (
     <Layout>
       <div className={styles.container}>
         <h1>{t("functionBookings")}</h1>
 
         <div className={styles.controls}>
-  <label>{t("filter")}:</label>
-  <DayDropdown
-    options={statusOptions}
-    value={filter}
-    onChange={setFilter}
-  />
-</div>
-
+          <label>{t("filter")}</label>
+          <DayDropdown options={STATUS_OPTIONS} value={filter} onChange={setFilter} />
+        </div>
 
         {loading ? (
           <p>{t("loadingBookings")}</p>
         ) : (
           <>
-            {/* ===== DESKTOP TABLE ===== */}
             <div className={styles.desktopOnly}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>{t("id")}</th>
-                    <th>{t("user")}</th>
-                    <th>{t("mobile")}</th>
-                    <th>{t("people")}</th>
-                    <th>{t("menuPreference")}</th>
-                    <th>{t("date")}</th>
-                    <th>{t("status")}</th>
-                    <th>{t("notes")}</th>
-                    <th>{t("actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length === 0 ? (
-                    <tr><td colSpan="9">{t("noBookingsFound")}</td></tr>
-                  ) : (
-                    sortedFiltered.map(b => (
-                      <tr key={b.id}>
-                        <td>{b.name}</td>
-                        <td>{b.mobile_no}</td>
-                        <td>{b.people_count}</td>
-                        <td>{b.menu_preference}</td>
-                        <td>{formatDate(b.function_date)}</td>
-                        <td>
-                          <span className={`${styles.status} ${styles[b.status.toLowerCase()]}`}>
-                            {t(b.status.toLowerCase())}
-                          </span>
-                        </td>
-                        <td>{b.notes || "-"}</td>
-                        <td className={styles.actions}>
-                          {b.status === "Pending" && (
-                            <>
-                              <button onClick={() => openConfirmModal(b.id, "Confirmed")} className={styles.confirm}>
-                                {t("confirm")}
-                              </button>
-                              <button onClick={() => openConfirmModal(b.id, "Rejected")} className={styles.reject}>
-                                {t("reject")}
-                              </button>
-                            </>
-                          )}
-                          {b.status === "Confirmed" && (
-                            <button onClick={() => openConfirmModal(b.id, "Completed")} className={styles.complete}>
-                              {t("complete")}
-                            </button>
-                          )}
-                        </td>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>{t("user")}</th>
+                      <th>{t("mobile")}</th>
+                      <th>{t("people")}</th>
+                      <th>{t("menuPreference")}</th>
+                      <th>{t("date")}</th>
+                      <th>{t("status")}</th>
+                      <th>{t("notes")}</th>
+                      <th>{t("actions")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredBookings.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className={styles.emptyRow}>{t("noBookingsFound")}</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      filteredBookings.map((booking) => {
+                        const actions = getActionButtons(booking);
+                        return (
+                          <tr key={booking.id}>
+                            <td>{booking.name || "-"}</td>
+                            <td>{booking.mobile_no || "-"}</td>
+                            <td>{booking.people_count || "-"}</td>
+                            <td>{booking.menu_preference || "-"}</td>
+                            <td>{formatDate(booking.function_date)}</td>
+                            <td>
+                              <span className={`${styles.status} ${styles[booking.status.toLowerCase()]}`}>
+                                {t(booking.status.toLowerCase())}
+                              </span>
+                            </td>
+                            <td>{booking.notes || "-"}</td>
+                            <td>
+                              <div className={styles.actions}>
+                                {actions.length === 0 ? (
+                                  <span className={styles.noAction}>—</span>
+                                ) : actions.map((action) => (
+                                  <button
+                                    key={action}
+                                    onClick={() => openConfirmModal(booking.id, action)}
+                                    className={
+                                      action === "Confirmed"
+                                        ? styles.confirm
+                                        : action === "Rejected"
+                                        ? styles.reject
+                                        : styles.complete
+                                    }
+                                  >
+                                    {action === "Confirmed"
+                                      ? t("confirm")
+                                      : action === "Rejected"
+                                      ? t("reject")
+                                      : t("complete")}
+                                  </button>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            {/* ===== MOBILE CARDS ===== */}
             <div className={styles.mobileOnly}>
-              {filtered.length === 0 ? (
+              {filteredBookings.length === 0 ? (
                 <p>{t("noBookingsFound")}</p>
               ) : (
-                sortedFiltered.map((b) => (
-  <MobileBookingCard
-    key={b.id}
-    booking={b}
-    t={t}
-    onStatusChange={openConfirmModal}
-  />
-))
-
+                filteredBookings.map((booking) => (
+                  <MobileBookingCard
+                    key={booking.id}
+                    booking={booking}
+                    t={t}
+                    onStatusChange={openConfirmModal}
+                  />
+                ))
               )}
             </div>
           </>
         )}
-
       </div>
 
-      {confirmData && (
-  <div className={styles.modalOverlay}>
-    <div className={styles.modal}>
-      <h3>
-        {t("confirmAction")}
-      </h3>
-
-      <p>
-        {t("areYouSure")}{" "}
-        ?
-      </p>
-
-      <div className={styles.modalActions}>
-        <button
-          className={styles.cancelBtn}
-          onClick={() => setConfirmData(null)}
-        >
-          {t("cancel")}
-        </button>
-
-        <button
-          className={styles.confirmBtn}
-          onClick={confirmStatusUpdate}
-        >
-          {t("yesProceed")}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {confirmData ? (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>{t("confirmAction")}</h3>
+            <p>{t("areYouSure")}?</p>
+            <div className={styles.modalActions}>
+              <button className={styles.cancelBtn} onClick={() => setConfirmData(null)}>
+                {t("cancel")}
+              </button>
+              <button className={styles.confirmBtn} onClick={confirmStatusUpdate}>
+                {t("yesProceed")}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </Layout>
   );
 }

@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
+import DayDropdown from "../../components/DayDropdown";
 import styles from "../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, User } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 function formatMoney(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
 }
 
 export default function AttendanceHistory() {
+  const { t } = useLanguage();
   const [staffList, setStaffList] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +30,20 @@ export default function AttendanceHistory() {
     fetchAttendance(false);
   }, [filters.staff_id, filters.month, filters.year]);
 
+  const currentYear = new Date().getFullYear();
+  const monthOptions = Array.from({ length: 12 }, (_, index) => ({
+    value: index + 1,
+    label: String(index + 1),
+  }));
+  const yearOptions = [currentYear - 1, currentYear, currentYear + 1].map((value) => ({
+    value,
+    label: String(value),
+  }));
+  const staffOptions = [
+    { value: "", label: t("allStaff") },
+    ...staffList.map((row) => ({ value: row.id, label: row.name })),
+  ];
+
   async function fetchStaff() {
     try {
       const data = await staffOfflineRequest("staff-list-v4", "/api/staff/list/", {
@@ -34,7 +51,7 @@ export default function AttendanceHistory() {
       });
       setStaffList(data || []);
     } catch (error) {
-      toast.error("Failed to load staff");
+      toast.error(t("failedToLoadStaff"));
     }
   }
 
@@ -50,83 +67,85 @@ export default function AttendanceHistory() {
           });
       setAttendance(response?.data || []);
     } catch (error) {
-      toast.error("Failed to load attendance");
+      toast.error(t("failedToLoadAttendance"));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <Layout title="Attendance History">
+    <Layout title={t("attendanceHistory")}>
       <div className={styles.container}>
         <div className={styles.pageStack}>
-          <button type="button" className={styles.backBtn} onClick={() => window.history.back()}>
-            <ArrowLeft size={16} /> Back
-          </button>
 
           <section className={styles.heroPanel}>
-            <p className={styles.heroKicker}>Attendance</p>
-            <h1 className={styles.heroHeading}>Attendance History</h1>
-            <p className={styles.heroText}>Review late penalties, overtime, and daily staff attendance from one filtered view.</p>
+            <p className={styles.heroKicker}>{t("attendance")}</p>
+            <div className={styles.header}>
+
+            <h1 className={styles.heroHeading}>{t("attendanceHistory")}</h1>
+          <button type="button" className={styles.backBtn} onClick={() => window.history.back()}>
+            <ArrowLeft size={16} /> {t("back")}
+          </button>
+            </div>
+            <p className={styles.heroText}>{t("attendanceHistoryDescription")}</p>
           </section>
 
           <section className={styles.paymentFormCard}>
             <div className={styles.formGridCompact}>
               <div className={styles.formGroup}>
-                <label>Staff</label>
-                <select className={styles.formInput} value={filters.staff_id} onChange={(event) => setFilters((prev) => ({ ...prev, staff_id: event.target.value }))}>
-                  <option value="">All Staff</option>
-                  {staffList.map((row) => (
-                    <option key={row.id} value={row.id}>{row.name}</option>
-                  ))}
-                </select>
+                <label>{t("staff")}</label>
+                <DayDropdown
+                  options={staffOptions}
+                  value={filters.staff_id}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, staff_id: value }))}
+                />
               </div>
               <div className={styles.formGroup}>
-                <label>Month</label>
-                <select className={styles.formInput} value={filters.month} onChange={(event) => setFilters((prev) => ({ ...prev, month: Number(event.target.value) }))}>
-                  {Array.from({ length: 12 }, (_, index) => index + 1).map((month) => (
-                    <option key={month} value={month}>{month}</option>
-                  ))}
-                </select>
+                <label>{t("month")}</label>
+                <DayDropdown
+                  options={monthOptions}
+                  value={filters.month}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, month: Number(value) }))}
+                />
               </div>
               <div className={styles.formGroup}>
-                <label>Year</label>
-                <select className={styles.formInput} value={filters.year} onChange={(event) => setFilters((prev) => ({ ...prev, year: Number(event.target.value) }))}>
-                  {[2025, 2026, 2027].map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+                <label>{t("year")}</label>
+                <DayDropdown
+                  options={yearOptions}
+                  value={filters.year}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, year: Number(value) }))}
+                />
               </div>
               <div className={styles.formGroup}>
-                <label>Refresh</label>
+                <label>{t("refresh")}</label>
                 <button type="button" className={styles.refreshBtn} onClick={() => fetchAttendance(true)}>
-                  <RefreshCw size={16} /> Refresh Data
+                  <RefreshCw size={16} /> {t("refreshData")}
                 </button>
               </div>
             </div>
           </section>
 
           <section className={styles.timelineList}>
-            {loading ? <div className={styles.emptyMsg}>Loading...</div> : null}
-            {!loading && attendance.length === 0 ? <div className={styles.emptyMsg}>No attendance records found.</div> : null}
+            {loading ? <div className={styles.emptyMsg}>{t("loading")}</div> : null}
+            {!loading && attendance.length === 0 ? <div className={styles.emptyMsg}>{t("noAttendanceRecordsFound")}</div> : null}
             {!loading && attendance.map((row) => (
               <div key={row.id} className={styles.timelineItem}>
                 <div className={styles.tlDetails}>
                   <div className={styles.tlRow}>
-                    <strong>{row.name}</strong>
+                    <strong> <User size={13}/> {row.name}</strong>
                     <span className={`${styles.statusPill} ${styles[`status${row.attendance_type === "H" ? "HF" : row.attendance_type}`] || styles.statusOFF}`}>
                       {row.attendance_type === "H" ? "HF" : row.attendance_type}
                     </span>
                   </div>
                   <div className={styles.tlRow2}>
                     <span>{new Date(row.attendance_date).toLocaleDateString()}</span>
-                    <span>In {row.check_in ? String(row.check_in).slice(11, 16) : "--:--"} / Out {row.check_out ? String(row.check_out).slice(11, 16) : "--:--"}</span>
+                    <span>{t("inOutTime", { inTime: row.check_in ? String(row.check_in).slice(11, 16) : "--:--", outTime: row.check_out ? String(row.check_out).slice(11, 16) : "--:--" })}</span>
                   </div>
                   <div className={styles.statusLegend} style={{ marginTop: "0.5rem" }}>
-                    {row.is_late ? <span className={`${styles.statusPill} ${styles.statusL}`}>Late {row.late_minutes}m</span> : null}
-                    {Number(row.overtime_hours || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>OT {row.overtime_hours}h</span> : null}
-                    <span className={styles.statusPill}>{formatMoney(row.penalty_amount)} penalty</span>
-                    <span className={styles.statusPill}>{formatMoney(row.overtime_amount)} OT pay</span>
+                    {row.is_late ? <span className={`${styles.statusPill} ${styles.statusL}`}>{t("lateMinutes", { minutes: row.late_minutes })}</span> : null}
+                    {Number(row.overtime_hours || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>{t("overtimeHours", { hours: row.overtime_hours })}</span> : null}
+                    <span className={styles.statusPill}>{t("penaltyAmount", { amount: formatMoney(row.penalty_amount) })}</span>
+                    <span className={styles.statusPill}>{t("overtimePayAmount", { amount: formatMoney(row.overtime_amount) })}</span>
                   </div>
                 </div>
               </div>

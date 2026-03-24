@@ -875,8 +875,10 @@
   background-color: #007170;
   color: #fff;
   margin-bottom: 10px;
+  border-radius: 18px;
+  height: min-content;
+  width: 100px;
   padding: 10px;
-  border-radius: 8px;
 }
 
 .actionWrapper {
@@ -944,4 +946,75 @@ display: flex;
 .buttonwrapper button {
   padding: 4px 8px;
   font-size: 12px;
+}
+
+.highlight {
+  animation: highlightFade 2s ease;
+  background-color: #d1fae5;
+}
+
+@keyframes highlightFade {
+  0% { background-color: #6ee7b7; }
+  100% { background-color: transparent; }
+}
+
+.searchTool{
+  display: flex;
+  gap:1rem;
+}
+
+
+.header{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  
+}
+
+
+.heroSection{
+display:flex;
+justify-content:space-between;
+/* align-items:flex-start; */
+flex-direction: column;
+/* gap:16px; */
+padding:24px;
+padding-bottom: 0;
+margin-bottom:20px;
+border-radius:20px;
+background:linear-gradient(135deg,#f8fafc 0%,#ecfeff 100%);
+border:1px solid #dbeafe;
+
+}
+
+.eyebrow{
+margin:0 0 8px;
+font-size:12px;
+font-weight:700;
+letter-spacing:0.08em;
+text-transform:uppercase;
+color:#007171;
+}
+
+.heroTitle{
+/* margin:0; */
+font-size:32px;
+line-height:1.1;
+color:#007171;
+
+}
+
+.backBtn{
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid #d6ece8;
+  background: #ffffff;
+  color: #0f766e;
+  font-weight: 700;
+  cursor: pointer;
+  height: max-content;
 }

@@ -23,6 +23,13 @@ import {
 } from "lucide-react";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const ATTENDANCE_OPTIONS = [
+  { label: "P", value: "P" },
+  { label: "HF", value: "H" },
+  { label: "A", value: "A" },
+  { label: "L", value: "L" },
+  { label: "OFF", value: "OFF" },
+];
 
 function formatMoney(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
@@ -35,6 +42,7 @@ function normalizePaymentType(value) {
 function statusLabel(type, row) {
   if (!row) return "OFF";
   if (type === "H") return "HF";
+  if (type === "OFF") return "OFF";
   return type || "OFF";
 }
 
@@ -86,7 +94,7 @@ export default function StaffProfile() {
   const [modalData, setModalData] = useState({
     date: new Date().toISOString().split("T")[0],
     check_in: "09:00",
-    check_out: "",
+    check_out: "18:00",
     attendance_type: "P",
     is_late: false,
     late_minutes: 0,
@@ -185,6 +193,14 @@ export default function StaffProfile() {
       }
     }
 
+    if (field === "attendance_type" && ["A", "L", "OFF"].includes(value)) {
+      updated.is_late = false;
+      updated.late_minutes = 0;
+      updated.penalty_amount = 0;
+      updated.overtime_hours = 0;
+      updated.overtime_amount = 0;
+    }
+
     setModalData(updated);
   }
 
@@ -276,6 +292,9 @@ export default function StaffProfile() {
 
   return (
     <Layout title={`Profile: ${profile.name}`}>
+             `<button type="button" className={styles.backBtn} onClick={() => router.back()}>
+          <ArrowLeft size={16} /> {t("back")}
+        </button>`
       <div className={styles.profileContainer}>
 
         <div className={styles.profileHero}>
@@ -283,7 +302,13 @@ export default function StaffProfile() {
             <div className={styles.avatar}>{profile.name?.charAt(0) || "S"}</div>
 
             <div className={styles.profileInfo}>
+              <div className={styles.header}>
+
               <h1 className={styles.profileName}>{profile.name}</h1>
+            <button className={styles.iconAction} type="button" onClick={() => router.push(`/staff/edit/${profile.id}`)}>
+              <Edit3 size={18} />
+            </button>
+              </div>
               <p className={styles.profilePhone}>{profile.phone || "No phone"}</p>
               
               <div className={styles.profileMetaRow}>
@@ -291,12 +316,6 @@ export default function StaffProfile() {
                 <span className={styles.profileMetaPill}>{String(profile.salary_type || "monthly").toUpperCase()}</span>
               </div>
             </div>
-            <button className={styles.iconAction} type="button" onClick={() => router.push(`/staff/edit/${profile.id}`)}>
-              <Edit3 size={18} />
-            </button>
-             <button type="button" className={styles.backBtn} onClick={() => router.back()}>
-          <ArrowLeft size={16} /> Back
-        </button>
           </div>
 
        
@@ -337,7 +356,12 @@ export default function StaffProfile() {
           <button className={`${styles.actionBtn} ${styles.markAttendance}`} type="button" onClick={() => {
             const now = new Date();
             const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-            setModalData((prev) => ({ ...prev, date: new Date().toISOString().split("T")[0], check_in: currentTime }));
+            setModalData((prev) => ({
+              ...prev,
+              date: new Date().toISOString().split("T")[0],
+              check_in: currentTime,
+              check_out: String(profile.shift_end || "18:00").slice(0, 5),
+            }));
             setShowModal(true);
           }}>
             <ClipboardCheck size={18} /> Mark Attendance
@@ -357,7 +381,7 @@ export default function StaffProfile() {
             <div className={styles.sectionHead}>
               <div>
                 <h3 className={styles.sectionTitle}>Attendance Calendar</h3>
-                <p className={styles.sectionSubtitle}>P = Present, HF = Half Day, A = Absent, WO = Week Off, L = Late, OT = Overtime, OFF = no data.</p>
+                <p className={styles.sectionSubtitle}>P = Present, HF = Half Day, A = Absent, L = Leave, OFF = Off, OT = Overtime.</p>
               </div>
             </div>
 
@@ -375,7 +399,7 @@ export default function StaffProfile() {
                       setModalData({
                         date: iso,
                         check_in: row?.check_in ? String(row.check_in).slice(11, 16) : "09:00",
-                        check_out: row?.check_out ? String(row.check_out).slice(11, 16) : "",
+                        check_out: row?.check_out ? String(row.check_out).slice(11, 16) : String(profile.shift_end || "18:00").slice(0, 5),
                         attendance_type: attendanceType || "P",
                         is_late: Boolean(row?.is_late),
                         late_minutes: Number(row?.late_minutes || 0),
@@ -459,7 +483,7 @@ export default function StaffProfile() {
                 <div className={`${styles.formGroup} ${styles.formGroupWide}`}>
                   <label>Status</label>
                   <div className={styles.btnTypes}>
-                    {[{ label: "P", value: "P" }, { label: "HF", value: "H" }, { label: "A", value: "A" }, { label: "WO", value: "WO" }].map((option) => (
+                    {ATTENDANCE_OPTIONS.map((option) => (
                       <button key={option.value} type="button" className={`${styles.typeBtn} ${modalData.attendance_type === option.value ? styles.active : ""}`} onClick={() => updateModalField("attendance_type", option.value)}>{option.label}</button>
                     ))}
                   </div>

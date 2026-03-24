@@ -44,34 +44,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Status is required" });
     }
 
-    // -------------------------------
-    // ⭐ 3. Check booking belongs to this mess
-    // -------------------------------
-    const checkQuery = `
-      SELECT fb.id 
-      FROM function_bookings fb
-      WHERE id = $1 AND mess_id = $2
-    `;
-    const checkResult = await pgPool.query(checkQuery, [id, messId]);
-
-    if (checkResult.rows.length === 0) {
-      return res.status(403).json({ error: "Not allowed for this mess" });
-    }
-
-    // -------------------------------
-    // ⭐ 4. UPDATE booking
-    // -------------------------------
     const updateQuery = `
       UPDATE function_bookings
       SET status = $1, updated_at = NOW()
       WHERE id = $2
+        AND mess_id = $3
       RETURNING *
     `;
 
-    const { rows } = await pgPool.query(updateQuery, [status, id]);
- console.log("CHECK RESULT:", checkResult.rows);
-console.log("MESS ID:", messId);
-console.log("BOOKING ID:", id);
+    const { rows } = await pgPool.query(updateQuery, [status, id, messId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Booking not found in your mess" });
+    }
+
     return res.status(200).json(rows[0]);
 
   } catch (err) {

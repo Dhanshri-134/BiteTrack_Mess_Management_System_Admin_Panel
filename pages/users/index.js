@@ -1,6 +1,6 @@
 
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import styles from "../../styles/users.module.css";
 import Link from "next/link";
@@ -20,6 +20,7 @@ import GlobalLoader from "../../components/GlobalLoader"
 
 export default function Users() {
   const router = useRouter();
+  const userRefs = useRef({});
   const { t } = useLanguage();
   const [verified, setVerified] = useState([]);
   const [unverified, setUnverified] = useState([]);
@@ -38,6 +39,31 @@ export default function Users() {
   const [freezeModal, setFreezeModal] = useState(null);
   const [freezeTarget, setFreezeTarget] = useState(null);
   const [exporting, setExporting] = useState(false);
+
+const { id } = router.query;
+
+useEffect(() => {
+  if (!id || verified.length === 0) return;
+
+  const user = verified.find(u => String(u.id) === String(id));
+
+  if (user) {
+    setActiveTab("verified");
+
+    setTimeout(() => {
+      userRefs.current[id]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+      userRefs.current[id]?.classList.add(styles.highlight);
+
+      setTimeout(() => {
+        userRefs.current[id]?.classList.remove(styles.highlight);
+      }, 2000);
+    }, 300);
+  }
+}, [id, verified]);
 
   const goToBilling = (user) => {
     const today = new Date();
@@ -389,7 +415,7 @@ export default function Users() {
         </thead>
         <tbody>
           {filterAndSort(users).map((u) => (
-            <tr key={u.id}>
+            <tr key={u.id} ref={(el) => (userRefs.current[u.id] = el)}>
               {columns.map((col) => (
                 <td key={col.key} data-label={col.label}>
                   {(() => {
@@ -890,8 +916,27 @@ export default function Users() {
     <Layout>
       <div className={styles.container}>
         <main className={styles.main}>
+        
+      {/* <section className={styles.heroSection}>
+        <div>
+          <p className={styles.eyebrow}>{t("users")}</p>
+          <div className={styles.header}>
+
+            <h1 className={styles.heroTitle}>{t("userManagement")}</h1>
+            <button
+              className={styles.backBtn}
+              onClick={() => router.back()}
+            >
+              ← Back
+            </button>
+          </div>
+        </div>
+      
+
+      </section> */}
           <h1>{t("userManagement")}</h1>
-          <div>
+  
+          <div className={styles.searchTool}>
             <div className={styles.searchBox}>
               <Search className={styles.searchIcon} size={16} />
               <input
@@ -902,15 +947,15 @@ export default function Users() {
                 className={styles.search}
               />
             </div>
-          </div>
 
           <button
             className={styles.exportBtn}
             onClick={handleExportUsersPDF}
             disabled={exporting}
-          >
+            >
             {exporting ? t("exporting") : t("exportPDF")}
           </button>
+            </div>
           <div className={styles.tabs}>
             <button
               className={`${styles.tabBtn} ${activeTab === "verified" ? styles.activeTab : ""}`}

@@ -12,7 +12,7 @@ import { FaWhatsapp, FaMoneyBillWave, FaPhoneAlt } from "react-icons/fa";
 import { useRouter } from "next/router";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { ChartBarIcon, ChevronDown, ChevronUp, Download, Filter, FilterIcon, FilterX, FilterXIcon, Presentation, MoreVertical } from "lucide-react";
+import { ChartBarIcon, ChevronDown, ChevronUp, Download, Filter, FilterIcon, FilterX, FilterXIcon, Presentation, MoreVertical, DownloadIcon, RefreshCcw } from "lucide-react";
 import DayDropdown from "../../components/DayDropdown";
 
 const TooltipText = ({ value }) => {
@@ -57,6 +57,7 @@ const TooltipText = ({ value }) => {
       tabIndex={0}
       onMouseEnter={showTooltip}
       onFocus={showTooltip}
+      onClick={showTooltip}
       onMouseLeave={() => setPos(p => ({ ...p, show: false }))}
       onBlur={() => setPos(p => ({ ...p, show: false }))}
     >
@@ -300,6 +301,12 @@ Thank you.`;
     closeWhatsAppDrawer();
   };
 
+  const goToUsers = (user) =>{
+   router.push({
+  pathname: "/users",
+  query: { id: user.user_id }
+});
+  }
   const getBillAmount = (b) => {
     if (!messAccess?.per_day_rate) {
       const price = (b.monthly_price || "₹0").replace(/[₹,]/g, "");
@@ -500,11 +507,11 @@ if (!map[key].parent_mobile && b.parent_mobile) {
 
       const isCurrent = Number(b.month) === targetMonth && Number(b.year) === targetYear;
 
-      if (isCurrent) {
-        map[key].payable = amount;
-        // map[key].start_date = b.start_date;
-        // map[key].end_date = b.end_date;
-      }
+      // if (isCurrent) {
+      //   map[key].payable = amount;
+      //   map[key].start_date = b.start_date;
+      //   map[key].end_date = b.end_date;
+      // }
 
       if (!b.paid) {
         const diff = amount - paidAmt;
@@ -641,13 +648,15 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                     <label>{t("search")}</label>
                     <input placeholder={t("searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} />
                   </div>
-                  <div className={styles.controlItemActions}>
-                    <button className={styles.btnPrimary} onClick={fetchBills}>{t("refresh")}</button>
-                    <button className={styles.btnSecondary} onClick={exportBillingPDF} disabled={exportingPDF}>{exportingPDF ? t("exporting") : t("exportPdf")}</button>
-                    <button className={`${styles.btnSecondary} ${!isMonthYearSelected ? styles.btnDisabledDownload : ""}`} onClick={downloadExcel} disabled={!isMonthYearSelected}>{t("downloadExcel")}</button>
-                  </div>
                 </div>
               )}
+
+              <br></br>
+              <div className={styles.controlItemActions}>
+                <button className={styles.btnPrimary} style={{ display:"flex",gap:"16px"}} onClick={fetchBills}><RefreshCcw size={13}/> {t("refresh")}</button>
+                <button className={styles.btnSecondary} style={{ display:"flex",gap:"16px"}} onClick={exportBillingPDF} disabled={exportingPDF}>{exportingPDF ? t("exporting") :( <><DownloadIcon size={13}/> {t("PDF")} </>) }</button>
+                <button className={`${styles.btnSecondary}`} style={{ display:"flex",gap:"16px"}} onClick={downloadExcel} disabled={!isMonthYearSelected}>  <DownloadIcon size={13}/>{t("Excel")} </button>
+              </div>
 
               <section style={{ marginTop: 20 }}>
                 {loading ? (
@@ -678,17 +687,9 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                           {filtered.map((b, idx) => (
                             <React.Fragment key={b.user_id}>
                             <tr style={{ background: expandedCard === b.user_id ? "#f3f4f6" : "transparent" }}>
+                              <td>{idx + 1}</td>
                               <td>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setExpandedCard(expandedCard === b.user_id ? null : b.user_id); }}
-                                  style={{ background: "transparent", border: "none", cursor: "pointer", marginRight: "8px", padding: "0" }}
-                                >
-                                  <ChevronDown size={16} style={{ transform: expandedCard === b.user_id ? "rotate(180deg)" : "rotate(0deg)", transition: "0.2s" }} />
-                                </button>
-                                {idx + 1}
-                              </td>
-                              <td>
-                                <strong>{b.name || b.user_name || "-"}</strong><br />
+                                <strong onClick={()=> goToUsers(b)}>{b.name || b.user_name || "-"}</strong><br />
                                 <span style={{ fontSize: "12px", color: "#6b7280" }}>{b.email || "-"}</span><br />
                                 <span style={{ fontSize: "12px", color: "#6b7280" }}>
                                     <a href={`tel:${b.mobile}`} style={{ color: "black", textDecoration: "none" }}>{b.mobile || "-"}</a>
@@ -718,14 +719,27 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                               <td>{Number(b.total_payable).toFixed(2)}</td>
                               {/* <td>{b.has_pending ? t("pending") : t("clear")}</td> */}
                               <td>
-  <span
-    className={`${styles.statusBadge} ${
-      b.has_pending ? styles.statusUnpaid : styles.statusPaid
-    }`}
-  >
-    {b.has_pending ? "Unpaid" : "Paid"}
-  </span>
-</td>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <span
+                                    className={`${styles.statusBadge} ${
+                                      b.has_pending ? styles.statusUnpaid : styles.statusPaid
+                                    }`}
+                                  >
+                                    {b.has_pending ? "Unpaid" : "Paid"}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    aria-label={expandedCard === b.user_id ? "Collapse payment history" : "Expand payment history"}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setExpandedCard(expandedCard === b.user_id ? null : b.user_id);
+                                    }}
+                                    style={{ background: "transparent", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", color: "#0f766e" }}
+                                  >
+                                    <ChevronDown size={16} style={{ transform: expandedCard === b.user_id ? "rotate(180deg)" : "rotate(0deg)", transition: "0.2s" }} />
+                                  </button>
+                                </div>
+                              </td>
   
 
                               {/* <td className={styles.actionsCell}>
@@ -829,10 +843,12 @@ if (!map[key].parent_mobile && b.parent_mobile) {
   </span>
                                 </strong>
                               <span style={{ fontSize: "13px", color: "#6b7280", display: "inline-block" }}>
-                              {b.email}
+                                <TooltipText value={b.email || "-"} />
                               </span>
                               <span style={{ fontSize: "13px", color: "#6b7280", display: "flex", flexDirection:"row", justifyContent:"space-between"}}>
-                                <a href={`tel:${b.mobile}`} style={{ color: "black", textDecoration: "none" }}>{b.mobile || "-"}</a>
+                                <a href={`tel:${b.mobile}`} style={{ color: "black", textDecoration: "none" }}>
+                                  <TooltipText value={b.mobile || "-"} />
+                                </a>
                               <div>
 
                                 {/* <button className={styles.btnAdvance} onClick={(e) => { e.stopPropagation(); openAdvanceModal(b); }}><FaMoneyBillWave size={20} /></button>
@@ -865,14 +881,20 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                               
                               <div style={{ marginTop: "12px" }}>
                                 <span style={{ fontSize: "13px", color: "#6b7280" }}>{t("parents")}</span><br/>
-                                <strong>{b.parent_name || "-"} - <a href={`tel:${b.parent_mobile}`} style={{ color: "black", textDecoration: "none" }}>{b.parent_mobile || "-"}</a></strong>
+                                <strong>
+                                  <TooltipText value={b.parent_name || "-"} />
+                                  {" - "}
+                                  <a href={`tel:${b.parent_mobile}`} style={{ color: "black", textDecoration: "none" }}>
+                                    <TooltipText value={b.parent_mobile || "-"} />
+                                  </a>
+                                </strong>
                               </div>
 
                               <hr style={{ margin: "16px 0", borderColor: "#f3f4f6" }} />
 
-                              <div className={styles.cardRow}><span>{t("advance")}</span><strong>₹{Number(b.advance_amount || 0).toFixed(2)}</strong></div>
-                              <div className={styles.cardRow}><span>{t("pending")}</span><strong>₹{Number(b.pending_amount || 0).toFixed(2)}</strong></div>
-                              <div className={styles.cardRow}><span>{t("totalPayable")}</span><strong>₹{Number(b.total_payable).toFixed(2)}</strong></div>
+                              <div className={styles.cardRow}><span>{t("advance")}</span><strong><TooltipText value={`₹${Number(b.advance_amount || 0).toFixed(2)}`} /></strong></div>
+                              <div className={styles.cardRow}><span>{t("pending")}</span><strong><TooltipText value={`₹${Number(b.pending_amount || 0).toFixed(2)}`} /></strong></div>
+                              <div className={styles.cardRow}><span>{t("totalPayable")}</span><strong><TooltipText value={`₹${Number(b.total_payable).toFixed(2)}`} /></strong></div>
                               
 
                               <div className={styles.mobileHistory} style={{ marginTop: "16px", background: "#f9fafb", padding: "12px", borderRadius: "8px" }}>
@@ -880,25 +902,26 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                                 {b.history.sort((a, y) => { if(a.year === y.year) return y.month - a.month; return y.year - a.year }).map(h => (
                                   <div key={`${h.user_id}-${h.year}-${h.month}`} style={{ background: "white", padding: "12px", marginBottom: "8px", borderRadius: "6px", border: "1px solid #e5e7eb" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                                      <span style={{ fontSize: "14px", fontWeight: "600" }}>{h.month}/{h.year}</span>
+                                      <span style={{ fontSize: "14px", fontWeight: "600" }}><TooltipText value={`${h.month}/${h.year}`} /></span>
                                       <div style={{ textAlign: "right" }}>
-                                        <span style={{ color: "#111827", fontWeight: "600" }}>₹{getBillAmount(h).toFixed(2)}</span><br/>
-                                        <span style={{ fontSize: "12px", color: h.paid ? "#10b981" : "#6b7280" }}>Paid: ₹{Number(h.paid_amount || 0).toFixed(2)}</span>
+                                        <span style={{ color: "#111827", fontWeight: "600" }}><TooltipText value={`₹${getBillAmount(h).toFixed(2)}`} /></span><br/>
+                                        <span style={{ fontSize: "12px", color: h.paid ? "#10b981" : "#6b7280" }}><TooltipText value={`Paid: ₹${Number(h.paid_amount || 0).toFixed(2)}`} /></span>
                                       </div>
                                     </div>
                                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#6b7280", marginBottom: "8px", alignItems: "flex-end" }}>
-                                      <span>{h.start_date || "-"} {t("to")} {h.end_date || "-"}</span>
+                                      <span><TooltipText value={`${h.start_date || "-"} ${t("to")} ${h.end_date || "-"}`} /></span>
                                       <span
   className={`${styles.statusBadge} ${
     h.paid ? styles.statusPaid : styles.statusUnpaid
   }`}
+  title={h.paid ? "Paid" : "Unpaid"}
 >
   {h.paid ? "Paid" : "Unpaid"}
 </span>
                                     </div>
                                     {h.note && (
                                       <div style={{ fontSize: "12px", color: "#4b5563", marginBottom: "12px", fontStyle: "italic", padding: "8px", background: "#f9fafb", borderRadius: "4px", border: "1px solid #f3f4f6" }}>
-                                        {h.note}
+                                        <TooltipText value={h.note} />
                                       </div>
                                     )}
                                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>

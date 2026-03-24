@@ -7,9 +7,18 @@
 
    Linting and checking validity of types ...
    Creating an optimized production build ...
-uncaughtException [Error: EPERM: operation not permitted, open 'D:\Internship\Shris Tech\Projects\mess-management-frontend\.next\trace'] {
-  errno: -4048,
-  code: 'EPERM',
-  syscall: 'open',
-  path: 'D:\\Internship\\Shris Tech\\Projects\\mess-management-frontend\\.next\\trace'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'D:\Internship\Shris Tech\Projects\mess-management-frontend\.next\cache\webpack\server-production\19.pack_' -> 'D:\Internship\Shris Tech\Projects\mess-management-frontend\.next\cache\webpack\server-production\19.pack'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'D:\Internship\Shris Tech\Projects\mess-management-frontend\.next\cache\webpack\client-production\2.pack_' -> 'D:\Internship\Shris Tech\Projects\mess-management-frontend\.next\cache\webpack\client-production\2.pack'
+ ✓ Compiled successfully
+   Collecting page data ...
+unhandledRejection Error [PageNotFoundError]: Cannot find module for page: /_document
+    at getPagePath (D:\Internship\Shris Tech\Projects\mess-management-frontend\node_modules\next\dist\server\require.js:94:15)
+    at requirePage (D:\Internship\Shris Tech\Projects\mess-management-frontend\node_modules\next\dist\server\require.js:99:22)
+    at D:\Internship\Shris Tech\Projects\mess-management-frontend\node_modules\next\dist\server\load-components.js:72:65
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (D:\Internship\Shris Tech\Projects\mess-management-frontend\node_modules\next\dist\server\load-components.js:71:33)
+    at async Object.hasCustomGetInitialProps (D:\Internship\Shris Tech\Projects\mess-management-frontend\node_modules\next\dist\build\utils.js:1273:24) {
+  type: 'PageNotFoundError',
+  code: 'ENOENT'
 }

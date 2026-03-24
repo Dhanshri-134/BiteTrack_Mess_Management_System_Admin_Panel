@@ -63,6 +63,11 @@ export default function Dashboard() {
     monthly: 0,
   });
   const [foodSearch, setFoodSearch] = useState("");
+  const handleNamedSearchChange = (setter) => (event) => {
+    const { name, value } = event?.target || {};
+    if (!name) return;
+    setter(value);
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -152,7 +157,7 @@ export default function Dashboard() {
       const data = await offlineFetch(`mess-info-${messId}`, async () => {
         if (!token) return console.warn("Session expired! Please login again.");
 
-        const res = await fetch(`${API_BASE}/api/mess/info/`, {
+        const res = await fetch(`${API_BASE}/api/settings/messInfo/`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -222,15 +227,14 @@ const fetchStats = async () => {
         return res.json();
       })) || [];
 
-      // ---------------- PAYMENT HISTORY ----------------
-const paymentHistory =
-  (await offlineFetch(`payments-${messId}`, async () => {
-    const res = await fetch(`${API_BASE}/api/bills/history/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error("payment history fetch failed");
-    return res.json();
-  })) || { users: [] };
+    const expectedPayment =
+      (await offlineFetch(`expected-payment-${messId}`, async () => {
+        const res = await fetch(`${API_BASE}/api/dashboard/expected-payment/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("dashboard/expected-payment failed");
+        return res.json();
+      })) || { expected_amount: 0 };
 
     // ---------------- TODAY ATTENDANCE ----------------
     const todayPresent = attendanceData.filter(
@@ -240,16 +244,7 @@ const paymentHistory =
     const todayAbsent = (usersData.count || 0) - todayPresent;
 
     // ---------------- MONTHLY PAYABLE / COLLECTED ----------------
-    const currentMonth = now.getMonth() + 1;
-    const currentYear = now.getFullYear();
-
-    const monthlyExpected = billsAllData
-      .filter(
-        (b) =>
-          Number(b.month) === currentMonth &&
-          Number(b.year) === currentYear
-      )
-      .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
+    const monthlyExpected = Number(expectedPayment.expected_amount || 0);
 
       
  const revenueRes = await fetch(`${API_BASE}/api/dashboard/collections/`, {
@@ -688,7 +683,7 @@ const absentUsers = foodUsers.filter(
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p>No attendance data</p>
+              <p>{t("noAttendanceData")}</p>
             )}
           </section>
 
@@ -723,7 +718,7 @@ const absentUsers = foodUsers.filter(
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <p>No revenue data</p>
+              <p>{t("noRevenueData")}</p>
             )}
           </section>
 
@@ -868,7 +863,7 @@ setFoodSearch(""); // reset search
                   <strong>{t("email")}:</strong> {mess.email}
                 </p>
                 <p>
-                  <strong>{t("phone")}:</strong> {mess.contact_info}
+                  <strong>{t("phone")}:</strong> {mess.contact_info?.phone || mess.contact_info || t("notAvailable")}
                 </p>
                 <p>
                   <strong>{t("address")}:</strong> {mess.location}
@@ -894,7 +889,7 @@ setFoodSearch(""); // reset search
     <div className={styles.attendanceModal}>
       <div className={styles.modalHeader}>
         <h3>
-          Attendance List ({attendanceModal.date})
+          {t("attendanceList")} ({attendanceModal.date})
         </h3>
         <button onClick={() =>{
           setAttendanceModal({ open: false, date: null, users: [] })
@@ -911,7 +906,7 @@ setFoodSearch(""); // reset search
     }`}
     onClick={() => setAttendanceTab("present")}
   >
-    Present ({attendanceModal.users.length})
+    {t("present")} ({attendanceModal.users.length})
   </button>
 
   <button
@@ -920,19 +915,21 @@ setFoodSearch(""); // reset search
     }`}
     onClick={() => setAttendanceTab("absent")}
   >
-    Absent ({absentUsers.length})
+    {t("absent")} ({absentUsers.length})
   </button>
 </div>
       <input
   type="text"
-  placeholder="Search student..."
+  name="attendanceSearch"
+  autoComplete="on"
+  placeholder={t("searchStudent")}
   value={attendanceSearch}
-  onChange={(e) => setAttendanceSearch(e.target.value)}
+  onChange={handleNamedSearchChange(setAttendanceSearch)}
   className={styles.searchInput}
 />
 
       {filteredAttendanceUsers.length === 0 ? (
-        <p>No students attended</p>
+        <p>{t("noStudentsAttended")}</p>
       ) : (
         <div className={styles.userList}>
           {attendanceTab === "present" ? (
@@ -962,7 +959,9 @@ setFoodSearch(""); // reset search
   <div className={styles.modalOverlay}>
     <div className={styles.attendanceModal}>
       <div className={styles.modalHeader}>
-        <h3>{foodModal.type} Members</h3>
+        <h3>
+          {foodModal.type === "Veg" ? t("veg") : t("nonVeg")} {t("members")}
+        </h3>
         <button
           onClick={() =>
             setFoodModal({ open: false, type: null, users: [] })
@@ -974,13 +973,15 @@ setFoodSearch(""); // reset search
       
  <input
         type="text"
-        placeholder="Search by name or phone..."
+        name="foodSearch"
+        autoComplete="on"
+        placeholder={t("searchByNameOrPhone")}
         value={foodSearch}
-        onChange={(e) => setFoodSearch(e.target.value)}
+        onChange={handleNamedSearchChange(setFoodSearch)}
         className={styles.searchInput}
       />
       {filteredFoodUsers.length === 0 ? (
-        <p>No members found</p>
+        <p>{t("noMembersFound")}</p>
       ) : (
         <div className={styles.userList}>
           {filteredFoodUsers.map((u, i) => (

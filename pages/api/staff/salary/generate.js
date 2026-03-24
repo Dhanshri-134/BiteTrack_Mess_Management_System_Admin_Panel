@@ -19,6 +19,10 @@ export default async function handler(req, res) {
   try {
 
     const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Token required" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const messId = decoded.messId;
@@ -46,8 +50,9 @@ export default async function handler(req, res) {
         `SELECT
             COUNT(*) FILTER (WHERE attendance_type='P') as present_days,
             COUNT(*) FILTER (WHERE attendance_type='A') as absent_days,
+            COUNT(*) FILTER (WHERE attendance_type='L') as leave_days,
             COUNT(*) FILTER (WHERE attendance_type='H') as half_days,
-            COUNT(*) FILTER (WHERE attendance_type='WO') as week_off_days,
+            COUNT(*) FILTER (WHERE attendance_type='OFF') as off_days,
             COUNT(*) FILTER (WHERE is_late=true) as late_days,
             SUM(overtime_amount) as overtime,
             SUM(penalty_amount) as penalty,
@@ -56,7 +61,7 @@ export default async function handler(req, res) {
               CASE attendance_type
                 WHEN 'P' THEN 1
                 WHEN 'H' THEN 0.5
-                WHEN 'WO' THEN 1
+                WHEN 'L' THEN 1
                 ELSE 0
               END
             ),0) as payable_units

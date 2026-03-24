@@ -1,18 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import Layout from "../../components/Layout";
 import styles from "../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { offlineFetch } from "@/lib/offlineFetch";
 import { staffRequest } from "@/lib/staffClient";
-import { ArrowLeft, ArrowRight, CalendarDays, CircleDollarSign, Clock3, UserCheck, UserPlus, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Clock3,
+  UserCheck,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 
 function formatMoney(value) {
-  return `Rs ${Number(value || 0).toFixed(2)}`;
+  return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
 export default function StaffDashboard() {
+  const router = useRouter();
+  const { t } = useLanguage();
   const [stats, setStats] = useState({
     total_staff: 0,
     present_today: 0,
@@ -23,7 +34,6 @@ export default function StaffDashboard() {
   const [salary, setSalary] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { t } = useLanguage();
   useEffect(() => {
     fetchDashboard();
   }, []);
@@ -53,7 +63,7 @@ export default function StaffDashboard() {
       setStaff(staffList || []);
       setSalary(salaryList?.data || []);
     } catch (error) {
-      toast.error("Failed to load staff dashboard");
+      toast.error(t("failedToLoadStaffDashboard"));
     } finally {
       setLoading(false);
     }
@@ -82,34 +92,30 @@ export default function StaffDashboard() {
   }, [salary, staff]);
 
   const cards = [
-    { label: "Active Staff", value: loading ? "..." : insights.activeStaff, icon: <Users size={18} /> },
-    { label: "Present Today", value: loading ? "..." : stats.present_today || 0, icon: <UserCheck size={18} /> },
-    { label: "Late Today", value: loading ? "..." : stats.late_today || 0, icon: <Clock3 size={18} /> },
-    { label: "Overtime Today", value: loading ? "..." : stats.overtime_today || 0, icon: <CalendarDays size={18} /> },
+    { label: t("activeStaff"), value: loading ? "..." : insights.activeStaff, icon: <Users size={18} /> },
+    { label: t("presentToday"), value: loading ? "..." : stats.present_today || 0, icon: <UserCheck size={18} /> },
+    { label: t("lateToday"), value: loading ? "..." : stats.late_today || 0, icon: <Clock3 size={18} /> },
+    { label: t("overtimeToday"), value: loading ? "..." : stats.overtime_today || 0, icon: <CalendarDays size={18} /> },
   ];
 
   return (
-    <Layout title="Staff Dashboard">
+    <Layout title={t("staffDashboard")}>
       <div className={styles.container}>
         <div className={styles.pageStack}>
           <section className={styles.heroPanel}>
-            <p className={styles.heroKicker}>Staff</p>
+            <p className={styles.heroKicker}>{t("staff")}</p>
             <div className={styles.header}>
-
               <h1 className={styles.heroTitle}>{t("dashboard")}</h1>
-              <button
-                className={styles.backBtn}
-                onClick={() => router.back()}
-              >
-                ← Back
+              <button className={styles.backBtn} onClick={() => router.back()}>
+                <ArrowLeft size={16} /> {t("back")}
               </button>
             </div>
             <div className={styles.heroActions}>
               <Link href="/staff/create" className={styles.primaryBtn}>
-                <UserPlus size={18} /> Add Staff
+                <UserPlus size={18} /> {t("addStaff")}
               </Link>
               <Link href="/staff/attendance" className={styles.actionBtn}>
-                <CalendarDays size={18} /> Mark Attendance
+                <CalendarDays size={18} /> {t("markAttendance")}
               </Link>
             </div>
           </section>
@@ -126,43 +132,39 @@ export default function StaffDashboard() {
 
           <section className={styles.insightGrid}>
             <div className={styles.insightCard}>
-              <span>Current Balance</span>
+              <span>{t("currentBalance")}</span>
               <strong>{formatMoney(insights.currentBalance)}</strong>
-              <div className={styles.mutedText}>Combined remaining balance across active staff.</div>
+              {/* <div className={styles.mutedText}>{t("currentBalanceDescription")}</div> */}
             </div>
             <div className={styles.insightCard}>
-              <span>Monthly Payable</span>
+              <span>{t("monthlyPayable")}</span>
               <strong>{formatMoney(insights.totalPayroll)}</strong>
-              <div className={styles.mutedText}>Generated salary outstanding for the current month.</div>
+              {/* <div className={styles.mutedText}>{t("monthlyPayableDescription")}</div> */}
             </div>
             <div className={styles.insightCard}>
-              <span>Pending Salary Rows</span>
+              <span>{t("pendingSalaryRows")}</span>
               <strong>{insights.overduePayroll}</strong>
-              <div className={styles.mutedText}>Salary records not fully paid yet.</div>
+              {/* <div className={styles.mutedText}>{t("pendingSalaryRowsDescription")}</div> */}
             </div>
             <div className={styles.insightCard}>
-              <span>Total Profiles</span>
+              <span>{t("totalProfiles")}</span>
               <strong>{stats.total_staff || 0}</strong>
-              <div className={styles.mutedText}>Staff records scoped to the current mess.</div>
+              {/* <div className={styles.mutedText}>{t("totalProfilesDescription")}</div> */}
             </div>
           </section>
 
           <section className={styles.actionGrid}>
             <Link href="/staff/list" className={styles.actionLinkCard}>
-              <span>Staff Directory</span>
+              <span>{t("staffDirectory")}</span>
               <ArrowRight size={18} />
             </Link>
             <Link href="/staff/attendance-history" className={styles.actionLinkCard}>
-              <span>Attendance History</span>
+              <span>{t("Attendance History")}</span>
               <ArrowRight size={18} />
             </Link>
             <Link href="/staff/salary/history" className={styles.actionLinkCard}>
-              <span>Salary Management</span>
+              <span>{t("salaryManagement")}</span>
               <ArrowRight size={18} />
-            </Link>
-            <Link href="/staff/list" className={styles.actionLinkCard}>
-              <span>Profile Analysis</span>
-              <CircleDollarSign size={18} />
             </Link>
           </section>
         </div>

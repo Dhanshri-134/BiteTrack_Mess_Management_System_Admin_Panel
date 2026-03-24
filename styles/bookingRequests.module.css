@@ -1,149 +1,119 @@
 .container {
   min-height: 100vh;
-  background: #fff; 
-  max-width: 100%;
+  background: #fff;
+  max-width: 1200px;
+  margin: 0 auto;
   overflow-x: hidden;
-  margin-bottom: 1.2rem;
   padding-top: clamp(1.3rem, 4vw, 2.5rem);
-  text-align: center;
-  padding: 5px;
-  margin: 0;
-  border-radius: 12px;
 }
 
-.container h1{
+.container h1 {
   color: #007171;
   font-weight: 700;
   font-size: 1.75rem;
   margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .controls {
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 10px;
   color: #007171;
 }
-.controls label{
+
+.controls label {
   color: #007171;
+  font-weight: 600;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
 }
 
 .table {
   width: 100%;
+  min-width: 900px;
   border-collapse: collapse;
-  margin-top: 10px;
 }
 
-.table th, .table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
+.table th,
+.table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.92rem;
+  vertical-align: middle;
 }
 
-.status {
+.table th {
+  background: #f1f5f9;
+  color: #006161;
+  font-weight: 700;
+}
+
+.emptyRow {
+  text-align: center !important;
+  color: #64748b;
+}
+
+.status,
+.statusBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  padding: 4px 10px;
+  padding: 0.3rem 0.75rem;
   border-radius: 999px;
-
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-transform: capitalize;
   white-space: nowrap;
 }
 
-.statusBadge {
-  position: absolute;
-  top: -8px ;
-  right: 0px;
-  padding: 4px 10px;
-  border-radius: 999px;
-
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-
-  text-transform: capitalize;
-  white-space: nowrap;
-/* margin: auto; */
-  z-index: 2;
-}
-
-/* Pending */
 .pending {
-  background: rgba(245, 159, 11, 0.241);
-  color: #e77e2d;
+  background: rgba(245, 159, 11, 0.18);
+  color: #b45309;
 }
 
-/* Confirmed */
 .confirmed {
-  background: rgba(34, 197, 94, 0.299);
+  background: rgba(34, 197, 94, 0.18);
   color: #15803d;
 }
 
-/* Rejected */
 .rejected {
-  background: rgba(239, 68, 68, 0.286);
+  background: rgba(239, 68, 68, 0.16);
   color: #b91c1c;
 }
 
-/* Completed */
 .completed {
-  background: rgba(59, 131, 246, 0.227);
+  background: rgba(59, 130, 246, 0.16);
   color: #1d4ed8;
-}
-
-.status::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 6px;
-  background: currentColor;
 }
 
 .actions {
   display: flex;
-  gap: 10px;
-  margin-top: 12px;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-/* Base button */
-.actions button {
-  flex: 1;
-  padding: 10px 14px;
+.actions button,
+.cardActions button {
   border: none;
   cursor: pointer;
   border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 700;
   color: white;
-
-  transition: 
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    opacity 0.15s ease;
+  padding: 0.65rem 0.95rem;
 }
 
-/* Hover */
-.actions button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-  opacity: 0.95;
-}
-
-/* Tap / active */
-.actions button:active {
-  transform: scale(0.97);
-  box-shadow: none;
-}
-
-/* Status colors */
 .confirm {
   background: linear-gradient(135deg, #16a34a, #22c55e);
 }
@@ -156,12 +126,11 @@
   background: linear-gradient(135deg, #2563eb, #3b82f6);
 }
 
-@media (max-width: 420px) {
-  .actions {
-    flex-direction: column;
-  }
+.noAction {
+  color: #94a3b8;
+  font-weight: 700;
 }
-/* ===== Responsive Switch ===== */
+
 .desktopOnly {
   display: block;
 }
@@ -174,41 +143,38 @@
   .desktopOnly {
     display: none;
   }
+
   .mobileOnly {
     display: block;
   }
 }
 
-/* ===== Mobile Booking Cards ===== */
 .bookingCard {
   background: #ffffff;
   border-radius: 14px;
   padding: 14px;
   margin-bottom: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   position: relative;
+  border: 1px solid #e5e7eb;
 }
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
 }
 
-.cardRow {
-  display: flex;
-  font-size: 0.95rem;
-  margin-bottom: 6px;
-  color: #007171;
-  justify-content: space-between;
-  align-items: right;
+.userName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
 }
-.cardRow b{
-  font-size: 0.95rem;
-  margin-bottom: 6px;
-  color: #007171;
-  /* justify-content: space-between; */
-  align-items: left;
+
+.subText {
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
 .cardActions {
@@ -216,58 +182,28 @@
   gap: 10px;
   margin-top: 12px;
   flex-wrap: wrap;
-  justify-content:space-between;
-  align-items: center;
 }
 
 .cardActions button {
   flex: 1;
-  align-items:left;
 }
 
-.cardActions {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.cardActions button {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border: none;
-  color: white;
-}
-/* 
-.confirm {
-  background: #16a34a;
-}
-
-.reject {
-  background: #dc2626;
-}
-
-.complete {
-  background: #2563eb;
-} */
-
-.expandBtn{
+.expandBtn {
   background-color: transparent;
   color: #007171;
-  margin-top: 10px;
-  margin-bottom: 0;
-  padding-bottom: 0;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-/* 🔹 Dropdown details wrapper */
+
 .details {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid #e5e7eb;
+  animation: expand 0.25s ease-out;
 }
 
-/* 🔹 GRID LAYOUT */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -275,48 +211,30 @@
   margin-bottom: 12px;
 }
 
-/* 🔹 Each grid cell */
 .grid > div {
   display: flex;
   flex-direction: column;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: #065f5b;
 }
 
-/* 🔹 Label */
+.gridWide {
+  grid-column: 1 / -1;
+}
+
 .grid span {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: #64748b;
   margin-bottom: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.04em;
 }
-@media (max-width: 280px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-.details {
-  animation: expand 0.25s ease-out;
-}
-
-@keyframes expand {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,11 +278,36 @@
   cursor: pointer;
 }
 
-.confirmBtn:hover {
-  opacity: 0.9;
+@keyframes expand {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 420px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardActions {
+    flex-direction: column;
+  }
 }

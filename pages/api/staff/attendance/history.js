@@ -18,6 +18,10 @@ export default async function handler(req, res) {
   try {
 
     const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Token required" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const messId = decoded.messId;
@@ -30,7 +34,11 @@ export default async function handler(req, res) {
         a.attendance_date,
         a.check_in,
         a.check_out,
-        a.attendance_type,
+        CASE
+          WHEN a.attendance_type IN ('WO', 'WEEKLY_OFF') THEN 'OFF'
+          WHEN a.attendance_type = 'H' THEN 'HF'
+          ELSE a.attendance_type
+        END AS attendance_type,
         a.is_late,
         a.late_minutes,
         a.overtime_hours,

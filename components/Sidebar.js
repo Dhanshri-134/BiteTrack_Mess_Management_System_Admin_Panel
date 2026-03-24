@@ -1,21 +1,32 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getLocalDB } from "@/lib/localDB";
-import { BarChart3, Users, ClipboardList, Zap, CreditCard, MessageSquare, BookImageIcon, CalendarDays, LogOutIcon, ChevronDown, ChevronRight, Settings, User
+import {
+  BarChart3,
+  BookImageIcon,
+  ChevronDown,
+  ClipboardList,
+  CompassIcon,
+  CreditCard,
+  LogOutIcon,
+  MessageSquare,
+  Settings,
+  User,
+  Users,
+  Zap,
 } from "lucide-react";
 import styles from "../styles/Sidebar.module.css";
 import HardwareScanner from "./HardwareScanner";
 import { useLanguage } from "../context/LanguageContext";
 import { offlineFetch } from "@/lib/offlineFetch";
-import { API_BASE } from "../lib/api";
-
+import { API_BASE } from "@/lib/api";
 
 function decodeToken(token) {
   if (!token || typeof token !== "string") return null;
   const parts = token.split(".");
   if (parts.length !== 3) return null;
+
   try {
     return JSON.parse(atob(parts[1]));
   } catch {
@@ -23,21 +34,64 @@ function decodeToken(token) {
   }
 }
 
+function normalizePath(path) {
+  if (!path) return "/";
+  const normalized = path.replace(/\/+$/, "");
+  return normalized || "/";
+}
+
+function SidebarSection({
+  title,
+  icon,
+  sectionKey,
+  children,
+  isOpen,
+  isCurrent,
+  onToggle,
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        className={`${styles.sectionHeader} ${
+          isCurrent ? styles.sectionHeaderCurrent : isOpen ? styles.sectionHeaderActive : ""
+        }`}
+        onClick={() => onToggle(sectionKey)}
+      >
+        <span className={styles.sectionTitle}>
+          {icon} {title}
+        </span>
+        <ChevronDown
+          size={18}
+          className={isOpen ? styles.arrowOpen : styles.arrow}
+        />
+      </button>
+
+      <div
+        className={`${styles.sectionBody} ${
+          isOpen ? styles.sectionOpen : styles.sectionClosed
+        }`}
+      >
+        <div className={styles.sectionInner}>{children}</div>
+      </div>
+    </>
+  );
+}
+
 export default function Sidebar({ closeSidebar, isDesktop }) {
   const router = useRouter();
   const { t } = useLanguage();
-  const sectionRefs = useRef({});
   const [messAccess, setMessAccess] = useState(null);
-  const [loadingAccess, setLoadingAccess] = useState(true);
   const [role, setRole] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [openSection, setOpenSection] = useState(null);
 
-  // ✅ ACCORDION STATE (ONLY ONE OPEN)
-  const [openSection, setOpenSection] = useState("management");
-
-  const toggle = (key) => {
-    setOpenSection((prev) => (prev === key ? null : key));
+  const currentPath = normalizePath(router.pathname);
+  const handleClose = () => {
+    if (typeof closeSidebar === "function") {
+      closeSidebar();
+    }
   };
 
   useEffect(() => {
@@ -54,21 +108,18 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
     const fetchAccess = async () => {
       try {
         const data = await offlineFetch("mess-access", async () => {
-          const res = await fetch(
-            `${API_BASE}/api/mess/access/`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const res = await fetch(`${API_BASE}/api/mess/access/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
           if (!res.ok) throw new Error("Failed to fetch access");
           return res.json();
         });
 
         setMessAccess(data || {});
-      } catch (err) {
-        console.error("Access unavailable offline");
+      } catch (error) {
+        console.error("Access unavailable offline", error);
         setMessAccess({});
-      } finally {
-        setLoadingAccess(false);
       }
     };
 
@@ -82,17 +133,16 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
     const fetchProfile = async () => {
       try {
         const data = await offlineFetch("mess-profile", async () => {
-          const res = await fetch(
-            `${API_BASE}/api/mess/profile/`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const res = await fetch(`${API_BASE}/api/mess/profile/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           if (!res.ok) throw new Error("Failed to fetch profile");
           return res.json();
         });
 
         if (data) setProfile(data);
-      } catch (err) {
-        console.error("Profile unavailable offline");
+      } catch (error) {
+        console.error("Profile unavailable offline", error);
       } finally {
         setLoadingProfile(false);
       }
@@ -101,6 +151,76 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
     fetchProfile();
   }, []);
 
+  const ownerSections = useMemo(() => {
+    const sections = [
+      {
+        key: "management",
+        title: t("management"),
+        icon: <Users size={22} />,
+        items: [
+          { path: "/attendance/", label: t("attendance") },
+          { path: "/users/", label: t("users") },
+          { path: "/menu/", label: t("menu") },
+          ...(messAccess?.leaves === false
+            ? []
+            : [{ path: "/requests/leave/", label: t("leave") }]),
+        ],
+      },
+      {
+        key: "billing",
+        title: t("billing"),
+        icon: <CreditCard size={22} />,
+        items: [
+          { path: "/billing/", label: t("userBilling") },
+          { path: "/BillingMess/", label: t("billingMess") },
+        ],
+      },
+      {
+        key: "requests",
+        title: t("requests"),
+        icon: <BookImageIcon size={22} />,
+        items: [
+          { path: "/requests/cash-payments/", label: t("payments") },
+          { path: "/requests/bookingRequests/", label: t("bookingRequests") },
+          { path: "/requests/DeleteAccRequest/", label: t("deleteAccount") },
+          { path: "/suggestions/", label: t("suggestions") },
+        ],
+      },
+      {
+        key: "inventory",
+        title: t("inventory"),
+        icon: <CompassIcon size={22} />,
+        items: [
+          { path: "/inventory/dashboard/", label: t("dashboard") },
+          { path: "/inventory/categories/", label: t("catalog") },
+          { path: "/inventory/items/", label: t("items") },
+          { path: "/inventory/vendors/", label: t("vendor") },
+          { path: "/inventory/stock-ledger/", label: t("stock") },
+          { path: "/inventory/purchase-history/", label: t("Purchases") },
+          { path: "/inventory/usage/", label: t("usage") },
+        ],
+      },
+    ];
+
+    return sections;
+  }, [messAccess?.leaves, t]);
+
+  useEffect(() => {
+    if (role === "STAFF") {
+      setOpenSection(null);
+      return;
+    }
+
+    const matchingSection = ownerSections.find((section) =>
+      section.items.some((item) => normalizePath(item.path) === currentPath)
+    );
+
+    setOpenSection(matchingSection?.key || null);
+  }, [currentPath, ownerSections, role]);
+
+  const isActivePath = (path) => normalizePath(path) === currentPath;
+  const sectionHasCurrentRoute = (section) =>
+    section.items.some((item) => isActivePath(item.path));
 
   const handleLogout = async () => {
     localStorage.clear();
@@ -112,238 +232,102 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
     router.replace("/login/");
   };
 
-
-  const Section = ({ title, icon, openKey, children }) => {
-    const isOpen = openSection === openKey;
-
-    useEffect(() => {
-      if (isOpen && sectionRefs.current[openKey]) {
-        sectionRefs.current[openKey].scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }
-    }, [isOpen, openKey]);
-
-    return (
-      <>
-        <button
-          ref={(el) => (sectionRefs.current[openKey] = el)}
-          className={`${styles.sectionHeader} ${isOpen ? styles.sectionHeaderActive : ""
-            }`}
-          onClick={() => toggle(openKey)}
-        >
-          <span className={styles.sectionTitle}>
-            {icon} {title}
-          </span>
-          <ChevronDown
-            size={18}
-            className={isOpen ? styles.arrowOpen : styles.arrow}
+  const renderProfile = () => (
+    <div className={styles.profileBar}>
+      <div className={styles.avatarWrapper}>
+        {loadingProfile ? (
+          <div className={styles.avatarSkeleton} />
+        ) : (
+          <img
+            src={profile?.owner_photo || "/Assets/logo_Bite_Track.png"}
+            alt={t("profile")}
+            className={styles.avatar}
+            onError={(event) => {
+              event.target.src = "/Assets/logo_Bite_Track.png";
+            }}
           />
-        </button>
-
-        <div
-          className={`${styles.sectionBody} ${isOpen ? styles.sectionOpen : styles.sectionClosed
-            }`}
-        >
-          <div className={styles.sectionInner}>
-            {children}
-          </div>
-        </div>
-
-      </>
-    );
-  };
-
-
-  return isDesktop ? (
-
-    <aside className={styles.sidebar}>
-      <div
-        className={styles.profileBar}
-      >
-        <div className={styles.avatarWrapper}>
-          {loadingProfile ? (
-            <div className={styles.avatarSkeleton} />
-          ) : (
-            <img
-              src={profile?.owner_photo || "/Assets/logo_Bite_Track.png"}
-
-              alt="Profile"
-              className={styles.avatar}
-              onError={(e) => {
-                e.target.src = "/Assets/logo_Bite_Track.png";
-              }}
-            />
-          )}
-        </div>
-
-        <div className={styles.profileInfo}>
-          <p className={styles.profileName}>
-            {profile?.name || "My Mess"}
-          </p>
-          <span className={styles.profileRole}>
-            {profile?.secret_key}
-            <br></br>
-            {role === "STAFF" ? t("staff") : t("owner")}
-          </span>
-        </div>
+        )}
       </div>
 
-      {/* NAV */}
+      <div className={styles.profileInfo}>
+        <p className={styles.profileName}>{profile?.name || t("myMess")}</p>
+        <span className={styles.profileRole}>
+          {profile?.secret_key}
+          <br />
+          {role === "STAFF" ? t("staff") : t("owner")}
+        </span>
+      </div>
+    </div>
+  );
+
+  const renderLink = (path, icon, label, extraClass = "") => (
+    <Link
+      key={path}
+      href={path}
+      onClick={handleClose}
+      className={`${styles.navLink} ${isActivePath(path) ? styles.navLinkActive : ""} ${extraClass}`.trim()}
+    >
+      {icon} {label}
+    </Link>
+  );
+
+  const renderOwnerNav = () => (
+    <>
+      {ownerSections.map((section) => {
+        const sectionIsCurrent = sectionHasCurrentRoute(section);
+        const sectionIsOpen = openSection === section.key;
+
+        return (
+          <SidebarSection
+            key={section.key}
+            title={section.title}
+            icon={section.icon}
+            sectionKey={section.key}
+            isOpen={sectionIsOpen}
+            isCurrent={sectionIsCurrent}
+            onToggle={(key) => setOpenSection((prev) => (prev === key ? null : key))}
+          >
+            {section.items.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                onClick={handleClose}
+                className={`${styles.sectionLink} ${
+                  isActivePath(item.path) ? styles.sectionLinkActive : ""
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </SidebarSection>
+        );
+      })}
+
+      {messAccess?.staff !== false
+        ? renderLink("/staff/dashboard/", <User size={20} />, t("staff"))
+        : null}
+
+      {renderLink("/settings/", <Settings size={20} />, t("mess_settings"))}
+    </>
+  );
+
+  const renderStaffNav = () => (
+    <>
+      {renderLink("/attendance/", <ClipboardList size={20} />, t("attendance"))}
+      {renderLink("/quickSettings/", <Zap size={20} />, t("quickActions"))}
+      {renderLink("/menu/", <BookImageIcon size={20} />, t("menu"))}
+      {renderLink("/suggestions/", <MessageSquare size={20} />, t("suggestions"))}
+    </>
+  );
+
+  const renderContent = () => (
+    <>
+      {renderProfile()}
+
       <nav className={styles.nav}>
-        {/* COMMON */}
-        <Link href="/dashboard/" onClick={closeSidebar}>
-          <BarChart3 /> {t("dashboard")}
-        </Link>
+        {renderLink("/dashboard/", <BarChart3 size={20} />, t("dashboard"))}
+        {role === "STAFF" ? renderStaffNav() : renderOwnerNav()}
 
-
-
-        {role === "STAFF" && (
-          <>
-            <Link href="/menu/" onClick={closeSidebar}>
-              <BookImageIcon /> {t("menu")}
-            </Link>
-
-            <Link href="/suggestions/" onClick={closeSidebar}>
-              <MessageSquare /> {t("suggestions")}
-            </Link>
-          </>
-        )}
-
-
-        {/* OWNER */}
-        {role !== "STAFF" && (
-          <>
-            <Section
-              title={t("management")}
-              icon={<Users size={22} />}
-              openKey="management"
-            >
-
-        <Link href="/attendance/" onClick={closeSidebar}>
-          {t("attendance")}
-        </Link>
-              <Link href="/users/" onClick={closeSidebar}>
-                {t("users")}
-              </Link>
-              <Link href="/menu/" onClick={closeSidebar}>
-                {t("menu")}
-              </Link>
-              {messAccess?.leaves !== false && (
-                <Link href="/requests/leave/" onClick={closeSidebar}>
-                  {t("leaves")}
-                </Link>
-              )}
-            </Section>
-
-            <Section
-              title={t("billing")}
-              icon={<CreditCard size={22} />}
-              openKey="billing"
-            >
-              <Link href="/billing/" onClick={closeSidebar}>
-                {t("userBilling")}
-              </Link>
-              <Link href="/BillingMess/" onClick={closeSidebar}>
-                {t("billingMess")}
-              </Link>
-            </Section>
-
-            <Section
-              title={t("requests")}
-              icon={<BookImageIcon size={22} />}
-              openKey="requests"
-            >
-              <Link href="/requests/cash-payments/" onClick={closeSidebar}>
-                {t("payments")}
-              </Link>
-              <Link href="/requests/bookingRequests/" onClick={closeSidebar}>
-                {t("bookingRequests")}
-              </Link>
-              <Link href="/requests/DeleteAccRequest/" onClick={closeSidebar}>
-                {t("deleteAccount")}
-              </Link>
-            <Link href="/suggestions/" onClick={closeSidebar}>
-             {t("suggestions")}
-            </Link>
-            </Section>
-
-            
-                          
-
-  {messAccess?.staff !== false && (
-                <Section
-                title={t("staff")}
-                icon={<User size={22} />}
-                openKey="staff">
-                 <Link href="/staff/dashboard/" onClick={closeSidebar}>
-                  {t("staffDashboard")}
-                </Link>
-
-                </Section>
-               )}
-
-               {messAccess?.staff !== false && (
-                <Section
-                title={t("inventory")}
-                icon={<User size={22} />}
-                openKey="inventory">
-                 <Link href="/inventory/dashboard/" onClick={closeSidebar}>
-                  {t("dashboard")}
-                </Link>
-
-                <Link href="/inventory/items/" onClick={closeSidebar}>
-                  {t("Items")}
-                </Link>
-
-                <Link href="/inventory/categories/" onClick={closeSidebar}>
-                  {t("categories")}
-                </Link>
-
-                <Link href="/inventory/vendors/" onClick={closeSidebar}>
-                  {t("vendors")}
-                </Link>
-
-                
-                <Link href="/inventory/add-purchases/">
-                  {t("addpurchases")}
-                </Link>
-                <Link href="/inventory/purchase-history/">
-                  {t("purchaseHistory")}
-                </Link>
-                <Link href="/inventory/usage/">
-                  {t("usage")}
-                </Link>
-                
-                <Link href="/inventory/stock-ledger/">
-                  {t("stockLedger")}
-                </Link>
-                
-                </Section>
-               )}
-
-            <Section
-              title={t("settings")}
-              icon={<BookImageIcon size={22} />}
-              openKey="settings"
-            >
-
-              <Link href="/settings/" onClick={closeSidebar}>
-                {t("mess_settings")}
-              </Link>
-              <Link href="/settings/app_settings" className={styles.item}>
-                {t("appSettings")}
-
-              </Link>
-
-            </Section>
-          </>
-        )}
-
-
-
-        {/* FOOTER */}
         <div className={styles.footer}>
           <div className={styles.logoutWrapper}>
             <button className={styles.logoutBtn} onClick={handleLogout}>
@@ -351,227 +335,26 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
             </button>
           </div>
 
-          {role !== "STAFF" && <HardwareScanner />}
+          {role !== "STAFF" ? <HardwareScanner /> : null}
 
           <p className={styles.messageBanner}>
-            BiteTrack
-            <br></br> Powered By Shris Tech
+            {t("biteTrack")}
+            <br />
+            {t("poweredByShrisTech")}
           </p>
         </div>
       </nav>
-    </aside>
-  ) : (
-    <div className={styles.overlay} onClick={closeSidebar}>
-      <aside className={styles.sidebar} onClick={(e) => e.stopPropagation()}>
-        {/* PROFILE BAR */}
+    </>
+  );
 
-        <div
-          className={styles.profileBar}
-        >
-          <div className={styles.avatarWrapper}>
-            {loadingProfile ? (
-              <div className={styles.avatarSkeleton} />
-            ) : (
-              <img
-                src={profile?.owner_photo || "/Assets/logo_Bite_Track.png"}
+  if (isDesktop) {
+    return <aside className={styles.sidebar}>{renderContent()}</aside>;
+  }
 
-                alt="Profile"
-                className={styles.avatar}
-                onError={(e) => {
-                  e.target.src = "/Assets/logo_Bite_Track.png";
-                }}
-              />
-            )}
-          </div>
-
-          <div className={styles.profileInfo}>
-            <p className={styles.profileName}>
-              {profile?.name || "My Mess"}
-            </p>
-            <span className={styles.profileRole}>
-              {profile?.secret_key}
-              <br></br>
-              {role === "STAFF" ? t("staff") : t("owner")}
-            </span>
-          </div>
-        </div>
-
-        {/* NAV */}
-        <nav className={styles.nav}>
-          {/* COMMON */}
-          <Link href="/dashboard/" onClick={closeSidebar}>
-            <BarChart3 /> {t("dashboard")}
-          </Link>
-
-          {/* STAFF */}
-          {/* STAFF ACCESS */}
-          {role === "STAFF" && (
-            <>
-
-              <Link href="/attendance/" onClick={closeSidebar}>
-                <ClipboardList /> {t("attendance")}
-              </Link>
-
-              <Link href="/quickSettings/" onClick={closeSidebar}>
-                <Zap /> {t("quickActions")}
-              </Link>
-
-              <Link href="/menu/" onClick={closeSidebar}>
-                <BookImageIcon /> {t("menu")}
-              </Link>
-
-              <Link href="/suggestions/" onClick={closeSidebar}>
-                <MessageSquare /> {t("suggestions")}
-              </Link>
-            </>
-          )}
-
-
-          {/* OWNER */}
-          {role !== "STAFF" && (
-            <>
-              <Section
-                title={t("management")}
-                icon={<Users size={22} />}
-                openKey="management"
-              >
-                <Link href="/users/" onClick={closeSidebar}>
-                  {t("users")}
-                </Link>
-                <Link href="/menu/" onClick={closeSidebar}>
-                  {t("menu")}
-                </Link>
-                {messAccess?.leaves !== false && (
-                  <Link href="/requests/leave/" onClick={closeSidebar}>
-                    {t("leaves")}
-                  </Link>
-                )}
-              </Section>
-
-              <Section
-                title={t("billing")}
-                icon={<CreditCard size={22} />}
-                openKey="billing"
-              >
-                <Link href="/billing/" onClick={closeSidebar}>
-                  {t("userBilling")}
-                </Link>
-                <Link href="/BillingMess/" onClick={closeSidebar}>
-                  {t("billingMess")}
-                </Link>
-              </Section>
-
-              <Section
-                title={t("requests")}
-                icon={<BookImageIcon size={22} />}
-                openKey="requests"
-              >
-                <Link href="/requests/cash-payments/" onClick={closeSidebar}>
-                  {t("payments")}
-                </Link>
-                <Link href="/requests/bookingRequests/" onClick={closeSidebar}>
-                  {t("bookingRequests")}
-                </Link>
-                <Link href="/requests/DeleteAccRequest/" onClick={closeSidebar}>
-                  {t("deleteAccount")}
-                </Link>
-              <Link href="/suggestions/" onClick={closeSidebar}>
-                {t("suggestions")}
-              </Link>
-              </Section>
-
-
-              {messAccess?.staff !== false && (
-                <Section
-                title={t("staff")}
-                icon={<User size={22} />}
-                openKey="staff">
-                 <Link href="/staff/dashboard/" onClick={closeSidebar}>
-                  {t("staffDashboard")}
-                </Link>
-
-                <Link href="/staff/list/" onClick={closeSidebar}>
-                  {t("staffList")}
-                </Link>
-
-                <Link href="/staff/attendance/" onClick={closeSidebar}>
-                  {t("staffAttendance")}
-                </Link>
-
-                <Link href="/staff/attendance-history/" onClick={closeSidebar}>
-                  {t("attendanceHistory")}
-                </Link>
-
-                
-                <Link href="/staff/salary/">
-                  Salary
-                </Link>
-                </Section>
-               )}
-              {messAccess?.staff !== false && (
-                <Section
-                title={t("inventory")}
-                icon={<User size={22} />}
-                openKey="inventory">
-                 <Link href="/inventory/dashboard/" onClick={closeSidebar}>
-                  {t("dashboard")}
-                </Link>
-
-                <Link href="/inventory/items/" onClick={closeSidebar}>
-                  {t("Items")}
-                </Link>
-
-                <Link href="/inventory/categories/" onClick={closeSidebar}>
-                  {t("categories")}
-                </Link>
-
-                <Link href="/inventory/vendors/" onClick={closeSidebar}>
-                  {t("vendors")}
-                </Link>
-
-                
-                <Link href="/inventory/add-purchases/">
-                  {t("addpurchases")}
-                </Link>
-                <Link href="/inventory/purchase-history/">
-                  {t("purchaseHistory")}
-                </Link>
-                <Link href="/inventory/usage/">
-                  {t("usage")}
-                </Link>
-                
-                <Link href="/inventory/stock-ledger/">
-                  {t("stockLedger")}
-                </Link>
-                
-                </Section>
-               )}
-
-
-              <Link href="/settings/" onClick={closeSidebar}>
-                <Settings /> {t("mess_settings")}
-              </Link>
-            </>
-          )}
-
-
-
-          {/* FOOTER */}
-          <div className={styles.footer}>
-            <div className={styles.logoutWrapper}>
-              <button className={styles.logoutBtn} onClick={handleLogout}>
-                <LogOutIcon size={18} /> {t("logout")}
-              </button>
-            </div>
-
-            {role !== "STAFF" && <HardwareScanner />}
-
-            <p className={styles.messageBanner}>
-              BiteTrack
-              <br></br> Powered By Shris Tech
-            </p>
-          </div>
-        </nav>
+  return (
+    <div className={styles.overlay} onClick={handleClose}>
+      <aside className={styles.sidebar} onClick={(event) => event.stopPropagation()}>
+        {renderContent()}
       </aside>
     </div>
   );

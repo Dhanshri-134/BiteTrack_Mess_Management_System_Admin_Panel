@@ -48,6 +48,7 @@ export default async function handler(req, res) {
         `
         SELECT
           name,
+          email,
           per_day_rate,
           stamp_image,
           privacy_policy,

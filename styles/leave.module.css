@@ -1,34 +1,24 @@
-/* ===============================
-   BASE LAYOUT
-================================ */
-
 .container {
-  /* padding: 2rem; */
-  background: #f9fafb;
+  background: #f8fafc;
   min-height: 100vh;
 }
-
 
 .main {
   flex: 1;
   padding-top: clamp(1rem, 4vw, 2rem);
-  background-color: #F8FAFC;
-  max-width: 100%;
+  background-color: #f8fafc;
+  max-width: 1200px;
+  margin: 0 auto;
   overflow-x: hidden;
 }
 
 .title {
-  /* padding: 1.2rem; */
   font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin: 0 0 1.5rem;
   color: #007170;
   text-align: center;
 }
-
-/* ===============================
-   TABS
-================================ */
 
 .tabs {
   display: flex;
@@ -41,162 +31,216 @@
   background: #e5e7eb;
   color: #374151;
   border: none;
-  padding: 0.6rem 1.25rem;
+  padding: 0.7rem 1.25rem;
   border-radius: 10px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s ease;
-  z-index: 2;
 }
 
 .tabBtn:hover {
-  background: #017171;
+  background: #d1d5db;
 }
 
-.active, .active:hover {
+.active,
+.active:hover {
   background: #017171;
   color: #ffffff;
 }
 
-/* ===============================
-   TABLE CONTAINER (DESKTOP)
-================================ */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filtersShell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.filterToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f766e;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filterToggle span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filterBar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid #dbe5ef;
+  background: #ffffff;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.filterField span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+.input,
+.searchInput {
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid #dbe5ef;
+  background: #ffffff;
+  font-size: 0.92rem;
+  color: #0f172a;
+}
+
+.searchInput:focus,
+.input:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.dateInput {
+  min-height: 44px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.checkboxField {
+  justify-content: flex-end;
+}
+
+.checkboxField input {
+  width: 18px;
+  height: 18px;
+  accent-color: #007170;
+}
 
 .tableContainer {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
   overflow-x: auto;
-  max-height: 70vh;
-  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  min-width: 760px;
 }
 
 .table th,
 .table td {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
+  font-size: 0.92rem;
+  vertical-align: middle;
 }
 
 .table th {
-  background: #f3f4f6;
-  font-weight: 600;
+  background: #f1f5f9;
+  font-weight: 700;
   color: #006161;
 }
 
-/* ===============================
-   STATUS BADGES
-================================ */
+.actionsCell {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.approved,
+.rejected,
+.pending {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
 
 .approved {
   background: #dcfce7;
   color: #166534;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 600;
 }
 
 .rejected {
   background: #fee2e2;
   color: #b91c1c;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 600;
 }
 
 .pending {
   background: #fff7ed;
   color: #d97706;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 600;
 }
 
-/* ===============================
-   ACTION BUTTONS
-================================ */
+.approveBtn,
+.rejectBtn {
+  border: none;
+  color: #ffffff;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
 
 .approveBtn {
   background: #16a34a;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.85rem;
-  margin-right: 6px;
 }
 
-.approveBtn:hover {
+.approveBtn:hover:not(:disabled) {
   background: #15803d;
 }
 
 .rejectBtn {
   background: #dc2626;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.85rem;
 }
 
-.rejectBtn:hover {
+.rejectBtn:hover:not(:disabled) {
   background: #b91c1c;
 }
 
-/* ===============================
-   EMPTY STATE
-================================ */
+.approveBtn:disabled,
+.rejectBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
 .emptyState {
   text-align: center;
-  padding: 2rem;
-  color: #6b7280;
-}
-
-/* ===============================
-   MEMBERS SECTION
-================================ */
-
-.subTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 1.5rem 0 1rem;
-  color: #1f2937;
-}
-
-.tableWrapper {
-  max-height: 280px;
-  overflow-y: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  padding: 1.5rem;
+  color: #64748b;
   background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
 }
-
-/* Sticky header */
-.stickyTable {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.stickyTable thead th {
-  position: sticky;
-  top: 0;
-  background: #f3f4f6;
-  z-index: 5;
-}
-
-/* ===============================
-   MOBILE STACKED CARDS
-================================ */
 
 .mobileList {
   display: none;
@@ -205,51 +249,109 @@
 .mobileCard {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 0.95rem;
   margin-bottom: 12px;
-  text-align: left;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
 }
 
 .mobileCard p {
-  margin: 4px 0;
-  font-size: 0.85rem;
-  color: #007171;
+  margin: 0 0 0.55rem;
+  font-size: 0.9rem;
+  color: #0f172a;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 0.75rem;
+  align-items: flex-start;
 }
 
-.mobileCard p .header {
-  margin: 4px 0;
-  font-size: 0.85rem;
-  color: #015151;
-  text-align: left!important;
+.mobileCard p:last-child {
+  margin-bottom: 0;
+}
+
+.header {
+  font-size: 0.8rem;
+  color: #0f766e;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .mobileActions {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
-  justify-content: center;   
-  align-items: center;
+  margin-top: 12px;
 }
 
-/* ===============================
-   RESPONSIVE RULES
-================================ */
+.mobileActions button {
+  flex: 1;
+}
+
+.groupHeader {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.groupHeaderContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.groupHeaderContent p {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.groupHeaderContent strong {
+  color: #0f766e;
+  margin-right: 0.35rem;
+}
+
+.expandIcon {
+  color: #0f766e;
+  flex-shrink: 0;
+}
+
+.groupBody {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.leaveItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.leaveItem p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.leaveDivider {
+  border: none;
+  border-top: 1px dashed #cbd5e1;
+  margin: 0.25rem 0 0;
+}
 
 @media (max-width: 768px) {
-  .table,
-  .tableWrapper {
+  .tableContainer {
     display: none;
   }
 
   .mobileList {
-    display: flex;
-    flex-direction: column;
+    display: block;
   }
 
   .tabs {
@@ -261,90 +363,15 @@
     text-align: center;
   }
 
-  .table td {
-  padding: 0.75rem 1rem;
-  text-align: right;
-  border-bottom: 1px solid #e5e7eb;
-}
-}
+  .filterBar {
+    grid-template-columns: 1fr;
+  }
 
+  .filterToggle {
+    width: 100%;
+  }
 
-.filterBar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.select {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #E2E8F0;
-}
-
-.check{
-  display: flex;
-  flex-direction: row;
-}
-.check input{
-  width: 25px;
-}
-/* .checkboxLabel {
-  display: flex;
-  flex-direction: row;
-  /* align-items: center; */
-  /* justify-content: space-between; */
-  /* gap: 6px; 
-  font-size: 14px;
-  /* width: 100%; 
-}*/
-.check span{
-  width: 200px;
-} 
-.container label {
-  width: 100%;
-}
-.searchInput {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #E2E8F0;
-}
-
-.groupHeader {
-  /* display: flex; */
-  justify-content: space-between;
-  cursor: pointer;
-}
-
-.groupBody {
-  margin-top: 10px;
-}
-
-.groupItem {
-  margin-bottom: 10px;
-}
-
-.groupHeader {
-  cursor: pointer;
-  position: relative;
-}
-
-.expandIcon {
-
-}
-
-.groupBody {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #E2E8F0;
-}
-
-.leaveItem {
-  margin-bottom: 10px;
-}
-
-.leaveDivider {
-  border: none;
-  border-top: 1px dashed #E2E8F0;
-  margin-top: 8px;
+  .mobileActions {
+    flex-direction: row;
+  }
 }

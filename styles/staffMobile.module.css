@@ -117,7 +117,7 @@
 
 .actionGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
@@ -377,8 +377,7 @@
   background-color: #009393;
   padding: 0.25rem 0.5rem;
   border-radius: 18px;
-
-  
+  width:fit-content
 }
 
 .monthSwitcher {
@@ -518,7 +517,7 @@
 .tlRow {
   display: flex;
   justify-content: space-between;
-  padding: 0.8rem 1rem;
+  padding: 0.2rem 0.5rem;
   border-bottom: 1px solid #f3f4f6;
 }
 
@@ -620,9 +619,6 @@
   margin-bottom: 1.5rem;
 }
 
-.formGroup {
-  margin-bottom: 1.2rem;
-}
 
 .formGroup label {
   display: block;
@@ -1143,8 +1139,9 @@
 }
 
 .formGridCompact {
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.8rem;
 }
 
@@ -1194,15 +1191,22 @@
 
   .formGridCompact,
   .paymentSummaryGrid,
-  .insightGrid,
-  .actionGrid {
-    grid-template-columns: 1fr;
+  .insightGrid
+ {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
+  .actionGrid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
   .formGroupWide,
   .summaryBoxWide {
     grid-column: span 1;
   }
+
+  .avatar{
+    display: none;
+  }
+ 
 }
 
 
@@ -1225,7 +1229,7 @@
   text-decoration: none;
   font-size: 0.9rem;
   display: flex;
-  margin-right:0px !important;
+  /* margin-right:0px !important; */
   margin:auto;
   align-items: center;
   justify-content: center;

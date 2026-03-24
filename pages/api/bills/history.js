@@ -34,6 +34,7 @@ export default async function handler(req, res) {
           u.email,
           (
             SELECT jsonb_build_object(
+              'id', ph.id,
               'payment_date', to_char(ph.payment_date, 'YYYY-MM-DD'),
               'amount', ph.amount,
               'payment_type', ph.payment_type,
@@ -41,6 +42,8 @@ export default async function handler(req, res) {
               'transaction_id', ph.transaction_id,
               'billing_start_date', ph.billing_start_date,
               'billing_end_date', ph.billing_end_date,
+              'leave_days', ph.leave_days,
+              'note', ph.note,
               'receipt_pdf_url',ph.receipt_pdf_url
             )
             FROM payment_history ph

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import styles from "../styles/billing.module.css";
 import toast from "react-hot-toast";
 import { useLanguage } from "../context/LanguageContext";
 import { ChevronDown } from "lucide-react";
 import { offlineFetch } from "@/lib/offlineFetch";
 import { Download, Eye } from "lucide-react";
+import { API_BASE } from "../lib/api";
 
 import GlobalLoader from "../components/GlobalLoader";
 
@@ -30,10 +31,9 @@ export default function PaymentHistory({ token }) {
 
                 const data =
                     (await offlineFetch("payment-history-users", async () => {
-                        const res = await fetch(
-                            "https://bite-track-mess-management-system-a.vercel.app/api/bills/history/",
-                            { headers: authHeaders }
-                        );
+                        const res = await fetch(`${API_BASE}/api/bills/history/`, {
+                            headers: authHeaders,
+                        });
                         if (!res.ok) throw new Error("history users fetch failed");
                         return res.json();
                     })) ?? { users: [] };
@@ -62,10 +62,9 @@ export default function PaymentHistory({ token }) {
 
             const data =
                 (await offlineFetch(`payment-history-${userId}`, async () => {
-                    const res = await fetch(
-                        `https://bite-track-mess-management-system-a.vercel.app/api/bills/history/?user_id=${userId}`,
-                        { headers: authHeaders }
-                    );
+                    const res = await fetch(`${API_BASE}/api/bills/history/?user_id=${userId}`, {
+                        headers: authHeaders,
+                    });
                     if (!res.ok) throw new Error("history fetch failed");
                     return res.json();
                 })) ?? { history: [] };
@@ -126,6 +125,7 @@ export default function PaymentHistory({ token }) {
                 tabIndex={0}
                 onMouseEnter={showTooltip}
                 onFocus={showTooltip}
+                onClick={showTooltip}
                 onMouseLeave={() => setPos(p => ({ ...p, show: false }))}
                 onBlur={() => setPos(p => ({ ...p, show: false }))}
             >
@@ -219,10 +219,12 @@ export default function PaymentHistory({ token }) {
                         {filteredUsers.map(u => {
                             const p = u.latest_payment;
                             if (!p) return null;
+                            const expandedPayments =
+                                historyMap[u.id]?.length ? historyMap[u.id] : [p];
 
                             return (
-                                <table>
-                                    <tr key={u.id}>
+                                <Fragment key={u.id}>
+                                    <tr>
                                         <td>{u.name}</td>
                                         <td>{u.email}</td>
                                         <td>{p.payment_date}</td>
@@ -252,7 +254,7 @@ export default function PaymentHistory({ token }) {
                                                     }
                                                 }}
                                             >
-                                                {t("history")}
+                                               
                                                 <span
                                                     style={{
                                                         display: "inline-block",
@@ -260,7 +262,7 @@ export default function PaymentHistory({ token }) {
                                                         transition: "transform 0.2s ease",
                                                     }}
                                                 >
-                                                    <ChevronDown />
+                                                    <ChevronDown size={16}/>
                                                 </span>
                                             </button>
 
@@ -276,7 +278,7 @@ export default function PaymentHistory({ token }) {
                                                         {t("paymentHistory")}
                                                     </div>
 
-                                                    {historyMap[u.id]?.slice(1).map(h => (
+                                                    {expandedPayments.map(h => (
                                                         <div key={h.id} className={styles.historyItem}>
                                                             <div className={styles.historyLabel}>{t("date")}</div>
                                                             <div className={styles.historyValue}>{h.payment_date}</div>
@@ -340,7 +342,7 @@ export default function PaymentHistory({ token }) {
 
                                         </tr>
                                     )}
-                                </table>
+                                </Fragment>
                             );
                         })}
                     </tbody>
@@ -353,6 +355,8 @@ export default function PaymentHistory({ token }) {
                 {filteredUsers.map(u => {
                     const p = u.latest_payment;
                     if (!p) return null;
+                    const expandedPayments =
+                        historyMap[u.id]?.length ? historyMap[u.id] : [p];
 
 
                     return (
@@ -455,7 +459,7 @@ export default function PaymentHistory({ token }) {
                                         {t("paymentHistory")}
                                     </div>
 
-                                    {historyMap[u.id]?.slice(1).map(h => (
+                                    {expandedPayments.slice(1).map(h => (
                                         <div key={h.id} className={styles.mobileHistoryItem}>
                                             <div className={styles.mobilerow}><span>{t("date")} </span> {h.payment_date} </div>
                                             <div className={styles.mobilerow}><span>{t("amount")} </span>  ₹{Number(h.amount).toFixed(2)}</div>
