@@ -175,6 +175,9 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           { path: "/BillingMess/", label: t("billingMess") },
         ],
       },
+       ...(messAccess?.inventory === false
+      ? []
+      : [
       {
         key: "requests",
         title: t("requests"),
@@ -185,7 +188,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           { path: "/requests/DeleteAccRequest/", label: t("deleteAccount") },
           { path: "/suggestions/", label: t("suggestions") },
         ],
-      },
+      }]),
       {
         key: "inventory",
         title: t("inventory"),
