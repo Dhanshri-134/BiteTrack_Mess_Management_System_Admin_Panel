@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 

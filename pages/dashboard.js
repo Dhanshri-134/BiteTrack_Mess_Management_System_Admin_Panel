@@ -157,7 +157,7 @@ export default function Dashboard() {
       const data = await offlineFetch(`mess-info-${messId}`, async () => {
         if (!token) return console.warn("Session expired! Please login again.");
 
-        const res = await fetch(`${API_BASE}/api/settings/messInfo/`, {
+        const res = await fetch(`${API_BASE}/api/mess/info/`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
