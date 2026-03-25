@@ -462,6 +462,7 @@ align-items:center;
 justify-content:center;
 gap:28px;
 width:100%;
+margin-top: -15px;
 }
 
 .splitItem{
@@ -471,6 +472,7 @@ align-items:center;
 justify-content:center;
 font-size:0.9rem;
 min-width:80px;
+margin-top: 0px;
 }
 
 .splitLabel{

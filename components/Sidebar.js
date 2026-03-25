@@ -175,9 +175,6 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           { path: "/BillingMess/", label: t("billingMess") },
         ],
       },
-       ...(messAccess?.inventory === false
-      ? []
-      : [
       {
         key: "requests",
         title: t("requests"),
@@ -188,7 +185,10 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           { path: "/requests/DeleteAccRequest/", label: t("deleteAccount") },
           { path: "/suggestions/", label: t("suggestions") },
         ],
-      }]),
+      },
+      ...(messAccess?.inventory === false
+     ? []
+     : [
       {
         key: "inventory",
         title: t("inventory"),
@@ -202,7 +202,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           { path: "/inventory/purchase-history/", label: t("Purchases") },
           { path: "/inventory/usage/", label: t("usage") },
         ],
-      },
+      }]),
     ];
 
     return sections;
