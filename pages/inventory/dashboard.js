@@ -52,7 +52,7 @@ return(
 
 <Layout title="Inventory Dashboard">
 
-{/* <div className={styles.container}> */}
+<div className={styles.container}>
 
 <section className={styles.heroSection}>
         <div>
@@ -61,13 +61,13 @@ return(
 
             <h1 className={styles.heroTitle}>{t("Dashboard")}</h1>
             <button
-              className={styles.secondaryBtn}
+              className={styles.backbtn}
               onClick={() => router.back()}
             >
               ← Back
             </button>
           </div>
-          <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p>
+          {/* <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p> */}
         </div>
         </section>
 
@@ -138,7 +138,7 @@ View Ledger
 
 </div>
 
-{/* </div> */}
+</div>
 
 </Layout>
 

@@ -35,8 +35,8 @@ export default function Items() {
       setLoading(true);
       setError("");
       const result = await inventoryOfflineRequest(
-        "inventory-items-active-v2",
-        "/api/inventory/getActiveItems/"
+        "inventory-stock-summary-v2",
+        "/api/inventory/getStockSummary/"
       );
       if (result.success) setItems(result.data || []);
     } catch (err) {
@@ -56,13 +56,13 @@ export default function Items() {
           
           <h1 className={styles.heroTitle}>{t("itemsLabel")}</h1>
                       <button
-                        className={styles.secondaryBtn}
+                        className={styles.backbtn}
                         onClick={() => router.back()}
                       >
                         ← Back
                       </button>
                     </div>
-          <p className={styles.heroSubtitle}>{t("itemsSubtitle")}</p>
+          {/* <p className={styles.heroSubtitle}>{t("itemsSubtitle")}</p> */}
         </div>
       </section>
 
@@ -73,7 +73,7 @@ export default function Items() {
         </div>
         <div>
           <span>{t("lowStock")}</span>
-          <strong>{items.filter((item) => Number(item.current_stock || 0) <= 0).length}</strong>
+          <strong>{items.filter((item) => Number(item.current_stock || 0) <= Number(item.min_stock || 0)).length}</strong>
         </div>
       </section>
 
@@ -102,6 +102,9 @@ export default function Items() {
               <h3>{item.item_name}</h3>
               <p>
                 {t("stock")}: {item.current_stock} {item.unit}
+              </p>
+              <p>
+                Min: {Number(item.min_stock || 0)} {item.unit}
               </p>
               <p className={styles.desc}>
                 {item.category_name || t("uncategorized")}

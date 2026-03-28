@@ -195,10 +195,9 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
         icon: <CompassIcon size={22} />,
         items: [
           { path: "/inventory/dashboard/", label: t("dashboard") },
-          { path: "/inventory/categories/", label: t("catalog") },
-          { path: "/inventory/items/", label: t("items") },
+          { path: "/inventory/categories/", label: t("material") },
+          { path: "/inventory/items/", label: t("stock") },
           { path: "/inventory/vendors/", label: t("vendor") },
-          { path: "/inventory/stock-ledger/", label: t("stock") },
           { path: "/inventory/purchase-history/", label: t("Purchases") },
           { path: "/inventory/usage/", label: t("usage") },
         ],
@@ -221,7 +220,14 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
     setOpenSection(matchingSection?.key || null);
   }, [currentPath, ownerSections, role]);
 
-  const isActivePath = (path) => normalizePath(path) === currentPath;
+  const isActivePath = (path) => {
+    const normalizedTarget = normalizePath(path);
+    if (normalizedTarget === "/") return currentPath === "/";
+    return (
+      currentPath === normalizedTarget ||
+      currentPath.startsWith(`${normalizedTarget}/`)
+    );
+  };
   const sectionHasCurrentRoute = (section) =>
     section.items.some((item) => isActivePath(item.path));
 

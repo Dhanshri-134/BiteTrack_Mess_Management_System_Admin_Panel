@@ -13,9 +13,7 @@ import { ChevronDown, ChevronUp, CloudAlert, DatabaseIcon, DeleteIcon, Edit, Edi
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { FileOpener } from "@capacitor-community/file-opener";
-import { Capacitor } from "@capacitor/core";
+import { saveJsPdfDocument } from "../../lib/fileDownload";
 import GlobalLoader from "../../components/GlobalLoader"
 
 export default function Users() {
@@ -463,6 +461,7 @@ useEffect(() => {
     try {
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/users/delete/`,
+        // `/api/users/delete/`,
         {
           method: "DELETE",
           headers: authHeaders(),
@@ -774,8 +773,7 @@ useEffect(() => {
 
       doc.text(mess.location || "", pageWidth - 14, 22, { align: "right" });
       doc.text(mess.email || "", pageWidth - 14, 28, { align: "right" });
-      doc.text(mess.contact_info || "", pageWidth - 14, 33, { align: "right" });
-
+doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" });
       const now = new Date();
       const month = now.toLocaleString("en-IN", { month: "long" });
       const year = now.getFullYear();
@@ -847,26 +845,7 @@ useEffect(() => {
 
       const fileName = `${mess.name.replace(/\s+/g, "_")}_Users.pdf`;
 
-      const pdfBase64 = doc.output("datauristring").split(",")[1];
-
-      if (Capacitor.isNativePlatform()) {
-
-        const savedFile = await Filesystem.writeFile({
-          path: fileName,
-          data: pdfBase64,
-          directory: Directory.Documents
-        });
-
-        await FileOpener.open({
-          filePath: savedFile.uri,
-          contentType: "application/pdf"
-        });
-
-      } else {
-
-        doc.save(fileName);
-
-      }
+      await saveJsPdfDocument(doc, fileName);
 
     } catch (err) {
       console.error(err);

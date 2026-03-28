@@ -77,13 +77,38 @@ input, select, textarea {
   border-radius: 10px;
   padding: 12px;
   width: 100%;
+  min-height: 48px;
   box-sizing: border-box;
   margin-bottom: 12px;
+  background: #fff;
+  color: #0F172A;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #0f766e;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94A3B8;
+  opacity: 1;
+}
+
+input[type="date"],
+input[type="time"],
+input[type="month"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #fff;
+  color: #0F172A;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  opacity: 0.75;
+  cursor: pointer;
 }
 
 /* Typography */
@@ -94,6 +119,13 @@ h1, h2, h3, h4, h5, h6 {
 
 p, span, label {
   color: #64748B;
+}
+
+label {
+  display: inline-flex;
+  margin-bottom: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 /* Mobile responsiveness */

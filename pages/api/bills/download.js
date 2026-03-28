@@ -193,17 +193,11 @@ export default async function handler(req, res) {
   // 1. JWT REQUIRED
   // --------------------------------------------------
   const headerAuth = req.headers.authorization;
-const queryToken = req.query.token;
+  if (!headerAuth?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-let token;
-
-if (headerAuth && headerAuth.startsWith("Bearer ")) {
-  token = headerAuth.split(" ")[1];
-} else if (queryToken) {
-  token = queryToken;
-} else {
-  return res.status(401).json({ error: "Unauthorized" });
-}
+  const token = headerAuth.split(" ")[1];
 
   let messId;
   try {

@@ -36,7 +36,7 @@ export default function DayDropdown({ options, value, onChange }) {
             : t(selected)
           : t("selectDay")}
 
-        <span className={styles.arrow}>{open ? "?" : "?"}</span>
+        <span className={styles.arrow}>{open ? "^" : "v"}</span>
       </button>
 
       {open ? (

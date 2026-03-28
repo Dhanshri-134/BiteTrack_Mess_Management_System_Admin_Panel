@@ -16,6 +16,7 @@ export default function Usage() {
     const [usageList, setUsageList] = useState([]);
     const [date, setDate] = useState("");
     const [error, setError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         loadItems();
@@ -79,32 +80,40 @@ export default function Usage() {
     }
 
     async function saveUsage() {
+        setSubmitting(true);
+        try {
 
         const validItems = rows.filter(r => r.item_id && r.quantity);
 
-        if (validItems.length === 0) {
-            setError(t("addAtLeastOneItem"));
-            return;
-        }
-
-        setError("");
-
-        const result = await inventoryRequest("/api/inventory/addUsage/", {
-            body: {
-                usage_date: date,
-                items: validItems
+            if (validItems.length === 0) {
+                setError(t("addAtLeastOneItem"));
+                return;
             }
-        });
 
-        if (result.success) {
+            setError("");
 
-            alert(t("usageRecorded"));
-            loadUsage();
-            setRows([{ item_id: "", quantity: "" }]);
-            setDate("");
+            const result = await inventoryRequest("/api/inventory/addUsage/", {
+                body: {
+                    usage_date: date,
+                    items: validItems
+                }
+            });
 
-        } else {
-            setError(result.error);
+            if (result.success) {
+
+                alert(t("usageRecorded"));
+                loadUsage();
+                setRows([{ item_id: "", quantity: "" }]);
+                setDate("");
+
+            } else {
+                setError(result.error);
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.message || t("somethingWentWrong"));
+        } finally {
+            setSubmitting(false);
         }
 
     }
@@ -115,18 +124,18 @@ export default function Usage() {
 
             <section className={styles.heroSection}>
                 <div>
-                    <p className={styles.eyebrow}>{t("inventory")}</p>
                     <div className={styles.header}>
                     
-                    <h1 className={styles.heroTitle}>{t("recordUsage")}</h1>
+                    <p className={styles.eyebrow}>{t("inventory")}</p>
                                 <button
-                                  className={styles.secondaryBtn}
+                                  className={styles.backbtn}
                                   onClick={() => router.back()}
                                 >
                                   ← Back
                                 </button>
                               </div>
-                    <p className={styles.heroSubtitle}>{t("usageSubtitle")}</p>
+                    <h1 className={styles.heroTitle}>{t("recordUsage")}</h1>
+                    {/* <p className={styles.heroSubtitle}>{t("usageSubtitle")}</p> */}
                 </div>
             </section>
 
@@ -143,91 +152,89 @@ export default function Usage() {
 <br></br>
             {error && <p className={styles.errorText}>{error}</p>}
 
-            <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-            />
-
-            <table className={styles.table}>
-
-                <thead>
-
-                    <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th></th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {rows.map((r, i) => (
-
-                        <tr key={i}>
-
-                            <td>
-
-                                <select
-                                    value={r.item_id}
-                                    onChange={(e) => updateRow(i, "item_id", e.target.value)}
-                                >
-
-                                    <option value="">{t("selectItem")}</option>
-
-                                    {items.map(it => (
-                                        <option key={it.id} value={it.id}>
-                                            {it.item_name}
-                                        </option>
-                                    ))}
-
-                                </select>
-
-                            </td>
-
-                            <td>
-
-                                <input
-                                    type="number"
-                                    value={r.quantity}
-                                    onChange={(e) => updateRow(i, "quantity", e.target.value)}
-                                />
-
-                            </td>
-
-                            <td>
-
-                                <button onClick={() => removeRow(i)}>
-                                    {t("remove")}
-                                </button>
-
-                            </td>
-
-                        </tr>
-
-                    ))}
-
-                </tbody>
-
-            </table>
-<br></br>
-<div style={{display: "flex", gap:"20px"}}>
-    
-            <button
-                className={styles.secondaryBtn}
-                onClick={addRow}
-                >
-                {t("addItem")}
-            </button>
-
-            <button
-                className={styles.primaryBtn}
-                onClick={saveUsage}
-            >
-                {t("saveUsage")}
-            </button>
+            <div className={styles.formCard}>
+                <div className={styles.formCardHeader}>
+                    <div>
+                        <h3 className={styles.formCardTitle}>{t("recordUsage")}</h3>
+                        {/* <p className={styles.formCardText}>Add date, select items, and record quantities in one place.</p> */}
+                    </div>
                 </div>
+
+                <div className={styles.formGrid}>
+                    <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>{t("date")}</label>
+                        <input
+                            className={styles.formControl}
+                            type="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                        />
+                    </div>
+                </div>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>{t("item")}</th>
+                            <th>{t("quantity")}</th>
+                            <th>{t("actions")}</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {rows.map((r, i) => (
+                            <tr key={i}  style={{paddingLeft : 0 }}>
+                                <td >
+                                    <select
+                                        className={styles.formControl}
+                                        value={r.item_id}
+                                        onChange={(e) => updateRow(i, "item_id", e.target.value)}
+                                    >
+                                        <option value="">{t("selectItem")}</option>
+                                        {items.map(it => (
+                                            <option key={it.id} value={it.id}>
+                                                {it.item_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </td>
+                                <td >
+                                    <input
+                                        className={styles.formControl}
+                                        type="number"
+                                        min="0"
+                                        value={r.quantity}
+                                        placeholder="Quantity"
+                                        onChange={(e) => updateRow(i, "quantity", e.target.value)}
+                                    />
+                                </td>
+                                <td>
+                                    <button className={styles.secondaryBtn} onClick={() => removeRow(i)} disabled={submitting}>
+                                        {t("remove")}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                <div className={styles.inlineActions}>
+                    <button
+                        className={styles.secondaryBtn}
+                        onClick={addRow}
+                        disabled={submitting}
+                    >
+                        {t("addItem")}
+                    </button>
+
+                    <button
+                        className={styles.primaryBtn}
+                        onClick={saveUsage}
+                        disabled={submitting}
+                    >
+                        {submitting ? t("saving") : t("saveUsage")}
+                    </button>
+                </div>
+            </div>
 
 
 
@@ -249,15 +256,15 @@ export default function Usage() {
 
                     {usageList.map(u => (
                         <tr key={u.id}>
-                            <td>{new Date(u.usage_date).toLocaleDateString()}</td>
-                            <td>
+                            <td data-label={t("date")}>{new Date(u.usage_date).toLocaleDateString()}</td>
+                            <td data-label={t("itemsUsed")}>
                                 {u.items.map((it, i) => (
                                     <div key={i}>
                                         {it.item_name} - {it.quantity} {it.unit}
                                     </div>
                                 ))}
                             </td>
-                            <td>{u.notes || "-"}</td>
+                            <td data-label={t("notes")}>{u.notes || "-"}</td>
                         </tr>
                     ))}
 

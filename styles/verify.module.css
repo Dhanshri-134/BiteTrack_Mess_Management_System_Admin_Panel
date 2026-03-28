@@ -9,7 +9,7 @@
 /* MAIN CONTENT (RESPONSIVE) */
 .main {
   flex: 1;
-  padding: 2rem;
+  /* padding: 2rem; */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,9 +99,7 @@
 
 /* MOBILE OPTIMIZATION */
 @media (max-width: 768px) {
-  .main {
-    padding: 1.25rem;
-  }
+  
 
   .card {
     padding: 1.5rem 1.25rem;

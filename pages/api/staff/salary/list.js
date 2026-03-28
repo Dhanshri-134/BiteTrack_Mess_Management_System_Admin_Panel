@@ -1,5 +1,6 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
+import { generateStaffSalaryForPeriod } from "@/lib/staffSalary";
 
 export default async function handler(req,res){
 
@@ -27,6 +28,8 @@ const decoded=jwt.verify(token,process.env.JWT_SECRET);
 const messId=decoded.messId;
 
 const {month,year}=req.body;
+
+await generateStaffSalaryForPeriod({ messId, month, year });
 
 const result=await pgPool.query(
 `SELECT

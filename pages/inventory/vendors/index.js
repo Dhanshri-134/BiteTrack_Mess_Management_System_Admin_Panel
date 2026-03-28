@@ -115,27 +115,30 @@ export default function Vendors() {
 
       <section className={styles.heroSection}>
         <div>
-          <p className={styles.eyebrow}>{t("inventory")}</p>
           <div className={styles.header}>
+          <p className={styles.eyebrow}>{t("inventory")}</p>
 
-            <h1 className={styles.heroTitle}>{t("vendors")}</h1>
             <button
-              className={styles.secondaryBtn}
+              className={styles.backbtn}
               onClick={() => router.back()}
             >
               ← Back
             </button>
           </div>
-          <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p>
-        </div>
-        
+          <div className={styles.header}>
 
+            <h1 className={styles.heroTitle}>{t("vendors")}</h1>
         <button
           className={styles.addVbtn}
           onClick={openCreateModal}
         >
         +  {t("addVendor")}
         </button>
+          </div>
+          {/* <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p> */}
+        </div>
+        
+
 
       </section>
 

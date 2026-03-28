@@ -6,9 +6,7 @@ import { offlineFetch } from "../lib/offlineFetch";
 import { useLanguage } from "../context/LanguageContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { FileOpener } from "@capacitor-community/file-opener";
-import { Capacitor } from "@capacitor/core";
+import { saveJsPdfDocument } from "../lib/fileDownload";
 import  GlobalLoader from "../components/GlobalLoader"
 
 
@@ -187,8 +185,8 @@ doc.text(
 // 📍 Location
 doc.setFontSize(10);
 doc.setFont("helvetica", "normal");
-doc.text(
-  mess.location || "",
+doc.text(String(
+  mess.location || ""),
   pageWidth - 14,
   22,
   { align: "right" }
@@ -196,19 +194,15 @@ doc.text(
 
 // 📧 Email
 doc.text(
-  mess.email || "",
+  String(mess.email || ""),
   pageWidth - 14,
   28,
   { align: "right" }
 );
 
 // 📧 contact
-doc.text(
-  mess.contact_info || "",
-  pageWidth - 14,
-  33,
-  { align: "right" }
-);
+doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" });
+
 
 // 📅 Generated Month
 doc.setFontSize(9);
@@ -258,21 +252,7 @@ doc.text("Feedback Report", 14, 50);
   tableLineWidth: 0.1,
     });
 
-    const pdfBase64 = doc.output("datauristring").split(",")[1];
-if (Capacitor.isNativePlatform()) {
-  const savedFile = await Filesystem.writeFile({
-    path: fileName,
-    data: pdfBase64,
-    directory: Directory.Documents,
-  });
-
-  await FileOpener.open({
-    filePath: savedFile.uri,
-    contentType: "application/pdf",
-  });
-} else {
-  doc.save(fileName);
-}
+    await saveJsPdfDocument(doc, fileName);
 
   } catch (err) {
     console.error(err);

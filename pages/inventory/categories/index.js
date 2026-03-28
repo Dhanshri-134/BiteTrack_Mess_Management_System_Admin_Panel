@@ -4,242 +4,260 @@ import styles from "../../../styles/inventory.module.css";
 import Link from "next/link";
 import { inventoryOfflineRequest, inventoryRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { useLanguage } from "../../../context/LanguageContext";
+import { useRouter } from "next/router";
 
-export default function CategoriesPage(){
+export default function CategoriesPage() {
+      const router = useRouter();
+    const {t} = useLanguage();
+    const [categories, setCategories] = useState([]);
+    const [filtered, setFiltered] = useState([]);
+    const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [suggestions, setSuggestions] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [categoryName, setCategoryName] = useState("");
+    const [categoryDescription, setCategoryDescription] = useState("");
 
-const [categories,setCategories] = useState([]);
-const [filtered,setFiltered] = useState([]);
-const [search,setSearch] = useState("");
-const [loading,setLoading] = useState(true);
-const [suggestions,setSuggestions] = useState([]);
-const [showModal,setShowModal] = useState(false);
-const [categoryName,setCategoryName] = useState("");
-const [categoryDescription,setCategoryDescription] = useState("");
+    useEffect(() => {
+        loadCategories();
+    }, []);
 
-useEffect(()=>{
-loadCategories();
-},[]);
+    useAppRefresh(loadCategories);
 
-useAppRefresh(loadCategories);
+    useEffect(() => {
+        filterCategories();
+    }, [search, categories]);
 
-useEffect(()=>{
-filterCategories();
-},[search,categories]);
+    async function loadCategories() {
 
-async function loadCategories(){
+        try {
 
-try{
+            const result = await inventoryOfflineRequest(
+                "inventory-categories-v2",
+                "/api/inventory/getCategories/"
+            );
+
+            if (result.success) {
+                setCategories(result.data);
+                setFiltered(result.data);
+            }
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+
+    }
+
+    async function fetchSuggestions(value) {
+
+        try {
+
+            const result = await inventoryRequest("/api/inventory/searchCategories/", {
+                body: { search: value }
+            });
+
+            if (result.success) {
+                setSuggestions(result.data);
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+
+    }
+    function filterCategories() {
+
+        if (!search) {
+            setFiltered(categories);
+            return;
+        }
+
+        const s = search.toLowerCase();
 
-const result = await inventoryOfflineRequest(
-"inventory-categories-v2",
-"/api/inventory/getCategories/"
-);
+        setFiltered(
+            categories.filter(c =>
+                c.category_name.toLowerCase().includes(s)
+            )
+        );
 
-if(result.success){
-setCategories(result.data);
-setFiltered(result.data);
-}
+    }
 
-}catch(err){
-console.error(err);
-}finally{
-setLoading(false);
-}
+    async function addCategory() {
 
-}
+        if (!categoryName) {
+            alert("Category name required");
+            return;
+        }
 
-async function fetchSuggestions(value){
+        try {
 
-try{
+            const result = await inventoryRequest("/api/inventory/addCategory/", {
+                body: {
+                    category_name: categoryName,
+                    description: categoryDescription
+                }
+            });
 
-const result = await inventoryRequest("/api/inventory/searchCategories/",{
-body:{ search:value }
-});
+            if (result.success) {
 
-if(result.success){
-setSuggestions(result.data);
-}
+                setCategoryName("");
+                setCategoryDescription("");
+                setShowModal(false);
+                loadCategories();
 
-}catch(err){
-console.error(err);
-}
+            } else {
+                alert(result.error || "Failed");
+            }
 
-}
-function filterCategories(){
+        } catch (err) {
+            console.error(err);
+        }
 
-if(!search){
-setFiltered(categories);
-return;
-}
+    }
 
-const s = search.toLowerCase();
+    return (
 
-setFiltered(
-categories.filter(c =>
-c.category_name.toLowerCase().includes(s)
-)
-);
+        <Layout title="Categories">
 
-}
+<section className={styles.heroSection}>
+        <div>
+          <div className={styles.header}>
+          <p className={styles.eyebrow}>{t("inventory")}</p>
+          
+                      {/* <h1 className={styles.heroTitle}>{t("vendors")}</h1> */}
+                      <button
+                        className={styles.backbtn}
+                        onClick={() => router.back()}
+                      >
+                        ← Back
+                      </button>
+                    </div>
+          {/* <p className={styles.heroSubtitle}>{t("categoryItemsSubtitle")}</p> */}
+        </div>
+      <section className={styles.header}>
+          <h1 className={styles.heroTitle}>{categoryName || t("category")}</h1>
+        
+        <button
+                    className={styles.primaryBtn}
+                    onClick={() => setShowModal(true)}
+                >
+                    + Add Category
+                </button>
+      </section>
+      </section>
+         
 
-async function addCategory(){
+            <input
+                className={styles.searchInput}
+                placeholder="Search category..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+            />
 
-if(!categoryName){
-alert("Category name required");
-return;
-}
+            {loading ? (
 
-try{
+                <p>Loading categories...</p>
 
-const result = await inventoryRequest("/api/inventory/addCategory/",{
-body:{
-category_name:categoryName,
-description:categoryDescription
-}
-});
+            ) : (
 
-if(result.success){
+                <div className={styles.cardGrid}>
 
-setCategoryName("");
-setCategoryDescription("");
-setShowModal(false);
-loadCategories();
+                    {filtered.map(c => (
 
-}else{
-alert(result.error || "Failed");
-}
+                        <Link key={c.id} href={`/inventory/categories/${c.id}`}>
 
-}catch(err){
-console.error(err);
-}
+                            <div className={styles.categoryCard}>
 
-}
+                                <h3>{c.category_name}</h3>
 
-return(
+                                <p>{c.description || "No description"}</p>
 
-<Layout title="Categories">
+                            </div>
 
-<div className={styles.pageHeader}>
+                        </Link>
 
-<h2>Categories</h2>
+                    ))}
 
-<button
-className={styles.primaryBtn}
-onClick={()=>setShowModal(true)}
->
-+ Add Category
-</button>
+                </div>
 
-</div>
+            )}
 
-<input
-className={styles.searchInput}
-placeholder="Search category..."
-value={search}
-onChange={(e)=>setSearch(e.target.value)}
-/>
+            {showModal && (
 
-{loading ? (
+                <div className={styles.modalOverlay}>
 
-<p>Loading categories...</p>
+                    <div className={styles.modalCard}>
 
-):( 
+                        <h3>Add Category</h3>
 
-<div className={styles.cardGrid}>
+                        <input
+                            placeholder="Category Name"
+                            value={categoryName}
+                            onChange={(e) => {
+                                setCategoryName(e.target.value);
+                                fetchSuggestions(e.target.value);
+                            }}
 
-{filtered.map(c=>(
+                            onKeyDown={(e) => { if (e.key === "Enter") addCategory(); }}
+                        />
 
-<Link key={c.id} href={`/inventory/categories/${c.id}`}>
+                        <textarea
+                            placeholder="Description"
+                            value={categoryDescription}
+                            onChange={(e) => setCategoryDescription(e.target.value)}
+                        />
+                        {suggestions.length > 0 && (
 
-<div className={styles.categoryCard}>
+                            <div className={styles.suggestionsBox}>
 
-<h3>{c.category_name}</h3>
+                                {suggestions.map(s => (
 
-<p>{c.description || "No description"}</p>
+                                    <div
+                                        key={s.id}
+                                        className={styles.suggestionItem}
+                                        onClick={() => {
+                                            setCategoryName(s.category_name);
+                                            setSuggestions([]);
+                                        }}
+                                    >
+                                        {s.category_name}
+                                    </div>
 
-</div>
+                                ))}
 
-</Link>
+                            </div>
 
-))}
+                        )}
 
-</div>
+                        <div className={styles.modalActions}>
 
-)}
+                            <button
+                                className={styles.secondaryBtn}
+                                onClick={() => setShowModal(false)}
+                            >
+                                Cancel
+                            </button>
 
-{showModal && (
+                            <button
+                                className={styles.primaryBtn}
+                                onClick={addCategory}
+                            >
+                                Create
+                            </button>
 
-<div className={styles.modalOverlay}>
+                        </div>
 
-<div className={styles.modalCard}>
+                    </div>
 
-<h3>Add Category</h3>
+                </div>
 
-<input
-placeholder="Category Name"
-value={categoryName}
-onChange={(e)=>{
-setCategoryName(e.target.value);
-fetchSuggestions(e.target.value);
-}}
+            )}
 
-onKeyDown={(e)=>{ if(e.key==="Enter") addCategory();}}
-/>
+        </Layout>
 
-<textarea
-placeholder="Description"
-value={categoryDescription}
-onChange={(e)=>setCategoryDescription(e.target.value)}
-/>
-{suggestions.length > 0 && (
-
-<div className={styles.suggestionsBox}>
-
-{suggestions.map(s => (
-
-<div
-key={s.id}
-className={styles.suggestionItem}
-onClick={()=>{
-setCategoryName(s.category_name);
-setSuggestions([]);
-}}
->
-{s.category_name}
-</div>
-
-))}
-
-</div>
-
-)}
-
-<div className={styles.modalActions}>
-
-<button
-className={styles.secondaryBtn}
-onClick={()=>setShowModal(false)}
->
-Cancel
-</button>
-
-<button
-className={styles.primaryBtn}
-onClick={addCategory}
->
-Create
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-)}
-
-</Layout>
-
-);
+    );
 
 }

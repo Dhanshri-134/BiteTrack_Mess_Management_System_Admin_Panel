@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     let query = `
       SELECT 
         a.id,
+        a.staff_id,
         a.attendance_date,
         a.check_in,
         a.check_out,

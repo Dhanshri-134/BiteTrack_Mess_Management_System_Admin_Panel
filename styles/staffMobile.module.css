@@ -1,19 +1,15 @@
 .container,
 .profileContainer {
-  padding: 1.5rem;
+  /* padding: 1.5rem; */
   max-width: 1200px;
   /* Supporting Desktop View natively */
   margin: 0 auto;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: transparent;
   min-height: calc(100vh - 80px);
-  /* accounting for typical topbars */
 }
-
-/* Base resets for typography using rem */
 .container {
   font-size: 1rem;
-  /* Base 16px */
 }
 
 .pageStack {
@@ -27,7 +23,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.7rem 0.95rem;
+  padding: 0.5rem 0.55rem;
   border-radius: 999px;
   border: 1px solid #d6ece8;
   background: #ffffff;
@@ -42,15 +38,17 @@
   border-radius: 1.25rem;
   padding: 1rem;
   box-shadow: 0 14px 32px rgba(0, 113, 112, 0.08);
+  
 }
 
 .heroKicker {
-  margin: 0 0 0.35rem;
-  color: #0f766e;
-  font-size: 0.76rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  margin:auto 0;
+font-size:12px;
+font-weight:700;
+letter-spacing:0.08em;
+text-transform:uppercase;
+color:#007171;
+height: auto;
 }
 
 .heroHeading {
@@ -96,6 +94,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  text-align: center;
+  box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .insightCard span {
@@ -105,7 +105,7 @@
 }
 
 .insightCard strong {
-  color: #0f172a;
+  color: #007171;
   font-size: 1.4rem;
   line-height: 1.1;
 }
@@ -133,6 +133,7 @@
   color: #0f172a;
   text-decoration: none;
   font-weight: 700;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .statusLegend {
@@ -422,7 +423,7 @@
   background: white;
   border: 1px solid #e5e7eb;
   color: #374151;
-  padding: 0.8rem;
+  padding: 0.6rem 0.8rem;
   border-radius: 0.5rem;
   font-weight: 600;
   text-align: center;
@@ -466,6 +467,7 @@
   border: 1px solid #f3f4f6;
   display: flex;
   flex-direction: column;
+  /* text-align: center; */
 }
 
 .statCard span {
@@ -482,7 +484,7 @@
 
 .statCard strong {
   font-size: 1.4rem;
-  color: #111827;
+  color: #007171;
 }
 
 .statCard.highlight {
@@ -589,7 +591,7 @@
   align-items: center;
   /* Desktop centered, Mobile will adapt */
   justify-content: center;
-  z-index: 1000;
+  z-index: 3000;
 }
 
 @media (max-width: 600px) {
@@ -988,11 +990,11 @@
 }
 
 .calendarCard {
+  background-color: #f6f6f6 !important ;
   min-height: 7.2rem;
   border-radius: 1rem;
   border: 1px solid #e7edf3;
   padding: 0.6rem;
-  background: #f9fbfc;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1001,7 +1003,7 @@
 }
 
 .calendarCardMarked {
-  background: linear-gradient(180deg, #ffffff 0%, #f5fbfa 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f1fffd 100%);
 }
 
 .calendarCardEmpty {
@@ -1222,7 +1224,8 @@
   background: #007170;
   color: white;
   border: none;
-  padding: 0.6rem 1.2rem;
+  padding:0.6rem 0.8rem;
+  height:auto ;
   border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
@@ -1230,7 +1233,7 @@
   font-size: 0.9rem;
   display: flex;
   /* margin-right:0px !important; */
-  margin:auto;
+  /* margin:auto; */
   align-items: center;
   justify-content: center;
   gap: 0.5rem;

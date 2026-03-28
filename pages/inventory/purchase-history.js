@@ -68,18 +68,18 @@ return(
 
       <section className={styles.heroSection}>
         <div>
-          <p className={styles.eyebrow}>{t("inventory")}</p>
           <div className={styles.header}>
 
-            <h1 className={styles.heroTitle}>{t("purchaseHistory")}</h1>
+            <p className={styles.eyebrow}>{t("inventory")}</p>
             <button
-              className={styles.secondaryBtn}
+              className={styles.backbtn}
               onClick={() => router.back()}
             >
               ← Back
             </button>
           </div>
-          <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p>
+            <h1 className={styles.heroTitle}>{t("purchaseHistory")}</h1>
+          {/* <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p> */}
         </div>
         </section>
 
@@ -122,23 +122,23 @@ style={{cursor:"pointer"}}
 onClick={()=>router.push(`/inventory/purchase-details/${r.id}`)}
 >
 
-<td>
+<td data-label={t("date")}>
 {new Date(r.purchase_date).toLocaleDateString()}
 </td>
 
-<td>
+<td data-label={t("vendor")}>
 {r.vendor_name || "-"}
 </td>
 
-<td>
+<td data-label={t("invoice")}>
 {r.invoice_number || "-"}
 </td>
 
-<td>
+<td data-label={t("items")}>
 {r.items_count}
 </td>
 
-<td>
+<td data-label={t("total")}>
 ₹ {Number(r.total_amount).toLocaleString()}
 </td>
 

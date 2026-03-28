@@ -5,6 +5,7 @@ import inventoryStyles from "../../../styles/inventory.module.css";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "@/context/LanguageContext";
+import { InfoIcon, User, User2, UserCheck, UserCheck2Icon, UserCircle, UserCircle2, UserCircle2Icon, UserCircleIcon } from "lucide-react";
 
 export default function VendorDetails() {
 
@@ -18,6 +19,7 @@ export default function VendorDetails() {
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [showVendorModal, setShowVendorModal] = useState(false);
 
     useEffect(() => {
         if (!router.isReady) return;
@@ -76,53 +78,28 @@ export default function VendorDetails() {
             <section className={inventoryStyles.heroSection}>
 
                 {/* <div> */}
-                <p className={inventoryStyles.eyebrow}>{t("inventory")}</p>
                 <div className={inventoryStyles.header}>
-                    <h1 className={inventoryStyles.heroTitle}>{vendor?.vendor_name || t("vendorPurchases")}</h1>
+                <p className={inventoryStyles.eyebrow}>{t("inventory")}</p>
                     <button
-                        className={inventoryStyles.secondaryBtn}
+                        className={inventoryStyles.backbtn}
                         onClick={() => router.back()}
                     >
                         ← Back
                     </button>
                 </div>
-
-                <p className={inventoryStyles.heroSubtitle}>{t("vendorBasicInfo")}</p>
+                    <h1
+  className={inventoryStyles.heroTitle}
+  style={{ cursor: "pointer" }}
+  onClick={() => setShowVendorModal(true)}
+>
+   {vendor?.vendor_name}  <InfoIcon size={16}/>
+</h1>
+                {/* <p className={inventoryStyles.heroSubtitle}>{t("vendorBasicInfo")}</p> */}
                 {/* </div> */}
 
 
             </section>
 
-            {vendor && (
-                <section className={inventoryStyles.infoGrid}>
-                    <div>
-                        <span>{t("phone")}</span>
-                        <strong>{vendor.phone || "-"}</strong>
-                    </div>
-                    <div>
-                        <span>{t("email")}</span>
-                        <strong>{vendor.email || "-"}</strong>
-                    </div>
-                    <div>
-                        <span>{t("gstNumber")}</span>
-                        <strong>{vendor.gst_number || "-"}</strong>
-                    </div>
-                    <div>
-                        <span>{t("address")}</span>
-                        <strong>{vendor.address || "-"}</strong>
-                    </div>
-                    <div>
-                        <span>{t("from")}</span>
-                        <strong>{vendor.created_at || "-"}</strong>
-                    </div>
-                </section>
-            )}
-
-            {vendor?.notes && (
-                <section className={inventoryStyles.totalBox}>
-                    {vendor.notes}
-                </section>
-            )}
 
             <section className={inventoryStyles.toolbar}>
                 <input
@@ -185,19 +162,19 @@ export default function VendorDetails() {
 
                             <tr key={r.id}>
 
-                                <td>
+                                <td data-label={t("date")}>
                                     {new Date(r.purchase_date).toLocaleDateString()}
                                 </td>
 
-                                <td>
+                                <td data-label={t("invoice")}>
                                     {r.invoice_number || "-"}
                                 </td>
 
-                                <td>
+                                <td data-label={t("items")}>
                                     {r.items_count}
                                 </td>
 
-                                <td>
+                                <td data-label={t("total")}>
                                     ₹{Number(r.total_amount).toLocaleString()}
                                 </td>
 
@@ -210,6 +187,51 @@ export default function VendorDetails() {
                 </table>
 
             )}
+            {showVendorModal && vendor && (
+  <div
+    className={inventoryStyles.modalOverlay}
+    onClick={() => setShowVendorModal(false)}
+  >
+    <div
+      className={inventoryStyles.modalContent}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className={inventoryStyles.modalHeader}>
+        <h2>{vendor.vendor_name}</h2>
+        <button onClick={() => setShowVendorModal(false)}>✕</button>
+      </div>
+
+      <div className={inventoryStyles.infoGrid} style={{gridTemplateColumns: "repeat(auto-fit, minmax(250px, 3fr))" }}>
+        <div>
+          <span>{t("phone")}</span>
+          <strong>{vendor.phone || "-"}</strong>
+        </div>
+        <div>
+          <span>{t("email")}</span>
+          <strong>{vendor.email || "-"}</strong>
+        </div>
+        <div>
+          <span>{t("gstNumber")}</span>
+          <strong>{vendor.gst_number || "-"}</strong>
+        </div>
+        <div>
+          <span>{t("address")}</span>
+          <strong>{vendor.address || "-"}</strong>
+        </div>
+        <div>
+          <span>{t("from")}</span>
+          <strong>{vendor.created_at || "-"}</strong>
+        </div>
+      </div>
+
+      {vendor.notes && (
+        <div className={inventoryStyles.totalBox}>
+          {vendor.notes}
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
         </Layout>
 

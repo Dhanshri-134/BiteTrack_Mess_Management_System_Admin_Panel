@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../../../components/Layout";
+import DayDropdown from "../../../components/DayDropdown";
 import styles from "../../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
@@ -30,9 +31,10 @@ const ATTENDANCE_OPTIONS = [
   { label: "L", value: "L" },
   { label: "OFF", value: "OFF" },
 ];
+const PAYMENT_TYPES = ["advance", "partial", "final"];
 
 function formatMoney(value) {
-  return `Rs ${Number(value || 0).toFixed(2)}`;
+  return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
 function normalizePaymentType(value) {
@@ -46,10 +48,17 @@ function statusLabel(type, row) {
   return type || "OFF";
 }
 
+function toLocalIsoDate(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 function buildCalendarRows(dateObj, attendance) {
   const year = dateObj.getFullYear();
   const monthIndex = dateObj.getMonth();
-  const firstDay = new Date(year, monthIndex, 1);
   const lastDay = new Date(year, monthIndex + 1, 0);
   const attendanceMap = new Map(
     attendance.map((row) => [String(row.attendance_date).split("T")[0], row])
@@ -58,7 +67,7 @@ function buildCalendarRows(dateObj, attendance) {
   const days = [];
   for (let day = 1; day <= lastDay.getDate(); day += 1) {
     const date = new Date(year, monthIndex, day);
-    const iso = date.toISOString().split("T")[0];
+    const iso = toLocalIsoDate(date);
     days.push({
       iso,
       day,
@@ -67,7 +76,7 @@ function buildCalendarRows(dateObj, attendance) {
     });
   }
 
-  return { leadingBlankCount: firstDay.getDay(), days };
+  return { days };
 }
 
 export default function StaffProfile() {
@@ -112,6 +121,16 @@ export default function StaffProfile() {
     if (id) fetchData(false);
   }, [id, month, year]);
 
+  function handlePaymentInputChange(event) {
+    const name = event?.target?.name;
+    if (!name) return;
+
+    setPaymentForm((prev) => ({
+      ...prev,
+      [name]: event.target.value,
+    }));
+  }
+
   async function fetchData(forceRefresh) {
     if (!id) return;
 
@@ -126,7 +145,7 @@ export default function StaffProfile() {
       const found = (staffList || []).find((staff) => String(staff.id) === String(id));
       if (!found) {
         setProfile(null);
-        toast.error("Staff not found");
+        toast.error(t("staffNotFound"));
         return;
       }
 
@@ -152,7 +171,7 @@ export default function StaffProfile() {
       setPayments(paymentsRes?.data || []);
       setSalaryDetails((salaryRes?.data || []).find((salary) => String(salary.staff_id) === String(found.id)) || null);
     } catch (error) {
-      toast.error("Failed to load profile");
+      toast.error(t("failedToLoadProfile"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -216,18 +235,18 @@ export default function StaffProfile() {
           notes: modalData.notes,
         },
       });
-      toast.success("Attendance saved");
+      toast.success(t("attendanceSaved"));
       setShowModal(false);
       await fetchData(true);
     } catch (error) {
-      toast.error("Failed to save attendance");
+      toast.error(t("failedToSaveAttendance"));
     }
   }
 
   async function submitPayment(event) {
     event.preventDefault();
     if (!profile?.id || !paymentForm.amount) {
-      toast.error("Amount is required");
+      toast.error(t("amountRequired"));
       return;
     }
 
@@ -242,11 +261,11 @@ export default function StaffProfile() {
           notes: paymentForm.notes,
         },
       });
-      toast.success("Payment recorded");
+      toast.success(t("paymentRecorded"));
       setPaymentForm({ amount: "", payment_type: "advance", payment_date: new Date().toISOString().split("T")[0], notes: "" });
       await fetchData(true);
     } catch (error) {
-      toast.error("Failed to record payment");
+      toast.error(t("failedToRecordPayment"));
     } finally {
       setSavingPayment(false);
     }
@@ -274,28 +293,43 @@ export default function StaffProfile() {
   const calendar = useMemo(() => buildCalendarRows(dateObj, attendance), [attendance, dateObj]);
 
   const paymentSummary = useMemo(() => {
-    const base = Number(salaryDetails?.base_salary || 0);
-    const overtime = Number(salaryDetails?.overtime_amount || 0);
-    const penalty = Number(salaryDetails?.penalty_amount || 0);
-    const totalPaid = Number(salaryDetails?.total_paid || 0);
-    const finalSalary = Number(salaryDetails?.final_salary || 0);
-    return { base, overtime, penalty, totalPaid, finalSalary, gross: base + overtime - penalty };
-  }, [salaryDetails]);
+    const paymentTotal = payments.reduce(
+      (sum, payment) => sum + Number(payment.amount || 0),
+      0
+    );
+    const penaltyFromAttendance = attendance.reduce(
+      (sum, row) => sum + Number(row.penalty_amount || 0),
+      0
+    );
+    const monthlyBase =
+      String(profile?.salary_type || "").toLowerCase() === "monthly"
+        ? Number(profile?.base_salary || 0)
+        : 0;
+
+    const base = Number(salaryDetails?.base_salary ?? monthlyBase);
+    const overtime = Number(salaryDetails?.overtime_amount ?? stats.overtimeAmount);
+    const penalty = Number(salaryDetails?.penalty_amount ?? penaltyFromAttendance);
+    const totalPaid = Number(salaryDetails?.total_paid ?? paymentTotal);
+    const gross = base + overtime - penalty;
+    const finalSalary = Number(salaryDetails?.final_salary ?? gross - totalPaid);
+
+    return { base, overtime, penalty, totalPaid, finalSalary, gross };
+  }, [attendance, payments, profile?.base_salary, profile?.salary_type, salaryDetails, stats.overtimeAmount]);
 
   if (loading && !profile) {
-    return <Layout title="Staff Profile"><div className={styles.profileContainer}>Loading...</div></Layout>;
+    return <Layout title={t("staffProfile")}><div className={styles.profileContainer}>{t("loading")}</div></Layout>;
   }
 
   if (!profile) {
-    return <Layout title="Staff Profile"><div className={styles.profileContainer}>Staff not found</div></Layout>;
+    return <Layout title={t("staffProfile")}><div className={styles.profileContainer}>{t("staffNotFound")}</div></Layout>;
   }
 
   return (
-    <Layout title={`Profile: ${profile.name}`}>
-             `<button type="button" className={styles.backBtn} onClick={() => router.back()}>
-          <ArrowLeft size={16} /> {t("back")}
-        </button>`
+    <Layout title={`${t("profile")}: ${profile.name}`}>
       <div className={styles.profileContainer}>
+        <button type="button" className={styles.backBtn} onClick={() => router.back()}>
+          <ArrowLeft size={16} /> {t("back")}
+        </button>
 
         <div className={styles.profileHero}>
           <div className={styles.profileHeaderMain}>
@@ -309,10 +343,10 @@ export default function StaffProfile() {
               <Edit3 size={18} />
             </button>
               </div>
-              <p className={styles.profilePhone}>{profile.phone || "No phone"}</p>
+              <p className={styles.profilePhone}>{profile.phone || t("noPhone")}</p>
               
               <div className={styles.profileMetaRow}>
-                <span className={styles.profileMetaPill}>{profile.role || "Staff"}</span>
+                <span className={styles.profileMetaPill}>{profile.role || t("staff")}</span>
                 <span className={styles.profileMetaPill}>{String(profile.salary_type || "monthly").toUpperCase()}</span>
               </div>
             </div>
@@ -321,13 +355,13 @@ export default function StaffProfile() {
        
           <div className={styles.balanceStrip}>
             <div>
-              <span className={styles.balanceLabelInline}>Current Balance</span>
+              <span className={styles.balanceLabelInline}>{t("currentBalance")}</span>
               <strong className={styles.balanceValueInline}>{formatMoney(profile.current_balance)}</strong>
             </div>
             <div className={styles.balanceMiniStats}>
-              <span>Base {formatMoney(profile.base_salary)}</span>
-              <span>Late {formatMoney(profile.late_penalty)}/min</span>
-              <span>OT {formatMoney(profile.overtime_rate)}/hr</span>
+              <span>{t("baseSalary")} {formatMoney(profile.base_salary)}</span>
+              <span>{t("late")} {formatMoney(profile.late_penalty)}/min</span>
+              <span>{t("overtime")} {formatMoney(profile.overtime_rate)}/hr</span>
             </div>
           </div>
         </div>
@@ -339,17 +373,17 @@ export default function StaffProfile() {
             <button className={styles.monthBtn} type="button" onClick={() => setDateObj((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}><ChevronRight size={20} /></button>
           </div>
           <button className={styles.refreshBtn} type="button" onClick={() => fetchData(true)} disabled={refreshing}>
-            <RefreshCw size={16} className={refreshing ? styles.spin : ""} /> Refresh
+            <RefreshCw size={16} className={refreshing ? styles.spin : ""} /> {t("refresh")}
           </button>
         </div>
 
         <div className={styles.statsGrid}>
-          <div className={styles.statCard}><span><CheckCircle size={14} /> Present</span><strong>{stats.present}</strong></div>
-          <div className={styles.statCard}><span><XCircle size={14} /> Absent</span><strong>{stats.absent}</strong></div>
-          <div className={styles.statCard}><span><Clock size={14} /> Late</span><strong>{stats.late}</strong></div>
-          <div className={styles.statCard}><span><CalendarDays size={14} /> OT Hours</span><strong>{stats.overtimeHours.toFixed(2)}</strong></div>
-          <div className={`${styles.statCard} ${styles.statCardWide}`}><span><IndianRupee size={14} /> OT Amount</span><strong>{formatMoney(stats.overtimeAmount)}</strong></div>
-          <div className={`${styles.statCard} ${styles.statCardWide}`}><span><Banknote size={14} /> Advance</span><strong>{formatMoney(stats.advance)}</strong></div>
+          <div className={styles.statCard}><span><CheckCircle size={14} /> {t("present")}</span><strong>{stats.present}</strong></div>
+          <div className={styles.statCard}><span><XCircle size={14} /> {t("absent")}</span><strong>{stats.absent}</strong></div>
+          <div className={styles.statCard}><span><Clock size={14} /> {t("late")}</span><strong>{stats.late}</strong></div>
+          <div className={styles.statCard}><span><CalendarDays size={14} /> {t("otHours")}</span><strong>{stats.overtimeHours.toFixed(2)}</strong></div>
+          <div className={`${styles.statCard} ${styles.statCardWide}`}><span><IndianRupee size={14} /> {t("otAmount")}</span><strong>{formatMoney(stats.overtimeAmount)}</strong></div>
+          <div className={`${styles.statCard} ${styles.statCardWide}`}><span><Banknote size={14} /> {t("advance")}</span><strong>{formatMoney(stats.advance)}</strong></div>
         </div>
 
         <div className={styles.actionRow}>
@@ -364,68 +398,88 @@ export default function StaffProfile() {
             }));
             setShowModal(true);
           }}>
-            <ClipboardCheck size={18} /> Mark Attendance
+            <ClipboardCheck size={18} /> {t("markAttendance")}
           </button>
           <button className={styles.actionBtn} type="button" onClick={() => router.push(`/staff/report/${profile.id}`)}>
-            <FileText size={18} /> Open Report
+            <FileText size={18} /> {t("openReport")}
           </button>
         </div>
 
         <div className={styles.tabSlider}>
-          <button type="button" className={`${styles.tabBtn} ${activeTab === "attendance" ? styles.tabBtnActive : ""}`} onClick={() => setActiveTab("attendance")}>Attendance</button>
-          <button type="button" className={`${styles.tabBtn} ${activeTab === "payments" ? styles.tabBtnActive : ""}`} onClick={() => setActiveTab("payments")}>Payment</button>
+          <button type="button" className={`${styles.tabBtn} ${activeTab === "attendance" ? styles.tabBtnActive : ""}`} onClick={() => setActiveTab("attendance")}>{t("attendance")}</button>
+          <button type="button" className={`${styles.tabBtn} ${activeTab === "payments" ? styles.tabBtnActive : ""}`} onClick={() => setActiveTab("payments")}>{t("payment")}</button>
         </div>
 
         {activeTab === "attendance" ? (
           <section className={styles.sectionBlock}>
             <div className={styles.sectionHead}>
               <div>
-                <h3 className={styles.sectionTitle}>Attendance Calendar</h3>
-                <p className={styles.sectionSubtitle}>P = Present, HF = Half Day, A = Absent, L = Leave, OFF = Off, OT = Overtime.</p>
+                <h3 className={styles.sectionTitle}>{t("attendanceCalendar")}</h3>
+                {/* <p className={styles.sectionSubtitle}>{t("attendanceCalendarLegend")}</p> */}
               </div>
             </div>
 
             <div className={styles.calendarShell}>
-              <div className={styles.calendarWeekdays}>{WEEKDAYS.map((day) => <span key={day}>{day}</span>)}</div>
-              <div className={styles.calendarGrid}>
-                {Array.from({ length: calendar.leadingBlankCount }).map((_, index) => <div key={`blank-${index}`} className={styles.calendarBlank} />)}
+              <div className={styles.attendanceHeaderRow}>
+                <span>{t("date")}</span>
+                <span>{t("attendance")}</span>
+                <span>{t("advance")}</span>
+              </div>
+              <div className={styles.attendanceList}>
                 {calendar.days.map(({ iso, day, weekday, row }) => {
-                  const dayDate = new Date(iso);
-                  const longDate = `${String(day).padStart(2, "0")} ${dayDate.toLocaleString("default", { month: "short" }).toUpperCase()}`;
                   const attendanceType = row?.attendance_type || "";
                   const label = statusLabel(attendanceType, row);
+                  const paymentForDay = payments.find((payment) => {
+                    if (!payment?.payment_date) return false;
+                    return String(payment.payment_date).split("T")[0] === iso;
+                  });
+
                   return (
-                    <button key={iso} type="button" className={`${styles.calendarCard} ${row ? styles.calendarCardMarked : styles.calendarCardEmpty}`} onClick={() => {
-                      setModalData({
-                        date: iso,
-                        check_in: row?.check_in ? String(row.check_in).slice(11, 16) : "09:00",
-                        check_out: row?.check_out ? String(row.check_out).slice(11, 16) : String(profile.shift_end || "18:00").slice(0, 5),
-                        attendance_type: attendanceType || "P",
-                        is_late: Boolean(row?.is_late),
-                        late_minutes: Number(row?.late_minutes || 0),
-                        penalty_amount: Number(row?.penalty_amount || 0),
-                        overtime_hours: Number(row?.overtime_hours || 0),
-                        overtime_amount: Number(row?.overtime_amount || 0),
-                        notes: row?.notes || "",
-                      });
-                      setShowModal(true);
-                    }}>
-                      <div className={styles.calendarCardHeader}><strong>{longDate}</strong><span>{weekday}</span></div>
+                    <button
+                      key={iso}
+                      type="button"
+                      className={`${styles.attendanceRow} ${row ? styles.attendanceRowMarked : styles.attendanceRowEmpty}`}
+                      onClick={() => {
+                        setModalData({
+                          date: iso,
+                          check_in: row?.check_in ? String(row.check_in).slice(11, 16) : "09:00",
+                          check_out: row?.check_out ? String(row.check_out).slice(11, 16) : String(profile.shift_end || "18:00").slice(0, 5),
+                          attendance_type: attendanceType || "P",
+                          is_late: Boolean(row?.is_late),
+                          late_minutes: Number(row?.late_minutes || 0),
+                          penalty_amount: Number(row?.penalty_amount || 0),
+                          overtime_hours: Number(row?.overtime_hours || 0),
+                          overtime_amount: Number(row?.overtime_amount || 0),
+                          notes: row?.notes || "",
+                        });
+                        setShowModal(true);
+                      }}
+                    >
+                      <div className={styles.attendanceDateCell}>
+                        <strong>{String(day).padStart(2, "0")}</strong>
+                        <span>{weekday}</span>
+                      </div>
+                      <div className={styles.attendanceStatusCell}>
                       <div className={styles.calendarBadgeRow}>
                         <span className={`${styles.statusPill} ${styles[`status${label}`] || styles.statusOFF}`}>{label}</span>
                         {row?.is_late ? <span className={`${styles.statusPill} ${styles.statusL}`}>L</span> : null}
                         {Number(row?.overtime_amount || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>OT</span> : null}
                       </div>
-                      <div className={styles.calendarInfo}>
+                      <div className={styles.attendanceMeta}>
                         {row ? (
                           <>
-                            <span>In {row.check_in ? String(row.check_in).slice(11, 16) : "--:--"}</span>
-                            <span>Out {row.check_out ? String(row.check_out).slice(11, 16) : "--:--"}</span>
-                            {Number(row.overtime_amount || 0) > 0 ? <span className={styles.calendarAmount}>{formatMoney(row.overtime_amount)}</span> : <span className={styles.calendarMuted}>{row.attendance_type === "A" ? "Absent" : "No OT"}</span>}
+                            <span>{t("inLabel", { time: row.check_in ? String(row.check_in).slice(11, 16) : "--:--" })}</span>
+                            <span>{t("outLabel", { time: row.check_out ? String(row.check_out).slice(11, 16) : "--:--" })}</span>
+                            {Number(row.overtime_amount || 0) > 0 ? <span className={styles.calendarAmount}>{formatMoney(row.overtime_amount)}</span> : <span className={styles.calendarMuted}>{row.attendance_type === "A" ? t("absent") : t("noOT")}</span>}
                           </>
                         ) : (
-                          <span className={styles.calendarMuted}>No data</span>
+                          <span className={styles.calendarMuted}>{t("noData")}</span>
                         )}
+                      </div>
+                      </div>
+                      <div className={styles.attendanceAmountCell}>
+                        <strong>{paymentForDay ? formatMoney(paymentForDay.amount) : formatMoney(0)}</strong>
+                        <span>{paymentForDay ? String(paymentForDay.payment_type || "").toUpperCase() : t("noData")}</span>
                       </div>
                     </button>
                   );
@@ -436,31 +490,31 @@ export default function StaffProfile() {
         ) : (
           <section className={styles.sectionBlock}>
             <div className={styles.paymentSummaryGrid}>
-              <div className={styles.summaryBox}><span>Base</span><strong>{formatMoney(paymentSummary.base)}</strong></div>
-              <div className={styles.summaryBox}><span>OT</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
-              <div className={styles.summaryBox}><span>Penalty</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
-              <div className={styles.summaryBox}><span>Advances</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
-              <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>Net Payable</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("baseSalary")}</span><strong>{formatMoney(paymentSummary.base)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
+              <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
             </div>
 
             <form className={styles.paymentFormCard} onSubmit={submitPayment}>
-              <div className={styles.sectionHead}><div><h3 className={styles.sectionTitle}>Add Payment</h3><p className={styles.sectionSubtitle}>Record advance, partial, or final payments from profile.</p></div><Wallet size={18} /></div>
+              <div className={styles.sectionHead}><div><h3 className={styles.sectionTitle}>{t("addPayment")}</h3><p className={styles.sectionSubtitle}>{t("recordPaymentDescription")}</p></div><Wallet size={18} /></div>
               <div className={styles.formGridCompact}>
-                <div className={styles.formGroup}><label>Amount</label><input className={styles.formInput} type="number" min="0" step="0.01" value={paymentForm.amount} onChange={(event) => setPaymentForm((prev) => ({ ...prev, amount: event.target.value }))} placeholder="0.00" /></div>
-                <div className={styles.formGroup}><label>Type</label><select className={styles.formInput} value={paymentForm.payment_type} onChange={(event) => setPaymentForm((prev) => ({ ...prev, payment_type: event.target.value }))}><option value="advance">Advance</option><option value="partial">Partial</option><option value="final">Final</option></select></div>
-                <div className={styles.formGroup}><label>Date</label><input className={styles.formInput} type="date" value={paymentForm.payment_date} onChange={(event) => setPaymentForm((prev) => ({ ...prev, payment_date: event.target.value }))} /></div>
-                <div className={`${styles.formGroup} ${styles.formGroupWide}`}><label>Notes</label><input className={styles.formInput} type="text" value={paymentForm.notes} onChange={(event) => setPaymentForm((prev) => ({ ...prev, notes: event.target.value }))} placeholder="Optional note" /></div>
+                <div className={styles.formGroup}><label htmlFor="staff-payment-amount">{t("amount")}</label><input id="staff-payment-amount" className={styles.formInput} type="number" min="0" step="0.01" name="amount" value={paymentForm.amount} onChange={handlePaymentInputChange} placeholder="0.00" autoComplete="off" /></div>
+                <div className={styles.formGroup}><label htmlFor="staff-payment-type">{t("type")}</label><div id="staff-payment-type"><DayDropdown options={PAYMENT_TYPES.map((type) => ({ value: type, label: t(type) }))} value={paymentForm.payment_type} onChange={(value) => setPaymentForm((prev) => ({ ...prev, payment_type: value }))} /></div></div>
+                <div className={styles.formGroup}><label htmlFor="staff-payment-date">{t("date")}</label><input id="staff-payment-date" className={styles.formInput} type="date" name="payment_date" value={paymentForm.payment_date} onChange={handlePaymentInputChange} autoComplete="on" /></div>
+                <div className={`${styles.formGroup} ${styles.formGroupWide}`}><label htmlFor="staff-payment-notes">{t("notes")}</label><input id="staff-payment-notes" className={styles.formInput} type="text" name="notes" value={paymentForm.notes} onChange={handlePaymentInputChange} placeholder={t("optionalNote")} autoComplete="on" /></div>
               </div>
-              <button className={styles.btnPrimary} type="submit" disabled={savingPayment}>{savingPayment ? "Saving..." : "Record Payment"}</button>
+              <button className={styles.btnPrimary} type="submit" disabled={savingPayment}>{savingPayment ? t("saving") : t("recordPayment")}</button>
             </form>
 
             <div className={styles.timelineList}>
-              {payments.length === 0 ? <div className={styles.emptyMsg}>No payments recorded for this month.</div> : payments.map((payment) => (
+              {payments.length === 0 ? <div className={styles.emptyMsg}>{t("noPaymentsRecordedThisMonth")}</div> : payments.map((payment) => (
                 <div key={payment.id} className={styles.timelineItem}>
                   <div className={styles.tlIcon}><Banknote size={18} /></div>
                   <div className={styles.tlDetails}>
                     <div className={styles.tlRow}><strong>{String(payment.payment_type || "").toUpperCase()}</strong><span className={styles.tlAmount}>{formatMoney(payment.amount)}</span></div>
-                    <div className={styles.tlRow2}><span>{new Date(payment.payment_date).toLocaleDateString()}</span><span>{payment.notes || "No note"}</span></div>
+                    <div className={styles.tlRow2}><span>{new Date(payment.payment_date).toLocaleDateString()}</span><span>{payment.notes || t("noNote")}</span></div>
                   </div>
                 </div>
               ))}
@@ -472,28 +526,28 @@ export default function StaffProfile() {
           <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
             <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
               <div className={styles.modalHeader}>
-                <h2>Mark Attendance</h2>
+                <h2>{t("markAttendance")}</h2>
                 <button type="button" className={styles.iconAction} onClick={() => setShowModal(false)}><XCircle size={20} /></button>
               </div>
 
               <div className={styles.formGridCompact}>
-                <div className={styles.formGroup}><label>Date</label><input type="date" className={styles.formInput} value={modalData.date} onChange={(event) => updateModalField("date", event.target.value)} /></div>
-                <div className={styles.formGroup}><label>Check In</label><input type="time" className={styles.formInput} value={modalData.check_in} onChange={(event) => updateModalField("check_in", event.target.value)} /></div>
-                <div className={styles.formGroup}><label>Check Out</label><input type="time" className={styles.formInput} value={modalData.check_out} onChange={(event) => updateModalField("check_out", event.target.value)} /></div>
+                <div className={styles.formGroup}><label htmlFor="attendance-date">{t("date")}</label><input id="attendance-date" type="date" className={styles.formInput} name="date" value={modalData.date} onChange={(event) => updateModalField("date", event.target.value)} autoComplete="on" /></div>
+                <div className={styles.formGroup}><label htmlFor="attendance-checkin">{t("checkIn")}</label><input id="attendance-checkin" type="time" className={styles.formInput} name="check_in" value={modalData.check_in} onChange={(event) => updateModalField("check_in", event.target.value)} autoComplete="on" /></div>
+                <div className={styles.formGroup}><label htmlFor="attendance-checkout">{t("checkOut")}</label><input id="attendance-checkout" type="time" className={styles.formInput} name="check_out" value={modalData.check_out} onChange={(event) => updateModalField("check_out", event.target.value)} autoComplete="on" /></div>
                 <div className={`${styles.formGroup} ${styles.formGroupWide}`}>
-                  <label>Status</label>
+                  <label>{t("status")}</label>
                   <div className={styles.btnTypes}>
                     {ATTENDANCE_OPTIONS.map((option) => (
                       <button key={option.value} type="button" className={`${styles.typeBtn} ${modalData.attendance_type === option.value ? styles.active : ""}`} onClick={() => updateModalField("attendance_type", option.value)}>{option.label}</button>
                     ))}
                   </div>
                 </div>
-                <div className={`${styles.formGroup} ${styles.formGroupWide}`}><label>Notes</label><input type="text" className={styles.formInput} value={modalData.notes} onChange={(event) => updateModalField("notes", event.target.value)} placeholder="Optional note" /></div>
+                <div className={`${styles.formGroup} ${styles.formGroupWide}`}><label htmlFor="attendance-notes">{t("notes")}</label><input id="attendance-notes" type="text" className={styles.formInput} name="notes" value={modalData.notes} onChange={(event) => updateModalField("notes", event.target.value)} placeholder={t("optionalNote")} autoComplete="on" /></div>
               </div>
 
-              {modalData.is_late ? <div className={styles.previewAlert}><Clock size={16} /> Late by {modalData.late_minutes} mins. Penalty {formatMoney(modalData.penalty_amount)}</div> : null}
-              {Number(modalData.overtime_amount || 0) > 0 ? <div className={styles.previewOT}><CheckCircle size={16} /> Overtime {Number(modalData.overtime_hours || 0).toFixed(2)} hrs. Amount {formatMoney(modalData.overtime_amount)}</div> : null}
-              <button className={styles.btnPrimary} type="button" onClick={submitAttendance}>Save Attendance</button>
+              {modalData.is_late ? <div className={styles.previewAlert}><Clock size={16} /> {t("latePenaltyPreview", { minutes: modalData.late_minutes, amount: formatMoney(modalData.penalty_amount) })}</div> : null}
+              {Number(modalData.overtime_amount || 0) > 0 ? <div className={styles.previewOT}><CheckCircle size={16} /> {t("overtimePreview", { hours: Number(modalData.overtime_hours || 0).toFixed(2), amount: formatMoney(modalData.overtime_amount) })}</div> : null}
+              <button className={styles.btnPrimary} type="button" onClick={submitAttendance}>{t("saveAttendance")}</button>
             </div>
           </div>
         ) : null}

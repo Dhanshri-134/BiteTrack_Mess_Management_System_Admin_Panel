@@ -84,6 +84,7 @@ export default function StaffList() {
              <ArrowLeft size={16}/> Back
             </button>
           </div>
+          <br></br>
           <div className={styles.header}>
 
           <button className={styles.addstaff} onClick={() => (window.location.href = "/staff/create")}>
@@ -130,13 +131,13 @@ export default function StaffList() {
                     <div className={styles.staffRoleBadge}>{member.role || "Staff"}</div>
                   </div>
 
-                  {/* <div className={styles.staffCardStatsRow}>
+                  <div className={styles.staffCardStatsRow}>
                     <div className={styles.statPill} style={{ background: "#dcfce7", color: "#166534" }}>P {stats.present}</div>
                     <div className={styles.statPill} style={{ background: "#fee2e2", color: "#991b1b" }}>A {stats.absent}</div>
                     <div className={styles.statPill} style={{ background: "#ffedd5", color: "#c2410c" }}>L {stats.leave}</div>
                     <div className={styles.statPill} style={{ background: "#fef3c7", color: "#b45309" }}>HF {stats.halfDay}</div>
                     <div className={styles.statPill} style={{ background: "#e5e7eb", color: "#4b5563" }}>OFF {stats.off}</div>
-                  </div> */}
+                  </div>
 
                   <div className={styles.staffCardBalance}>
                     <span className={styles.balanceLabel}>Balance</span>

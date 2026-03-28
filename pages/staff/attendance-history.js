@@ -4,7 +4,7 @@ import DayDropdown from "../../components/DayDropdown";
 import styles from "../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
-import { ArrowLeft, RefreshCw, User } from "lucide-react";
+import { ArrowLeft, RefreshCw, User, UserCircle, UserCircle2, UserIcon } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 
 function formatMoney(value) {
@@ -132,7 +132,7 @@ export default function AttendanceHistory() {
               <div key={row.id} className={styles.timelineItem}>
                 <div className={styles.tlDetails}>
                   <div className={styles.tlRow}>
-                    <strong> <User size={13}/> {row.name}</strong>
+                    <strong> <User size={16} /> {row.name}</strong>
                     <span className={`${styles.statusPill} ${styles[`status${row.attendance_type === "H" ? "HF" : row.attendance_type}`] || styles.statusOFF}`}>
                       {row.attendance_type === "H" ? "HF" : row.attendance_type}
                     </span>

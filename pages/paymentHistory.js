@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import { offlineFetch } from "@/lib/offlineFetch";
 import { Download, Eye } from "lucide-react";
 import { API_BASE } from "../lib/api";
+import { downloadFileFromUrl } from "../lib/fileDownload";
 
 import GlobalLoader from "../components/GlobalLoader";
 
@@ -21,6 +22,16 @@ export default function PaymentHistory({ token }) {
 
     const authHeaders = {
         Authorization: `Bearer ${token}`,
+    };
+    const handleReceiptDownload = async (url, paymentId) => {
+        try {
+            await downloadFileFromUrl(url, {
+                fileName: `receipt-${paymentId || Date.now()}.pdf`,
+            });
+        } catch (error) {
+            console.error(error);
+            toast.error(t("somethingWentWrong"));
+        }
     };
 
     /* ================= LOAD USERS (PAID ONLY) ================= */
@@ -167,7 +178,7 @@ export default function PaymentHistory({ token }) {
 
                         <button
                             className={styles.downloadBtn}
-                            onClick={() => window.open(receiptModal, "_blank")}
+                            onClick={() => handleReceiptDownload(receiptModal)}
                         >
                             <Download size={18} />
                         </button>
@@ -328,7 +339,7 @@ export default function PaymentHistory({ token }) {
 
                                                                     <button
                                                                         className={styles.downloadIcon}
-                                                                        onClick={() => window.open(h.receipt_pdf_url, "_blank")}
+                                                                        onClick={() => handleReceiptDownload(h.receipt_pdf_url, h.id)}
                                                                     >
                                                                         <Download size={16} />
                                                                     </button>
@@ -445,7 +456,7 @@ export default function PaymentHistory({ token }) {
 
                                     <button
                                         className={styles.downloadIcon}
-                                        onClick={() => window.open(p.receipt_pdf_url, "_blank")}
+                                        onClick={() => handleReceiptDownload(p.receipt_pdf_url, p.id)}
                                     >
                                         <Download size={16} />
                                     </button>
@@ -480,7 +491,7 @@ export default function PaymentHistory({ token }) {
 
                                                     <button
                                                         className={styles.downloadIcon}
-                                                        onClick={() => window.open(h.receipt_pdf_url, "_blank")}
+                                                        onClick={() => handleReceiptDownload(h.receipt_pdf_url, h.id)}
                                                     >
                                                         <Download size={16} />
                                                     </button>
@@ -509,7 +520,7 @@ export default function PaymentHistory({ token }) {
 
         <button
           className={styles.downloadIcon}
-          onClick={() => window.open(receiptModal, "_blank")}
+          onClick={() => handleReceiptDownload(receiptModal)}
         >
           Download
         </button>

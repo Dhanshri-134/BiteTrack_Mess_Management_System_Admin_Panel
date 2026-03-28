@@ -14,6 +14,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ChartBarIcon, ChevronDown, ChevronUp, Download, Filter, FilterIcon, FilterX, FilterXIcon, Presentation, MoreVertical, DownloadIcon, RefreshCcw } from "lucide-react";
 import DayDropdown from "../../components/DayDropdown";
+import { downloadFileFromUrl, saveJsPdfDocument } from "../../lib/fileDownload";
 
 const TooltipText = ({ value }) => {
   const [pos, setPos] = useState({ x: 0, y: 0, show: false });
@@ -423,6 +424,7 @@ Thank you.`;
   
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const authHeaders = () => ({ Authorization: `Bearer ${token}`, "Content-Type": "application/json" });
+  const downloadAuthHeaders = () => ({ Authorization: `Bearer ${token}` });
 
   const fetchBills = async () => {
     try {
@@ -569,9 +571,10 @@ if (!map[key].parent_mobile && b.parent_mobile) {
           b.name, getBillAmount(b).toFixed(2), Number(b.advance_amount || 0).toFixed(2), Number(b.pending_amount || 0).toFixed(2), Number(b.total_payable).toFixed(2)
         ])
       });
-      doc.save(`Billing_${month}_${year}.pdf`);
+      await saveJsPdfDocument(doc, `Billing_${month}_${year}.pdf`);
     } catch (err) {
       console.error(err);
+      toast.error(t("somethingWentWrong"));
     } finally {
       setExportingPDF(false);
     }
@@ -587,10 +590,21 @@ if (!map[key].parent_mobile && b.parent_mobile) {
     return `${b.name || ""} ${b.email || ""} ${b.mobile || ""}`.toLowerCase().includes(search.toLowerCase());
   });
 
-  const downloadExcel = () => {
+  const downloadExcel = async () => {
     if (!month || !year) return toast(t("selectMonthYear"));
-    const url = `${API_BASE}/api/bills/download/?month=${month}&year=${year}&token=${token}`;
-    window.location.href = url;
+
+    try {
+      await downloadFileFromUrl(
+        `${API_BASE}/api/bills/download/?month=${month}&year=${year}`,
+        {
+          fileName: `Billing_${month}_${year}.xlsx`,
+          headers: downloadAuthHeaders(),
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error(t("somethingWentWrong"));
+    }
   };
 
   const { t } = useLanguage();

@@ -104,33 +104,34 @@ export default function CategoryItems() {
 
   return (
     <Layout title={t("categoryItems")}>
+      
       <section className={styles.heroSection}>
         <div>
-          <p className={styles.eyebrow}>{t("inventory")}</p>
           <div className={styles.header}>
+          <p className={styles.eyebrow}>{t("inventory")}</p>
           
-          <h1 className={styles.heroTitle}>{categoryName || t("category")}</h1>
                       {/* <h1 className={styles.heroTitle}>{t("vendors")}</h1> */}
                       <button
-                        className={styles.secondaryBtn}
+                        className={styles.backbtn}
                         onClick={() => router.back()}
                       >
                         ← Back
                       </button>
                     </div>
-          <p className={styles.heroSubtitle}>{t("categoryItemsSubtitle")}</p>
+          <h1 className={styles.heroTitle}>{categoryName || t("category")}</h1>
+          {/* <p className={styles.heroSubtitle}>{t("categoryItemsSubtitle")}</p> */}
+        </div>
+      <section className={styles.catId}>
+        <div >
+          <span>{t("itemsLabel")}</span> :
+          <strong> {items.length}</strong>
         </div>
         <button className={styles.addVbtn} onClick={() => setShowAddItem(true)}>
           + {t("addItem")}
         </button>
       </section>
-
-      <section className={styles.infoGrid}>
-        <div>
-          <span>{t("itemsLabel")}</span>
-          <strong>{items.length}</strong>
-        </div>
       </section>
+
 
       <section className={styles.toolbar}>
         <input

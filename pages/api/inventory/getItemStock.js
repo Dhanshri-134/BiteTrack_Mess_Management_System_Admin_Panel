@@ -26,6 +26,7 @@ SELECT
 i.id,
 i.item_name,
 i.unit,
+COALESCE(s.min_stock, 0) AS min_stock,
 
 COALESCE(SUM(
 CASE
@@ -38,13 +39,17 @@ END
 
 FROM inventory_items i
 
+LEFT JOIN inventory_stock s
+ON s.item_id=i.id
+AND s.mess_id=$2
+
 LEFT JOIN inventory_stock_transactions t
 ON t.item_id=i.id
 AND t.mess_id=$2
 
 WHERE i.id=$1
 
-GROUP BY i.id,i.item_name,i.unit
+GROUP BY i.id,i.item_name,i.unit,s.min_stock
 `,[item_id,messId]);
 
 res.json({

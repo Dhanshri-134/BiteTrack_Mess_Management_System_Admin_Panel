@@ -4,217 +4,281 @@ import styles from "../../styles/inventory.module.css";
 import { inventoryOfflineRequest, inventoryRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "../../context/LanguageContext";
+import { useRouter } from "next/router";
 
 export default function AddPurchase() {
-    const [vendors, setVendors] = useState([]);
-    const [items, setItems] = useState([]);
-    const [vendor, setVendor] = useState("");
-    const [invoice, setInvoice] = useState("");
-    const [purchaseDate, setPurchaseDate] = useState("");
-    const [notes, setNotes] = useState("");
-    const [error, setError] = useState("");
-    const [rows, setRows] = useState([
-        { item_id: "", quantity: "", price: "" }
-    ]);
-    const {t} = useLanguage();
+  const router = useRouter();
+  const { t } = useLanguage();
+  const [vendors, setVendors] = useState([]);
+  const [items, setItems] = useState([]);
+  const [vendor, setVendor] = useState("");
+  const [invoice, setInvoice] = useState("");
+  const [purchaseDate, setPurchaseDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [rows, setRows] = useState([{ item_id: "", quantity: "", price: "" }]);
 
-    useEffect(() => {
-        loadVendors();
-        loadItems();
-    }, []);
+  useEffect(() => {
+    loadVendors();
+    loadItems();
+  }, []);
 
-    useAppRefresh(() => {
-        loadVendors();
-        loadItems();
+  useAppRefresh(() => {
+    loadVendors();
+    loadItems();
+  });
+
+  async function loadVendors() {
+    const result = await inventoryOfflineRequest(
+      "inventory-vendors",
+      "/api/inventory/getVendors/"
+    );
+    if (result.success) {
+      setVendors(result.data || []);
+    }
+  }
+
+  async function loadItems() {
+    const result = await inventoryOfflineRequest(
+      "inventory-items-all",
+      "/api/inventory/getItems/"
+    );
+    if (result.success) {
+      setItems(result.data || []);
+    }
+  }
+
+  function addRow() {
+    setRows((prev) => [...prev, { item_id: "", quantity: "", price: "" }]);
+  }
+
+  function updateRow(index, field, value) {
+    setRows((prev) =>
+      prev.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, [field]: value } : row
+      )
+    );
+  }
+
+  function removeRow(index) {
+    setRows((prev) => {
+      if (prev.length === 1) return prev;
+      return prev.filter((_, rowIndex) => rowIndex !== index);
     });
+  }
 
-    async function loadVendors() {
-        const result = await inventoryOfflineRequest(
-            "inventory-vendors",
-            "/api/inventory/getVendors/"
-        );
-        if (result.success) {
-            setVendors(result.data);
-        }
+  function totalAmount() {
+    return rows.reduce(
+      (sum, row) => sum + Number(row.quantity || 0) * Number(row.price || 0),
+      0
+    );
+  }
+
+  async function savePurchase() {
+    if (!vendor) {
+      setError("Select a vendor.");
+      return;
     }
-    async function loadItems() {
-        const result = await inventoryOfflineRequest(
-            "inventory-items-all",
-            "/api/inventory/getItems/"
-        );
-        if (result.success) {
-            setItems(result.data);
-        }
+
+    const validRows = rows.filter(
+      (row) =>
+        row.item_id && Number(row.quantity) > 0 && Number(row.price) >= 0
+    );
+
+    if (validRows.length === 0) {
+      setError("Add at least one valid item row.");
+      return;
     }
-    function addRow() {
-        setRows([
-            ...rows,
-            { item_id: "", quantity: "", price: "" }
-        ]);
+
+    setError("");
+    setSaving(true);
+
+    try {
+      const result = await inventoryRequest("/api/inventory/addPurchase/", {
+        body: {
+          vendor_id: vendor,
+          invoice_number: invoice,
+          purchase_date: purchaseDate,
+          notes,
+          items: validRows,
+        },
+      });
+
+      if (result.success) {
+        alert("Purchase saved");
+        setRows([{ item_id: "", quantity: "", price: "" }]);
+        setVendor("");
+        setInvoice("");
+        setPurchaseDate("");
+        setNotes("");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
     }
-    function updateRow(index, field, value) {
-        const copy = [...rows];
-        copy[index][field] = value;
-        setRows(copy);
-    }
-    function removeRow(index) {
-        const copy = [...rows];
-        copy.splice(index, 1);
-        setRows(copy);
-    }
-    function totalAmount() {
-        return rows.reduce((sum, r) => {
-            return sum + (Number(r.quantity || 0) * Number(r.price || 0));
-        }, 0);
-    }
-    async function savePurchase() {
-        if (!vendor) {
-            setError("Select a vendor.");
-            return;
-        }
-        const validRows = rows.filter((row) => row.item_id && Number(row.quantity) > 0 && Number(row.price) >= 0);
-        if (validRows.length === 0) {
-            setError("Add at least one valid item row.");
-            return;
-        }
-        setError("");
-        try {
-            const result = await inventoryRequest("/api/inventory/addPurchase/", {
-                body: {
-                    vendor_id: vendor,
-                    invoice_number: invoice,
-                    purchase_date: purchaseDate,
-                    notes,
-                    items: validRows
-                }
-            });
-            if (result.success) {
-                alert("Purchase saved");
-                setRows([{ item_id: "", quantity: "", price: "" }]);
-                setInvoice("");
-                setPurchaseDate("");
-                setNotes("");
-            }
-        } catch (err) {
-            setError(err.message);
-        }
-    }
-    return (
-        <Layout title="Add Purchase">
+  }
+
+  return (
+    <Layout title="Add Purchase">
       <section className={styles.heroSection}>
         <div>
-          <p className={styles.eyebrow}>{t("inventory")}</p>
           <div className={styles.header}>
-
-            <h1 className={styles.heroTitle}>{t("addPurchases")}</h1>
-            <button
-              className={styles.secondaryBtn}
-              onClick={() => router.back()}
-            >
-              ← Back
+            <p className={styles.eyebrow}>{t("inventory")}</p>
+            <button className={styles.backbtn} onClick={() => router.back()}>
+              Back
             </button>
           </div>
-          <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p>
+          <h1 className={styles.heroTitle}>{t("addPurchases")}</h1>
         </div>
-        </section>
+      </section>
 
-            <div className={styles.formGrid}>
+      <div className={styles.formCard}>
+        <div className={styles.formCardHeader}>
+          <div>
+            <h3 className={styles.formCardTitle}>{t("addPurchases")}</h3>
+            <p className={styles.formCardText}>
+              Fill vendor details, add purchase rows, and save everything from
+              one clean form.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.formGrid}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>{t("vendor")}</label>
+            <select
+              className={styles.formControl}
+              value={vendor}
+              onChange={(e) => setVendor(e.target.value)}
+            >
+              <option value="">Select Vendor</option>
+              {vendors.map((vendorItem) => (
+                <option key={vendorItem.id} value={vendorItem.id}>
+                  {vendorItem.vendor_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>{t("invoice")}</label>
+            <input
+              className={styles.formControl}
+              placeholder="Invoice Number"
+              value={invoice}
+              onChange={(e) => setInvoice(e.target.value)}
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>{t("date")}</label>
+            <input
+              className={styles.formControl}
+              type="date"
+              value={purchaseDate}
+              onChange={(e) => setPurchaseDate(e.target.value)}
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>{t("notes")}</label>
+            <textarea
+              className={styles.formControl}
+              placeholder="Notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {error ? <p className={styles.errorText}>{error}</p> : null}
+
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>{t("item")}</th>
+            <th>{t("quantity")}</th>
+            <th>{t("price")}</th>
+            <th>{t("total")}</th>
+            <th>{t("actions")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={index}>
+              <td data-label={t("item")}>
                 <select
-                    value={vendor}
-                    onChange={(e) => setVendor(e.target.value)}
+                  className={styles.formControl}
+                  value={row.item_id}
+                  onChange={(e) => updateRow(index, "item_id", e.target.value)}
                 >
-                    <option value="">Select Vendor</option>
-                    {vendors.map(v => (
-                        <option key={v.id} value={v.id}>
-                            {v.vendor_name}
-                        </option>
-                    ))}
+                  <option value="">Select Item</option>
+                  {items.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.item_name}
+                    </option>
+                  ))}
                 </select>
+              </td>
+
+              <td data-label={t("quantity")}>
                 <input
-                    placeholder="Invoice Number"
-                    value={invoice}
-                    onChange={(e) => setInvoice(e.target.value)}
+                  className={styles.formControl}
+                  type="number"
+                  min="0"
+                  value={row.quantity}
+                  onChange={(e) => updateRow(index, "quantity", e.target.value)}
                 />
+              </td>
+
+              <td data-label={t("price")}>
                 <input
-                    type="date"
-                    value={purchaseDate}
-                    onChange={(e) => setPurchaseDate(e.target.value)}
+                  className={styles.formControl}
+                  type="number"
+                  min="0"
+                  value={row.price}
+                  onChange={(e) => updateRow(index, "price", e.target.value)}
                 />
-                <textarea
-                    placeholder="Notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                />
-            </div>
-            {error && <p className={styles.errorText}>{error}</p>}
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((r, i) => (
-                        <tr key={i}>
-                            <td>
-                                <select
-                                    value={r.item_id}
-                                    onChange={(e) => updateRow(i, "item_id", e.target.value)}
-                                >
-                                    <option value="">Select Item</option>
-                                    {items.map(it => (
-                                        <option key={it.id} value={it.id}>
-                                            {it.item_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </td>
-                            <td>
-                                <input
-                                    type="number"
-                                    value={r.quantity}
-                                    onChange={(e) => updateRow(i, "quantity", e.target.value)}
-                                />
-                            </td>
-                            <td>
-                                <input
-                                    type="number"
-                                    value={r.price}
-                                    onChange={(e) => updateRow(i, "price", e.target.value)}
-                                />
-                            </td>
-                            <td>
-                                ₹ {Number(r.quantity || 0) * Number(r.price || 0)}
-                            </td>
-                            <td>
-                                <button onClick={() => removeRow(i)}>
-                                    Remove
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <br></br>
-            <button
-                className={styles.secondaryBtn}
-                onClick={addRow}
-            >
-                + Add Item
-            </button>
-            <div className={styles.totalBox}>
-                Total: ₹ {totalAmount()}
-            </div>
-            <button
-                className={styles.primaryBtn}
-                onClick={savePurchase}
-            >
-                Save Purchase
-            </button>
-        </Layout>
-    );
+              </td>
+
+              <td data-label={t("total")}>Rs {Number(row.quantity || 0) * Number(row.price || 0)}</td>
+
+              <td data-label={t("actions")}>
+                <button
+                  className={styles.secondaryBtn}
+                  onClick={() => removeRow(index)}
+                  disabled={saving}
+                >
+                  Remove
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className={styles.inlineActions}>
+        <button
+          className={styles.secondaryBtn}
+          onClick={addRow}
+          disabled={saving}
+        >
+          + Add Item
+        </button>
+
+        <div className={styles.totalBox}>Total: Rs {totalAmount()}</div>
+
+        <button
+          className={styles.primaryBtn}
+          onClick={savePurchase}
+          disabled={saving}
+        >
+          {saving ? t("saving") : "Save Purchase"}
+        </button>
+      </div>
+    </Layout>
+  );
 }

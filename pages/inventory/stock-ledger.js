@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/inventory.module.css";
 import tableStyles from "../../styles/inventory.module.css";
+import DayDropdown from "../../components/DayDropdown";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "@/context/LanguageContext";
@@ -50,48 +51,52 @@ export default function StockLedger() {
         }
     }
 
-    function selectItem(e) {
-        const id = e.target.value;
+    function selectItem(id) {
         setSelectedItem(id);
         if (id) {
             loadLedger(id);
+        } else {
+            setLedger([]);
         }
     }
+
+    const itemOptions = [
+        { value: "", label: t("selectItem") },
+        ...items.map((item) => ({
+            value: String(item.id),
+            label: item.item_name,
+        })),
+    ];
 
     return (
         <Layout title={t("stockLedger")}>
             <section className={styles.heroSection}>
                 <div>
-                    <p className={styles.eyebrow}>{t("inventory")}</p>
                     <div className={styles.header}>
 
-                    <h1 className={styles.heroTitle}>{t("stockLedger")}</h1>
+                    <p className={styles.eyebrow}>{t("inventory")}</p>
             <button
-              className={styles.secondaryBtn}
+              className={styles.backbtn}
               onClick={() => router.back()}
             >
               ← Back
             </button>
           </div>
-                    <p className={styles.heroSubtitle}>{t("stockLedgerSubtitle")}</p>
+                    <h1 className={styles.heroTitle}>{t("stockLedger")}</h1>
+                    {/* <p className={styles.heroSubtitle}>{t("stockLedgerSubtitle")}</p> */}
                 </div>
             </section>
 
-            <select
-                value={selectedItem}
-                onChange={selectItem}
-                className={styles.searchInput}
-            >
-
-                <option value="">{t("selectItem")}</option>
-
-                {items.map(i => (
-                    <option key={i.id} value={i.id}>
-                        {i.item_name}
-                    </option>
-                ))}
-
-            </select>
+            <div className={styles.toolbar}>
+                <div className={styles.filterCard}>
+                    <label className={styles.filterLabel}>{t("selectItem")}</label>
+                    <DayDropdown
+                        options={itemOptions}
+                        value={selectedItem}
+                        onChange={selectItem}
+                    />
+                </div>
+            </div>
 
             <table className={tableStyles.table}>
 

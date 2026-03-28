@@ -15,8 +15,9 @@
 .main {
   flex: 1;
   padding: 1.5rem;
-  padding-top: calc(1.5rem + 64px); /* navbar */
+  padding-top: 2rem;
   padding-bottom: calc(1.5rem + 80px); /* footer */
+  margin-top: 68px;
   
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -32,7 +33,6 @@
 
 @media (min-width: 768px) {
   .main{
-
     margin-left:260px;
   }
 }

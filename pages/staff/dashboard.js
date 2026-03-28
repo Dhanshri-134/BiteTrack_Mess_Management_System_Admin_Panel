@@ -103,13 +103,13 @@ export default function StaffDashboard() {
       <div className={styles.container}>
         <div className={styles.pageStack}>
           <section className={styles.heroPanel}>
-            <p className={styles.heroKicker}>{t("staff")}</p>
             <div className={styles.header}>
-              <h1 className={styles.heroTitle}>{t("dashboard")}</h1>
+            <p className={styles.heroKicker}>{t("staff")}</p>
               <button className={styles.backBtn} onClick={() => router.back()}>
                 <ArrowLeft size={16} /> {t("back")}
               </button>
             </div>
+              <h1 className={styles.heroTitle}>{t("dashboard")}</h1>
             <div className={styles.heroActions}>
               <Link href="/staff/create" className={styles.primaryBtn}>
                 <UserPlus size={18} /> {t("addStaff")}

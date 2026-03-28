@@ -681,7 +681,7 @@
   "editPaidAmount": "Edit Paid Amount",
   "leave": "रजा",
   "summary": "सारांश",
-  "catalog": "कॅटलॉग",
+  "catalog": "स्टोर",
   "itemsInUse": "वापरातील वस्तू",
   "vendor": "विक्रेता",
   "stockHistory": "स्टॉक इतिहास",
@@ -762,4 +762,36 @@
   "totalProfilesDescription": "सध्याच्या मेसपुरते मर्यादित स्टाफ रेकॉर्ड.",
   "staffDirectory": "स्टाफ निर्देशिका",
   "joiningDate": "रुजू तारीख"
+  ,"staffProfile": "स्टाफ प्रोफाइल"
+  ,"staffNotFound": "स्टाफ सापडला नाही"
+  ,"noPhone": "फोन नाही"
+  ,"failedToLoadProfile": "प्रोफाइल लोड करता आले नाही"
+  ,"attendanceSaved": "हजेरी जतन केली"
+  ,"failedToSaveAttendance": "हजेरी जतन करता आली नाही"
+  ,"amountRequired": "रक्कम आवश्यक आहे"
+  ,"late": "उशीर"
+  ,"otHours": "ओटी तास"
+  ,"otAmount": "ओटी रक्कम"
+  ,"openReport": "रिपोर्ट उघडा"
+  ,"attendanceCalendar": "हजेरी कॅलेंडर"
+  ,"attendanceCalendarLegend": "P = उपस्थित, HF = अर्धा दिवस, A = गैरहजर, L = रजा, OFF = सुट्टी, OT = ओव्हरटाईम."
+  ,"inLabel": "इन {{time}}"
+  ,"outLabel": "आउट {{time}}"
+  ,"noOT": "ओटी नाही"
+  ,"advances": "अॅडव्हान्स"
+  ,"netPayable": "निव्वळ देय"
+  ,"addPayment": "पेमेंट जोडा"
+  ,"recordPaymentDescription": "प्रोफाइलमधून अॅडव्हान्स, पार्टियल किंवा फायनल पेमेंट नोंदवा."
+  ,"recordPayment": "पेमेंट नोंदवा"
+  ,"noPaymentsRecordedThisMonth": "या महिन्यात कोणतेही पेमेंट नोंदलेले नाही."
+  ,"noNote": "नोंद नाही"
+  ,"checkIn": "चेक इन"
+  ,"checkOut": "चेक आउट"
+  ,"optionalNote": "ऐच्छिक नोंद"
+  ,"latePenaltyPreview": "{{minutes}} मिनिटे उशीर. दंड {{amount}}"
+  ,"overtimePreview": "ओव्हरटाईम {{hours}} तास. रक्कम {{amount}}"
+  ,"saveAttendance": "हजेरी जतन करा"
+  ,"partial": "पार्टियल"
+  ,"final": "फायनल"
+  ,"status": "स्थिती"
 }

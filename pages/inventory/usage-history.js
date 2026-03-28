@@ -3,8 +3,10 @@ import Layout from "../../components/Layout";
 import styles from "../../styles/table.module.css";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function UsageHistory(){
+const { t } = useLanguage();
 
 const [usage,setUsage]=useState([]);
 
@@ -43,8 +45,8 @@ return(
 
 {usage.map(u=>(
 <tr key={u.id}>
-<td>{u.usage_date}</td>
-<td>
+<td data-label={t("date")}>{u.usage_date}</td>
+<td data-label={t("items")}>
 
 {u.items?.map((i,index)=>(
 <div key={`${u.id}-${index}`}>

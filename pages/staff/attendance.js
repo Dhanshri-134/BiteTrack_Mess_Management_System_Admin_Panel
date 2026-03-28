@@ -145,16 +145,14 @@ export default function StaffAttendance() {
         <div className={styles.pageStack}>
 
           <section className={styles.heroPanel}>
-            <p className={styles.heroKicker}>Attendance</p>
              <div className={styles.header}>
-                <h1 className={styles.heroHeading}>Mark Attendance</h1>
+            <p className={styles.heroKicker}>Attendance</p>
               <button type="button" className={styles.backBtn} onClick={() => window.history.back()}>
                 <ArrowLeft size={16} /> Back
               </button>
           </div>
-            <p className={styles.heroText}>
-              Overtime is calculated from late check-out, not from a separate status.
-            </p>
+                <h1 className={styles.heroHeading}>Mark Attendance</h1>
+          
             <br></br>
             <div className={styles.statusLegend}>
               {ATTENDANCE_OPTIONS.map((option) => (
