@@ -75,7 +75,7 @@ export default function SalaryHistoryPage() {
         acc.final += Number(row.final_salary || 0);
         acc.penalty += Number(row.penalty_amount || 0);
         acc.overtime += Number(row.overtime_amount || 0);
-        acc.pending += String(row.payment_status || "").toLowerCase() === "paid" ? 0 : 1;
+        acc.pending += Number(row.final_salary || 0) > 0 ? 1 : 0;
         return acc;
       },
       { final: 0, penalty: 0, overtime: 0, pending: 0 }

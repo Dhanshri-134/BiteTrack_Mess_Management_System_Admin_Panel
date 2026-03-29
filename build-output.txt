@@ -17,265 +17,265 @@
    Finalizing page optimization ...
    Collecting build traces ...
 
-Route (pages)                                  Size     First Load JS
-┌ ○ / (863 ms)                                 4.57 kB         117 kB
-├   └ css/976c70e21c4c83eb.css                 501 B
-├   /_app                                      0 B             110 kB
-├ ○ /404                                       183 B           110 kB
-├ ƒ /api/accountDeletion/list                  0 B             110 kB
-├ ƒ /api/accountDeletion/update                0 B             110 kB
-├ ƒ /api/advance/fetch                         0 B             110 kB
-├ ƒ /api/advance/update                        0 B             110 kB
-├ ƒ /api/analytics/collection                  0 B             110 kB
-├ ƒ /api/analytics/day-details                 0 B             110 kB
-├ ƒ /api/analytics/week-details                0 B             110 kB
-├ ƒ /api/attendance                            0 B             110 kB
-├ ƒ /api/attendance/delete                     0 B             110 kB
-├ ƒ /api/attendance/fetch                      0 B             110 kB
-├ ƒ /api/attendance/mark                       0 B             110 kB
-├ ƒ /api/attendance/monthly                    0 B             110 kB
-├ ƒ /api/attendance/owner-mark                 0 B             110 kB
-├ ƒ /api/auth/forgot-password                  0 B             110 kB
-├ ƒ /api/auth/login                            0 B             110 kB
-├ ƒ /api/auth/register-mess                    0 B             110 kB
-├ ƒ /api/auth/staff-login                      0 B             110 kB
-├ ƒ /api/billing                               0 B             110 kB
-├ ƒ /api/billing/create-subscription           0 B             110 kB
-├ ƒ /api/billing/status                        0 B             110 kB
-├ ƒ /api/bills/all                             0 B             110 kB
-├ ƒ /api/bills/download                        0 B             110 kB
-├ ƒ /api/bills/downloadPDF                     0 B             110 kB
-├ ƒ /api/bills/fetch                           0 B             110 kB
-├ ƒ /api/bills/generate                        0 B             110 kB
-├ ƒ /api/bills/generate-receipt                0 B             110 kB
-├ ƒ /api/bills/history                         0 B             110 kB
-├ ƒ /api/bills/mark-paid                       0 B             110 kB
-├ ƒ /api/bills/toggle-freeze                   0 B             110 kB
-├ ƒ /api/bills/update-attendance               0 B             110 kB
-├ ƒ /api/bookings                              0 B             110 kB
-├ ƒ /api/bookings/[id]                         0 B             110 kB
-├ ƒ /api/bookings/fetch                        0 B             110 kB
-├ ƒ /api/bookings/updateStatus                 0 B             110 kB
-├ ƒ /api/cash-payments/fetch                   0 B             110 kB
-├ ƒ /api/cash-payments/update                  0 B             110 kB
-├ ƒ /api/courses/fetch                         0 B             110 kB
-├ ƒ /api/daily-payments/fetch                  0 B             110 kB
-├ ƒ /api/daily-payments/update                 0 B             110 kB
-├ ƒ /api/dashboard/collections                 0 B             110 kB
-├ ƒ /api/dashboard/expected-payment            0 B             110 kB
-├ ƒ /api/database/table-data                   0 B             110 kB
-├ ƒ /api/database/tables                       0 B             110 kB
-├ ƒ /api/feedback/add                          0 B             110 kB
-├ ƒ /api/feedback/fetch                        0 B             110 kB
-├ ƒ /api/hostels/fetch                         0 B             110 kB
-├ ƒ /api/inventory/addCategory                 0 B             110 kB
-├ ƒ /api/inventory/addItem                     0 B             110 kB
-├ ƒ /api/inventory/addPurchase                 0 B             110 kB
-├ ƒ /api/inventory/addStock                    0 B             110 kB
-├ ƒ /api/inventory/addUsage                    0 B             110 kB
-├ ƒ /api/inventory/addVendor                   0 B             110 kB
-├ ƒ /api/inventory/adjustStock                 0 B             110 kB
-├ ƒ /api/inventory/dashboard                   0 B             110 kB
-├ ƒ /api/inventory/getActiveItems              0 B             110 kB
-├ ƒ /api/inventory/getCategories               0 B             110 kB
-├ ƒ /api/inventory/getCategoryItems            0 B             110 kB
-├ ƒ /api/inventory/getItems                    0 B             110 kB
-├ ƒ /api/inventory/getItemStock                0 B             110 kB
-├ ƒ /api/inventory/getLowStockItems            0 B             110 kB
-├ ƒ /api/inventory/getPurchaseDetails          0 B             110 kB
-├ ƒ /api/inventory/getPurchases                0 B             110 kB
-├ ƒ /api/inventory/getStockLedger              0 B             110 kB
-├ ƒ /api/inventory/getStockSummary             0 B             110 kB
-├ ƒ /api/inventory/getStockTransactions        0 B             110 kB
-├ ƒ /api/inventory/getUsage                    0 B             110 kB
-├ ƒ /api/inventory/getVendorPurchases          0 B             110 kB
-├ ƒ /api/inventory/getVendors                  0 B             110 kB
-├ ƒ /api/inventory/purchase-history            0 B             110 kB
-├ ƒ /api/inventory/searchCategories            0 B             110 kB
-├ ƒ /api/inventory/searchItems                 0 B             110 kB
-├ ƒ /api/inventory/updateMinStock              0 B             110 kB
-├ ƒ /api/inventory/updateVendor                0 B             110 kB
-├ ƒ /api/inventory/useStock                    0 B             110 kB
-├ ƒ /api/leave/history                         0 B             110 kB
-├ ƒ /api/leave/members                         0 B             110 kB
-├ ƒ /api/leave/requests                        0 B             110 kB
-├ ƒ /api/leave/update-status                   0 B             110 kB
-├ ƒ /api/menu/cravings/fetch                   0 B             110 kB
-├ ƒ /api/menu/fasting/fetch                    0 B             110 kB
-├ ƒ /api/menu/fasting/update                   0 B             110 kB
-├ ƒ /api/menu/fetch                            0 B             110 kB
-├ ƒ /api/menu/monthly-history                  0 B             110 kB
-├ ƒ /api/menu/ratings/add                      0 B             110 kB
-├ ƒ /api/menu/ratings/average                  0 B             110 kB
-├ ƒ /api/menu/ratings/fetch                    0 B             110 kB
-├ ƒ /api/menu/special_dishes/add               0 B             110 kB
-├ ƒ /api/menu/special_dishes/delete            0 B             110 kB
-├ ƒ /api/menu/special_dishes/fetch             0 B             110 kB
-├ ƒ /api/menu/special_dishes/vote              0 B             110 kB
-├ ƒ /api/menu/update                           0 B             110 kB
-├ ƒ /api/menu/votes/fetch                      0 B             110 kB
-├ ƒ /api/menu/votes/vote                       0 B             110 kB
-├ ƒ /api/mess/access                           0 B             110 kB
-├ ƒ /api/mess/details                          0 B             110 kB
-├ ƒ /api/mess/info                             0 B             110 kB
-├ ƒ /api/mess/mess-contact                     0 B             110 kB
-├ ƒ /api/mess/meta                             0 B             110 kB
-├ ƒ /api/mess/profile                          0 B             110 kB
-├ ƒ /api/mess/settings                         0 B             110 kB
-├ ƒ /api/notifications                         0 B             110 kB
-├ ƒ /api/notifications/delete-groups           0 B             110 kB
-├ ƒ /api/payment-verifications/fetch           0 B             110 kB
-├ ƒ /api/payment-verifications/update          0 B             110 kB
-├ ƒ /api/payment/config                        0 B             110 kB
-├ ƒ /api/quick-actions/[action]                0 B             110 kB
-├ ƒ /api/ratings/add                           0 B             110 kB
-├ ƒ /api/ratings/average                       0 B             110 kB
-├ ƒ /api/register                              0 B             110 kB
-├ ƒ /api/settings/app                          0 B             110 kB
-├ ƒ /api/settings/change-credentials-request   0 B             110 kB
-├ ƒ /api/settings/delete-account-request       0 B             110 kB
-├ ƒ /api/settings/messInfo                     0 B             110 kB
-├ ƒ /api/settings/staff                        0 B             110 kB
-├ ƒ /api/settings/staffs                       0 B             110 kB
-├ ƒ /api/settings/staffs/[id]                  0 B             110 kB
-├ ƒ /api/settings/update-credentials           0 B             110 kB
-├ ƒ /api/settings/upload                       0 B             110 kB
-├ ƒ /api/settings/view-credentials             0 B             110 kB
-├ ƒ /api/staff/attendance/history              0 B             110 kB
-├ ƒ /api/staff/attendance/mark                 0 B             110 kB
-├ ƒ /api/staff/attendance/today                0 B             110 kB
-├ ƒ /api/staff/attendance/update               0 B             110 kB
-├ ƒ /api/staff/create                          0 B             110 kB
-├ ƒ /api/staff/dashboard                       0 B             110 kB
-├ ƒ /api/staff/delete                          0 B             110 kB
-├ ƒ /api/staff/list                            0 B             110 kB
-├ ƒ /api/staff/payments/create                 0 B             110 kB
-├ ƒ /api/staff/payments/list                   0 B             110 kB
-├ ƒ /api/staff/salary/generate                 0 B             110 kB
-├ ƒ /api/staff/salary/list                     0 B             110 kB
-├ ƒ /api/staff/salary/pay                      0 B             110 kB
-├ ƒ /api/staff/update                          0 B             110 kB
-├ ƒ /api/subscription/check                    0 B             110 kB
-├ ƒ /api/superadmin-notifications              0 B             110 kB
-├ ƒ /api/translate                             0 B             110 kB
-├ ƒ /api/update                                0 B             110 kB
-├ ƒ /api/users/changeDOJ                       0 B             110 kB
-├ ƒ /api/users/count                           0 B             110 kB
-├ ƒ /api/users/delete                          0 B             110 kB
-├ ƒ /api/users/foodPreference                  0 B             110 kB
-├ ƒ /api/users/inactive                        0 B             110 kB
-├ ƒ /api/users/list                            0 B             110 kB
-├ ƒ /api/users/names                           0 B             110 kB
-├ ƒ /api/users/sendmail                        0 B             110 kB
-├ ƒ /api/users/toggle-freeze                   0 B             110 kB
-├ ƒ /api/users/unmailed                        0 B             110 kB
-├ ƒ /api/users/unverified                      0 B             110 kB
-├ ƒ /api/users/update-email                    0 B             110 kB
-├ ƒ /api/users/verified                        0 B             110 kB
-├ ƒ /api/verify                                0 B             110 kB
-├ ƒ /api/webhooks/razorpay                     0 B             110 kB
-├ ○ /attendance (700 ms)                       6.6 kB          231 kB
-├   └ css/15cf80978d7f1753.css                 4.5 kB
-├ ○ /attendance/scan                           1.14 kB         218 kB
-├ ○ /billing (2277 ms)                         9.21 kB         271 kB
-├   └ css/7a7a1e7352eda6b9.css                 6.64 kB
-├ ○ /billing/analytics (3378 ms)               1.99 kB         233 kB
-├   └ css/1b8542a7d9d0c3aa.css                 3.41 kB
-├ ○ /BillingMess                               3.2 kB          120 kB
-├   └ css/1a742f7bceea1112.css                 3.15 kB
-├ ○ /calendardummy                             1.14 kB         111 kB
-├   └ css/89d1d98e38401793.css                 749 B
-├ ○ /dashboard (342 ms)                        15.9 kB         247 kB
-├   └ css/ad54fac062bd0c1f.css                 4.86 kB
-├ ○ /database-viewer (920 ms)                  1.79 kB         111 kB
-├   └ css/eb5c7c226aefcdd9.css                 1.18 kB
-├ ○ /forgot-password (754 ms)                  1.06 kB         111 kB
-├   └ css/2a6c78aaf35141d1.css                 1.16 kB
-├ ○ /inventory/add-purchases (996 ms)          5.39 kB         122 kB
-├ ○ /inventory/categories (394 ms)             5.02 kB         122 kB
-├ ○ /inventory/categories/[id] (843 ms)        5.29 kB         122 kB
-├ ○ /inventory/dashboard (928 ms)              4.87 kB         122 kB
-├ ○ /inventory/items (389 ms)                  4.86 kB         122 kB
-├ ○ /inventory/items/[id] (345 ms)             5.89 kB         123 kB
-├ ○ /inventory/items/[id]/stock-ledger         2.47 kB         112 kB
-├   └ css/0caf0987927c0b0a.css                 3.07 kB
-├ ○ /inventory/low-stock                       3.86 kB         121 kB
-├ ○ /inventory/purchase-details                3.98 kB         121 kB
-├ ○ /inventory/purchase-details/[id] (413 ms)  3.88 kB         121 kB
-├ ○ /inventory/purchase-history (395 ms)       4.85 kB         122 kB
-├ ○ /inventory/reports                         2.57 kB         119 kB
-├   └ css/8c4d48609dc13e77.css                 2.97 kB
-├ ○ /inventory/stock-ledger (404 ms)           5.18 kB         122 kB
-├   └ css/ae16a0a814dc4acc.css                 5.8 kB
-├ ○ /inventory/usage (405 ms)                  5.34 kB         122 kB
-├ ○ /inventory/usage-history (381 ms)          3.93 kB         121 kB
-├ ○ /inventory/vendors                         5.52 kB         122 kB
-├ ○ /inventory/vendors/[id] (346 ms)           5.41 kB         122 kB
-├ ○ /login                                     2.62 kB         112 kB
-├ ○ /menu (823 ms)                             11 kB           181 kB
-├   └ css/79f13ce7bc75d2f8.css                 3.59 kB
-├ ○ /menu/fasting                              3.65 kB         113 kB
-├   └ css/8ae5a10ebb74fe7e.css                 562 B
-├ ○ /menu/menuCalendar (415 ms)                3.9 kB          121 kB
-├   └ css/469c948f7ca66d28.css                 3.53 kB
-├ ○ /menu/MenuManagement (322 ms)              2.32 kB         112 kB
-├   └ css/174420a24af51627.css                 1.55 kB
-├ ○ /menu/MenuPreview                          1.55 kB         111 kB
-├   └ css/4f4363d861217ea8.css                 726 B
-├ ○ /menu/RatingsReviews                       3.49 kB         120 kB
-├ ○ /menu/SpecialDish (691 ms)                 490 B           163 kB
-├   └ css/de89e74a8c50b3cf.css                 1.2 kB
-├ ○ /notifications                             4.4 kB          121 kB
-├   └ css/cecfa9cccfda4957.css                 3.79 kB
-├ ○ /paymentHistory                            1.74 kB         116 kB
-├   └ css/90d93feb2f867495.css                 3.48 kB
-├ ○ /quickSettings                             3.14 kB         120 kB
-├   └ css/84ae2bcbb2136c24.css                 3.42 kB
-├ ○ /quickSettings/change-email                3.75 kB         120 kB
-├   └ css/0172b407ac94e19e.css                 3.41 kB
-├ ○ /quickSettings/register                    3.78 kB         120 kB
-├   └ css/c8d355476eb776d2.css                 3.47 kB
-├ ○ /quickSettings/update-user                 4.14 kB         121 kB
-├   └ css/9f2988323faec6ff.css                 3.32 kB
-├ ○ /quickSettings/verify                      3.22 kB         120 kB
-├   └ css/3b88121ea59d712c.css                 3.33 kB
-├ ○ /register-success                          1.08 kB         111 kB
-├ ○ /registerMess                              2.89 kB         112 kB
-├   └ css/7f63edcbddaee06f.css                 1.57 kB
-├ ○ /requests/bookingRequests                  5.28 kB         122 kB
-├   └ css/0881a50c7a6b6650.css                 4.36 kB
-├ ○ /requests/cash-payments                    5.7 kB          122 kB
-├ ○ /requests/DeleteAccRequest                 4.07 kB         121 kB
-├   └ css/a4b497c767c25f63.css                 3.48 kB
-├ ○ /requests/leave                            6.48 kB         123 kB
-├   └ css/5419179e91c09f90.css                 4.45 kB
-├ ○ /settings (546 ms)                         6.69 kB         174 kB
-├   └ css/b26ef8b613213cfe.css                 4.31 kB
-├ ○ /settings/app_settings                     5.43 kB         122 kB
-├   └ css/157c878a2a9d1bb1.css                 3.67 kB
-├ ○ /settings/staff_setting                    2.99 kB         113 kB
-├   └ css/78653348b73ab595.css                 1.78 kB
-├ ○ /staff/attendance                          6.84 kB         124 kB
-├ ○ /staff/attendance-history                  6.53 kB         123 kB
-├ ○ /staff/create                              6.23 kB         123 kB
-├ ○ /staff/dashboard                           3.87 kB         123 kB
-├ ○ /staff/edit/[id]                           6.24 kB         123 kB
-├ ○ /staff/list                                3.99 kB         123 kB
-├ ○ /staff/payments/[id]                       6.1 kB          123 kB
-├ ○ /staff/profile/[id]                        8.36 kB         127 kB
-├ ○ /staff/report/[id]                         4.49 kB         124 kB
-├ ○ /staff/salary                              6.53 kB         123 kB
-├   └ css/d57c4d34768bac30.css                 1.82 kB
-├ ○ /staff/salary/history                      6.63 kB         123 kB
-├ ○ /suggestions                               3.54 kB         261 kB
-├   └ css/d1370701400e6f6d.css                 3.69 kB
-└ ○ /users                                     8.48 kB         266 kB
-    └ css/5e58c966027f7035.css                 5.9 kB
-+ First Load JS shared by all                  111 kB
-  ├ chunks/framework-945b357d4a851f4b.js       44.9 kB
-  ├ chunks/main-60bdaa16dcdfbcba.js            32.3 kB
-  ├ chunks/pages/_app-f4591d57b39ea697.js      30.5 kB
-  └ other shared chunks (total)                3.17 kB
+Route (pages)                                 Size     First Load JS
+┌ ○ /                                         4.57 kB         117 kB
+├   └ css/976c70e21c4c83eb.css                501 B
+├   /_app                                     0 B             110 kB
+├ ○ /404                                      183 B           110 kB
+├ ƒ /api/accountDeletion/list                 0 B             110 kB
+├ ƒ /api/accountDeletion/update               0 B             110 kB
+├ ƒ /api/advance/fetch                        0 B             110 kB
+├ ƒ /api/advance/update                       0 B             110 kB
+├ ƒ /api/analytics/collection                 0 B             110 kB
+├ ƒ /api/analytics/day-details                0 B             110 kB
+├ ƒ /api/analytics/week-details               0 B             110 kB
+├ ƒ /api/attendance                           0 B             110 kB
+├ ƒ /api/attendance/delete                    0 B             110 kB
+├ ƒ /api/attendance/fetch                     0 B             110 kB
+├ ƒ /api/attendance/mark                      0 B             110 kB
+├ ƒ /api/attendance/monthly                   0 B             110 kB
+├ ƒ /api/attendance/owner-mark                0 B             110 kB
+├ ƒ /api/auth/forgot-password                 0 B             110 kB
+├ ƒ /api/auth/login                           0 B             110 kB
+├ ƒ /api/auth/register-mess                   0 B             110 kB
+├ ƒ /api/auth/staff-login                     0 B             110 kB
+├ ƒ /api/billing                              0 B             110 kB
+├ ƒ /api/billing/create-subscription          0 B             110 kB
+├ ƒ /api/billing/status                       0 B             110 kB
+├ ƒ /api/bills/all                            0 B             110 kB
+├ ƒ /api/bills/download                       0 B             110 kB
+├ ƒ /api/bills/downloadPDF                    0 B             110 kB
+├ ƒ /api/bills/fetch                          0 B             110 kB
+├ ƒ /api/bills/generate                       0 B             110 kB
+├ ƒ /api/bills/generate-receipt               0 B             110 kB
+├ ƒ /api/bills/history                        0 B             110 kB
+├ ƒ /api/bills/mark-paid                      0 B             110 kB
+├ ƒ /api/bills/toggle-freeze                  0 B             110 kB
+├ ƒ /api/bills/update-attendance              0 B             110 kB
+├ ƒ /api/bookings                             0 B             110 kB
+├ ƒ /api/bookings/[id]                        0 B             110 kB
+├ ƒ /api/bookings/fetch                       0 B             110 kB
+├ ƒ /api/bookings/updateStatus                0 B             110 kB
+├ ƒ /api/cash-payments/fetch                  0 B             110 kB
+├ ƒ /api/cash-payments/update                 0 B             110 kB
+├ ƒ /api/courses/fetch                        0 B             110 kB
+├ ƒ /api/daily-payments/fetch                 0 B             110 kB
+├ ƒ /api/daily-payments/update                0 B             110 kB
+├ ƒ /api/dashboard/collections                0 B             110 kB
+├ ƒ /api/dashboard/expected-payment           0 B             110 kB
+├ ƒ /api/database/table-data                  0 B             110 kB
+├ ƒ /api/database/tables                      0 B             110 kB
+├ ƒ /api/feedback/add                         0 B             110 kB
+├ ƒ /api/feedback/fetch                       0 B             110 kB
+├ ƒ /api/hostels/fetch                        0 B             110 kB
+├ ƒ /api/inventory/addCategory                0 B             110 kB
+├ ƒ /api/inventory/addItem                    0 B             110 kB
+├ ƒ /api/inventory/addPurchase                0 B             110 kB
+├ ƒ /api/inventory/addStock                   0 B             110 kB
+├ ƒ /api/inventory/addUsage                   0 B             110 kB
+├ ƒ /api/inventory/addVendor                  0 B             110 kB
+├ ƒ /api/inventory/adjustStock                0 B             110 kB
+├ ƒ /api/inventory/dashboard                  0 B             110 kB
+├ ƒ /api/inventory/getActiveItems             0 B             110 kB
+├ ƒ /api/inventory/getCategories              0 B             110 kB
+├ ƒ /api/inventory/getCategoryItems           0 B             110 kB
+├ ƒ /api/inventory/getItems                   0 B             110 kB
+├ ƒ /api/inventory/getItemStock               0 B             110 kB
+├ ƒ /api/inventory/getLowStockItems           0 B             110 kB
+├ ƒ /api/inventory/getPurchaseDetails         0 B             110 kB
+├ ƒ /api/inventory/getPurchases               0 B             110 kB
+├ ƒ /api/inventory/getStockLedger             0 B             110 kB
+├ ƒ /api/inventory/getStockSummary            0 B             110 kB
+├ ƒ /api/inventory/getStockTransactions       0 B             110 kB
+├ ƒ /api/inventory/getUsage                   0 B             110 kB
+├ ƒ /api/inventory/getVendorPurchases         0 B             110 kB
+├ ƒ /api/inventory/getVendors                 0 B             110 kB
+├ ƒ /api/inventory/purchase-history           0 B             110 kB
+├ ƒ /api/inventory/searchCategories           0 B             110 kB
+├ ƒ /api/inventory/searchItems                0 B             110 kB
+├ ƒ /api/inventory/updateMinStock             0 B             110 kB
+├ ƒ /api/inventory/updateVendor               0 B             110 kB
+├ ƒ /api/inventory/useStock                   0 B             110 kB
+├ ƒ /api/leave/history                        0 B             110 kB
+├ ƒ /api/leave/members                        0 B             110 kB
+├ ƒ /api/leave/requests                       0 B             110 kB
+├ ƒ /api/leave/update-status                  0 B             110 kB
+├ ƒ /api/menu/cravings/fetch                  0 B             110 kB
+├ ƒ /api/menu/fasting/fetch                   0 B             110 kB
+├ ƒ /api/menu/fasting/update                  0 B             110 kB
+├ ƒ /api/menu/fetch                           0 B             110 kB
+├ ƒ /api/menu/monthly-history                 0 B             110 kB
+├ ƒ /api/menu/ratings/add                     0 B             110 kB
+├ ƒ /api/menu/ratings/average                 0 B             110 kB
+├ ƒ /api/menu/ratings/fetch                   0 B             110 kB
+├ ƒ /api/menu/special_dishes/add              0 B             110 kB
+├ ƒ /api/menu/special_dishes/delete           0 B             110 kB
+├ ƒ /api/menu/special_dishes/fetch            0 B             110 kB
+├ ƒ /api/menu/special_dishes/vote             0 B             110 kB
+├ ƒ /api/menu/update                          0 B             110 kB
+├ ƒ /api/menu/votes/fetch                     0 B             110 kB
+├ ƒ /api/menu/votes/vote                      0 B             110 kB
+├ ƒ /api/mess/access                          0 B             110 kB
+├ ƒ /api/mess/details                         0 B             110 kB
+├ ƒ /api/mess/info                            0 B             110 kB
+├ ƒ /api/mess/mess-contact                    0 B             110 kB
+├ ƒ /api/mess/meta                            0 B             110 kB
+├ ƒ /api/mess/profile                         0 B             110 kB
+├ ƒ /api/mess/settings                        0 B             110 kB
+├ ƒ /api/notifications                        0 B             110 kB
+├ ƒ /api/notifications/delete-groups          0 B             110 kB
+├ ƒ /api/payment-verifications/fetch          0 B             110 kB
+├ ƒ /api/payment-verifications/update         0 B             110 kB
+├ ƒ /api/payment/config                       0 B             110 kB
+├ ƒ /api/quick-actions/[action]               0 B             110 kB
+├ ƒ /api/ratings/add                          0 B             110 kB
+├ ƒ /api/ratings/average                      0 B             110 kB
+├ ƒ /api/register                             0 B             110 kB
+├ ƒ /api/settings/app                         0 B             110 kB
+├ ƒ /api/settings/change-credentials-request  0 B             110 kB
+├ ƒ /api/settings/delete-account-request      0 B             110 kB
+├ ƒ /api/settings/messInfo                    0 B             110 kB
+├ ƒ /api/settings/staff                       0 B             110 kB
+├ ƒ /api/settings/staffs                      0 B             110 kB
+├ ƒ /api/settings/staffs/[id]                 0 B             110 kB
+├ ƒ /api/settings/update-credentials          0 B             110 kB
+├ ƒ /api/settings/upload                      0 B             110 kB
+├ ƒ /api/settings/view-credentials            0 B             110 kB
+├ ƒ /api/staff/attendance/history             0 B             110 kB
+├ ƒ /api/staff/attendance/mark                0 B             110 kB
+├ ƒ /api/staff/attendance/today               0 B             110 kB
+├ ƒ /api/staff/attendance/update              0 B             110 kB
+├ ƒ /api/staff/create                         0 B             110 kB
+├ ƒ /api/staff/dashboard                      0 B             110 kB
+├ ƒ /api/staff/delete                         0 B             110 kB
+├ ƒ /api/staff/list                           0 B             110 kB
+├ ƒ /api/staff/payments/create                0 B             110 kB
+├ ƒ /api/staff/payments/list                  0 B             110 kB
+├ ƒ /api/staff/salary/generate                0 B             110 kB
+├ ƒ /api/staff/salary/list                    0 B             110 kB
+├ ƒ /api/staff/salary/pay                     0 B             110 kB
+├ ƒ /api/staff/toggleActive                   0 B             110 kB
+├ ƒ /api/staff/update                         0 B             110 kB
+├ ƒ /api/subscription/check                   0 B             110 kB
+├ ƒ /api/superadmin-notifications             0 B             110 kB
+├ ƒ /api/translate                            0 B             110 kB
+├ ƒ /api/update                               0 B             110 kB
+├ ƒ /api/users/changeDOJ                      0 B             110 kB
+├ ƒ /api/users/count                          0 B             110 kB
+├ ƒ /api/users/delete                         0 B             110 kB
+├ ƒ /api/users/foodPreference                 0 B             110 kB
+├ ƒ /api/users/inactive                       0 B             110 kB
+├ ƒ /api/users/list                           0 B             110 kB
+├ ƒ /api/users/names                          0 B             110 kB
+├ ƒ /api/users/sendmail                       0 B             110 kB
+├ ƒ /api/users/toggle-freeze                  0 B             110 kB
+├ ƒ /api/users/unmailed                       0 B             110 kB
+├ ƒ /api/users/unverified                     0 B             110 kB
+├ ƒ /api/users/update-email                   0 B             110 kB
+├ ƒ /api/users/verified                       0 B             110 kB
+├ ƒ /api/verify                               0 B             110 kB
+├ ƒ /api/webhooks/razorpay                    0 B             110 kB
+├ ○ /attendance                               6.04 kB         371 kB
+├   └ css/713ef2ec8511e332.css                4.52 kB
+├ ○ /attendance/scan                          1.14 kB         218 kB
+├ ○ /billing                                  10.9 kB         273 kB
+├   └ css/892fe0463b67e69a.css                6.67 kB
+├ ○ /billing/analytics (764 ms)               1.99 kB         234 kB
+├   └ css/1b8542a7d9d0c3aa.css                3.41 kB
+├ ○ /BillingMess                              1.01 kB         120 kB
+├   └ css/1a742f7bceea1112.css                3.15 kB
+├ ○ /calendardummy                            1.14 kB         111 kB
+├   └ css/89d1d98e38401793.css                749 B
+├ ○ /dashboard (843 ms)                       15.9 kB         248 kB
+├   └ css/ad54fac062bd0c1f.css                4.86 kB
+├ ○ /database-viewer                          1.79 kB         111 kB
+├   └ css/eb5c7c226aefcdd9.css                1.18 kB
+├ ○ /forgot-password                          1.06 kB         111 kB
+├   └ css/2a6c78aaf35141d1.css                1.16 kB
+├ ○ /inventory/add-purchases                  3.19 kB         123 kB
+├ ○ /inventory/categories                     2.82 kB         122 kB
+├ ○ /inventory/categories/[id]                3.08 kB         122 kB
+├ ○ /inventory/dashboard                      2.76 kB         122 kB
+├ ○ /inventory/items                          2.65 kB         122 kB
+├ ○ /inventory/items/[id]                     3.67 kB         123 kB
+├ ○ /inventory/items/[id]/stock-ledger        2.5 kB          112 kB
+├   └ css/0ae71e94cb7eaee3.css                3.12 kB
+├ ○ /inventory/low-stock                      1.66 kB         121 kB
+├ ○ /inventory/purchase-details               1.78 kB         121 kB
+├ ○ /inventory/purchase-details/[id]          2.8 kB          122 kB
+├ ○ /inventory/purchase-history               2.88 kB         122 kB
+├ ○ /inventory/reports                        370 B           120 kB
+├   └ css/8c4d48609dc13e77.css                2.97 kB
+├ ○ /inventory/stock-ledger                   3.06 kB         122 kB
+├   └ css/85c1272d5f90fe51.css                5.85 kB
+├ ○ /inventory/usage                          3.11 kB         122 kB
+├ ○ /inventory/usage-history                  1.73 kB         121 kB
+├ ○ /inventory/vendors                        3.32 kB         123 kB
+├ ○ /inventory/vendors/[id]                   3.26 kB         123 kB
+├ ○ /login                                    2.62 kB         112 kB
+├ ○ /menu                                     8.87 kB         181 kB
+├   └ css/79f13ce7bc75d2f8.css                3.59 kB
+├ ○ /menu/fasting                             3.65 kB         113 kB
+├   └ css/8ae5a10ebb74fe7e.css                562 B
+├ ○ /menu/menuCalendar                        1.7 kB          121 kB
+├   └ css/469c948f7ca66d28.css                3.53 kB
+├ ○ /menu/MenuManagement                      3.05 kB         113 kB
+├   └ css/174420a24af51627.css                1.55 kB
+├ ○ /menu/MenuPreview                         1.55 kB         111 kB
+├   └ css/4f4363d861217ea8.css                726 B
+├ ○ /menu/RatingsReviews                      1.3 kB          121 kB
+├ ○ /menu/SpecialDish                         490 B           163 kB
+├   └ css/de89e74a8c50b3cf.css                1.2 kB
+├ ○ /notifications                            2.2 kB          122 kB
+├   └ css/cecfa9cccfda4957.css                3.79 kB
+├ ○ /paymentHistory                           1.74 kB         116 kB
+├ ○ /quickSettings                            946 B           120 kB
+├   └ css/84ae2bcbb2136c24.css                3.42 kB
+├ ○ /quickSettings/change-email               1.56 kB         121 kB
+├   └ css/0172b407ac94e19e.css                3.41 kB
+├ ○ /quickSettings/register                   1.58 kB         121 kB
+├   └ css/c8d355476eb776d2.css                3.47 kB
+├ ○ /quickSettings/update-user                1.97 kB         121 kB
+├   └ css/9f2988323faec6ff.css                3.32 kB
+├ ○ /quickSettings/verify                     1.03 kB         120 kB
+├   └ css/3b88121ea59d712c.css                3.33 kB
+├ ○ /register-success                         1.08 kB         111 kB
+├ ○ /registerMess                             2.89 kB         112 kB
+├   └ css/7f63edcbddaee06f.css                1.57 kB
+├ ○ /requests/bookingRequests                 3.14 kB         122 kB
+├   └ css/79aaf69058bcc5eb.css                4.37 kB
+├ ○ /requests/cash-payments                   3.55 kB         123 kB
+├ ○ /requests/DeleteAccRequest                1.86 kB         121 kB
+├   └ css/681f040870699756.css                3.5 kB
+├ ○ /requests/leave                           4.39 kB         124 kB
+├   └ css/b45540a5836109fe.css                4.47 kB
+├ ○ /settings                                 4.45 kB         174 kB
+├   └ css/b26ef8b613213cfe.css                4.31 kB
+├ ○ /settings/app_settings                    3.2 kB          123 kB
+├   └ css/157c878a2a9d1bb1.css                3.67 kB
+├ ○ /settings/staff_setting                   2.96 kB         113 kB
+├   └ css/78653348b73ab595.css                1.78 kB
+├ ○ /staff/attendance                         4.71 kB         124 kB
+├ ○ /staff/attendance-history                 4.51 kB         124 kB
+├ ○ /staff/create                             4.21 kB         124 kB
+├ ○ /staff/dashboard                          4.24 kB         124 kB
+├ ○ /staff/edit/[id]                          4.11 kB         123 kB
+├ ○ /staff/list                               4.48 kB         124 kB
+├ ○ /staff/payments/[id]                      4.37 kB         124 kB
+├ ○ /staff/profile/[id]                       9.08 kB         128 kB
+├ ○ /staff/report/[id]                        4.73 kB         124 kB
+├ ○ /staff/salary                             4.38 kB         124 kB
+├   └ css/d57c4d34768bac30.css                1.82 kB
+├ ○ /staff/salary/history                     4.62 kB         124 kB
+├ ○ /suggestions                              3.55 kB         261 kB
+├   └ css/d1370701400e6f6d.css                3.69 kB
+└ ○ /users                                    8.48 kB         266 kB
+    └ css/5e58c966027f7035.css                5.9 kB
++ First Load JS shared by all                 111 kB
+  ├ chunks/framework-945b357d4a851f4b.js      44.9 kB
+  ├ chunks/main-60bdaa16dcdfbcba.js           32.3 kB
+  ├ chunks/pages/_app-f4591d57b39ea697.js     30.5 kB
+  └ other shared chunks (total)               3.17 kB
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand

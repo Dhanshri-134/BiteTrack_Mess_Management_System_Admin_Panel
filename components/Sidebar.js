@@ -207,10 +207,35 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           { path: "/inventory/usage/", label: t("usage") },
         ],
       }]),
+      ...(messAccess?.staff === false
+        ? []
+        : [
+            {
+              key: "staff",
+              title: t("staff"),
+              icon: <Users size={22} />,
+              items: [
+                { path: "/staff/dashboard/", label: t("dashboard") },
+                { path: "/staff/list/", label: t("staffDirectory") },
+                { path: "/staff/attendance/", label: t("attendance") },
+                { path: "/staff/attendance-history/", label: t("attendanceHistory") },
+                { path: "/staff/salary/history/", label: t("salaryManagement") },
+              ],
+            },
+          ]),
+      {
+        key: "settings",
+        title: "Settings",
+        icon: <Settings size={22} />,
+        items: [
+          { path: "/settings/", label: "Mess Setting" },
+          { path: "/settings/app_settings/", label: "App Setting" },
+        ],
+      },
     ];
 
     return sections;
-  }, [messAccess?.leaves, t]);
+  }, [messAccess?.inventory, messAccess?.leaves, messAccess?.staff, t]);
 
   useEffect(() => {
     if (role === "STAFF") {
@@ -316,12 +341,6 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           </SidebarSection>
         );
       })}
-
-      {messAccess?.staff !== false
-        ? renderLink("/staff/dashboard/", <Users size={20} />, t("staff"))
-        : null}
-
-      {renderLink("/settings/", <Settings size={20} />, t("mess_settings"))}
     </>
   );
 

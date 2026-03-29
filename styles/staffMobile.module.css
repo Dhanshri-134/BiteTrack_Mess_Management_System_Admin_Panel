@@ -256,6 +256,13 @@ height: auto;
   margin-bottom: 0.75rem;
 }
 
+.staffBadgeRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
 .staffName {
   margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
@@ -305,6 +312,26 @@ height: auto;
   align-items: center;
   padding-top: 0.75rem;
   border-top: 1px solid #f3f4f6;
+}
+
+.staffCardActions {
+  margin-top: 0.85rem;
+}
+
+.statusToggleBtn {
+  width: 100%;
+  border: 1px solid #d6ece8;
+  background: #ffffff;
+  color: #0f766e;
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.statusToggleBtn:disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 .balanceLabel {

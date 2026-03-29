@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     } = req.body;
 
     const salaryRes = await pgPool.query(
-      `SELECT id, staff_id, month, year, final_salary
+      `SELECT id, staff_id, month, year, base_salary, overtime_amount, penalty_amount, final_salary
        FROM staff_salary
        WHERE id=$1
        AND mess_id=$2
@@ -44,7 +44,12 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Salary record not found" });
     }
 
+    const now = new Date();
     const salaryRow = salaryRes.rows[0];
+    const grossSalary =
+      Number(salaryRow.base_salary || 0) +
+      Number(salaryRow.overtime_amount || 0) -
+      Number(salaryRow.penalty_amount || 0);
     const payAmount = Number(amount || salaryRow.final_salary || 0);
 
     await pgPool.query(
@@ -73,30 +78,38 @@ export default async function handler(req, res) {
     );
 
     const totalPaid = Number(payments.rows[0].total_paid || 0);
-    const remaining = Number(salaryRow.final_salary || 0) - totalPaid;
+    const remaining = Number((grossSalary - totalPaid).toFixed(2));
 
     await pgPool.query(
       `UPDATE staff_salary
        SET payment_status=$1,
-           payment_date=$2
-       WHERE id=$3
-       AND mess_id=$4`,
+           payment_date=$2,
+           final_salary=$3
+       WHERE id=$4
+       AND mess_id=$5`,
       [
         remaining <= 0 ? "paid" : "partial",
         payment_date || new Date().toISOString().slice(0, 10),
+        Math.max(remaining, 0),
         salary_id,
         messId,
       ]
     );
 
-    await pgPool.query(
-      `UPDATE staff
-       SET current_balance=$1,
-           updated_at=NOW()
-       WHERE id=$2
-       AND mess_id=$3`,
-      [remaining, salaryRow.staff_id, messId]
-    );
+    const isCurrentPeriod =
+      Number(salaryRow.month) === now.getMonth() + 1 &&
+      Number(salaryRow.year) === now.getFullYear();
+
+    if (isCurrentPeriod) {
+      await pgPool.query(
+        `UPDATE staff
+         SET current_balance=$1,
+             updated_at=NOW()
+         WHERE id=$2
+         AND mess_id=$3`,
+        [remaining, salaryRow.staff_id, messId]
+      );
+    }
 
     res.json({ success: true, remaining_balance: remaining });
 

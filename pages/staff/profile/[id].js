@@ -146,6 +146,7 @@ export default function StaffProfile() {
   const [dateObj, setDateObj] = useState(new Date());
   const [showModal, setShowModal] = useState(false);
   const [savingPayment, setSavingPayment] = useState(false);
+  const [savingStatus, setSavingStatus] = useState(false);
   const [paymentForm, setPaymentForm] = useState({
     amount: "",
     payment_type: "advance",
@@ -323,6 +324,26 @@ export default function StaffProfile() {
     }
   }
 
+  async function toggleStaffStatus() {
+    if (!profile?.id) return;
+
+    try {
+      setSavingStatus(true);
+      await staffRequest("/api/staff/toggleActive/", {
+        body: {
+          id: profile.id,
+          is_active: profile.is_active === false,
+        },
+      });
+      await fetchData(true);
+      toast.success(profile.is_active === false ? "Staff activated" : "Staff deactivated");
+    } catch (error) {
+      toast.error("Failed to update staff status");
+    } finally {
+      setSavingStatus(false);
+    }
+  }
+
   const stats = useMemo(() => {
     let present = 0;
     let absent = 0;
@@ -364,8 +385,16 @@ export default function StaffProfile() {
     const gross = base + overtime - penalty;
     const finalSalary = Number(salaryDetails?.final_salary ?? gross - totalPaid);
 
-    return { base, overtime, penalty, totalPaid, finalSalary, gross };
-  }, [attendance, payments, profile, salaryDetails, stats.overtimeAmount]);
+    return {
+      base,
+      overtime,
+      penalty,
+      totalPaid,
+      finalSalary,
+      gross,
+      overtimeHours: stats.overtimeHours,
+    };
+  }, [attendance, payments, profile, salaryDetails, stats.overtimeAmount, stats.overtimeHours]);
 
   if (loading && !profile) {
     return <Layout title={t("staffProfile")}><div className={styles.profileContainer}>{t("loading")}</div></Layout>;
@@ -457,6 +486,9 @@ export default function StaffProfile() {
           <button className={styles.actionBtn} type="button" onClick={() => router.push(`/staff/report/${profile.id}`)}>
             <FileText size={18} /> {t("openReport")}
           </button>
+          <button className={styles.actionBtn} type="button" onClick={toggleStaffStatus} disabled={savingStatus}>
+            {savingStatus ? t("saving") : profile.is_active === false ? "Activate Staff" : "Deactivate Staff"}
+          </button>
         </div>
 
         <div className={styles.tabSlider}>
@@ -542,6 +574,7 @@ export default function StaffProfile() {
           <section className={styles.sectionBlock}>
             <div className={styles.paymentSummaryGrid}>
               <div className={styles.summaryBox}><span>{t("baseSalary")}</span><strong>{formatMoney(paymentSummary.base)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("otHours")}</span><strong>{Number(paymentSummary.overtimeHours || 0).toFixed(2)}</strong></div>
               <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
               <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
               <div className={styles.summaryBox}><span>Gross Salary</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>

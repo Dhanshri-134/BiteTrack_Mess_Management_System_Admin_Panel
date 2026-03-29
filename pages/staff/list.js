@@ -16,6 +16,7 @@ export default function StaffList() {
   const [statsMap, setStatsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [savingId, setSavingId] = useState(null);
 
   useEffect(() => {
     fetchStaffAndStats();
@@ -73,6 +74,34 @@ export default function StaffList() {
     );
   }, [staff, search]);
 
+  async function toggleStaffStatus(member, event) {
+    event.stopPropagation();
+
+    try {
+      setSavingId(member.id);
+      await staffRequest("/api/staff/toggleActive/", {
+        body: {
+          id: member.id,
+          is_active: member.is_active === false,
+        },
+      });
+
+      setStaff((prev) =>
+        prev.map((row) =>
+          row.id === member.id
+            ? { ...row, is_active: row.is_active === false ? true : false }
+            : row
+        )
+      );
+
+      toast.success(member.is_active === false ? "Staff activated" : "Staff deactivated");
+    } catch (error) {
+      toast.error("Failed to update staff status");
+    } finally {
+      setSavingId(null);
+    }
+  }
+
   return (
     <Layout title="Staff List">
       <div className={styles.container}>
@@ -128,7 +157,12 @@ export default function StaffList() {
                       <h3 className={styles.staffName}>{member.name}</h3>
                       <p className={styles.staffPhone}>{member.phone || "No phone provided"}</p>
                     </div>
-                    <div className={styles.staffRoleBadge}>{member.role || "Staff"}</div>
+                    <div className={styles.staffBadgeRow}>
+                      <div className={styles.staffRoleBadge}>{member.role || "Staff"}</div>
+                      <div className={`${styles.profileMetaPill} ${member.is_active === false ? styles.profileStatusInactive : styles.profileStatusActive}`}>
+                        {member.is_active === false ? "Inactive" : "Active"}
+                      </div>
+                    </div>
                   </div>
 
                   <div className={styles.staffCardStatsRow}>
@@ -142,6 +176,16 @@ export default function StaffList() {
                   <div className={styles.staffCardBalance}>
                     <span className={styles.balanceLabel}>Balance</span>
                     <span className={styles.balanceAmount}> {Number(member.current_balance || 0).toLocaleString()}</span>
+                  </div>
+                  <div className={styles.staffCardActions}>
+                    <button
+                      type="button"
+                      className={styles.statusToggleBtn}
+                      onClick={(event) => toggleStaffStatus(member, event)}
+                      disabled={savingId === member.id}
+                    >
+                      {savingId === member.id ? "Saving..." : member.is_active === false ? "Activate" : "Deactivate"}
+                    </button>
                   </div>
                 </div>
               );

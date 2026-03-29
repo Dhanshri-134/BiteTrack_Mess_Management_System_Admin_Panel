@@ -71,6 +71,7 @@ export default function StaffDashboard() {
 
   const insights = useMemo(() => {
     const activeStaff = staff.filter((row) => row.is_active !== false);
+    const inactiveStaff = staff.filter((row) => row.is_active === false);
     const currentBalance = activeStaff.reduce(
       (sum, row) => sum + Number(row.current_balance || 0),
       0
@@ -80,11 +81,12 @@ export default function StaffDashboard() {
       0
     );
     const overduePayroll = salary.filter(
-      (row) => String(row.payment_status || "").toLowerCase() !== "paid"
+      (row) => Number(row.final_salary || 0) > 0
     ).length;
 
     return {
       activeStaff: activeStaff.length,
+      inactiveStaff: inactiveStaff.length,
       currentBalance,
       totalPayroll,
       overduePayroll,
@@ -141,23 +143,35 @@ export default function StaffDashboard() {
               <strong>{formatMoney(insights.totalPayroll)}</strong>
               {/* <div className={styles.mutedText}>{t("monthlyPayableDescription")}</div> */}
             </div>
+            {/* <div className={styles.insightCard}>
+              <span>Inactive Staff</span>
+              <strong>{insights.inactiveStaff}</strong>
+            </div>
             <div className={styles.insightCard}>
               <span>Unpaid Salaries</span>
               <strong>{insights.overduePayroll}</strong>
-              <div className={styles.mutedText}>Salary rows for this month that are not settled yet.</div>
+              <div className={styles.mutedText}>Staff salary rows for this month with remaining balance due.</div>
             </div>
             <div className={styles.insightCard}>
               <span>{t("totalProfiles")}</span>
               <strong>{stats.total_staff || 0}</strong>
-              {/* <div className={styles.mutedText}>{t("totalProfilesDescription")}</div> */}
-            </div>
+              <div className={styles.mutedText}>All staff profiles, active and inactive.</div>
+            </div> */}
           </section>
 
           <section className={styles.actionGrid}>
+            {/* <Link href="/staff/dashboard" className={styles.actionLinkCard}>
+              <span>{t("dashboard")}</span>
+              <ArrowRight size={18} />
+            </Link> */}
             <Link href="/staff/list" className={styles.actionLinkCard}>
               <span>{t("staffDirectory")}</span>
               <ArrowRight size={18} />
             </Link>
+            {/* <Link href="/staff/attendance" className={styles.actionLinkCard}>
+              <span>{t("markAttendance")}</span>
+              <ArrowRight size={18} />
+            </Link> */}
             <Link href="/staff/attendance-history" className={styles.actionLinkCard}>
               <span>{t("Attendance History")}</span>
               <ArrowRight size={18} />
@@ -166,6 +180,10 @@ export default function StaffDashboard() {
               <span>{t("salaryManagement")}</span>
               <ArrowRight size={18} />
             </Link>
+            {/* <Link href="/settings/staff_setting" className={styles.actionLinkCard}>
+              <span>Staff Settings</span>
+              <ArrowRight size={18} />
+            </Link> */}
           </section>
         </div>
       </div>

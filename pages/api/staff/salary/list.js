@@ -42,8 +42,13 @@ s.salary_type,
 ss.base_salary,
 ss.overtime_amount,
 ss.penalty_amount,
-ss.final_salary,
-ss.payment_status,
+ss.base_salary + ss.overtime_amount - ss.penalty_amount AS gross_salary,
+GREATEST((ss.base_salary + ss.overtime_amount - ss.penalty_amount) - COALESCE(p.total_paid,0), 0) AS final_salary,
+CASE
+WHEN (ss.base_salary + ss.overtime_amount - ss.penalty_amount) - COALESCE(p.total_paid,0) <= 0 THEN 'paid'
+WHEN COALESCE(p.total_paid,0) > 0 THEN 'partial'
+ELSE 'pending'
+END AS payment_status,
 COALESCE(p.total_paid,0) AS total_paid,
 p.payments
 FROM staff_salary ss

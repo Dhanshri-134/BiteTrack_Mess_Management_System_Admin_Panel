@@ -1,7 +1,10 @@
 import { useRouter } from "next/router";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import Layout from "../../../components/Layout";
-import styles from "../../../styles/table.module.css";
+import styles from "../../../styles/inventory.module.css";
+import { inventoryOfflineRequest } from "@/lib/inventoryClient";
+import { useAppRefresh } from "@/lib/useAppRefresh";
+import PurchaseDetailsView from "../../../components/inventory/PurchaseDetailsView";
 
 export default function PurchaseDetails(){
 
@@ -10,10 +13,12 @@ const { id } = router.query;
 
 const [purchase,setPurchase] = useState(null);
 const [items,setItems] = useState([]);
-
 const [loading,setLoading] = useState(true);
+const [error,setError] = useState("");
 
-const getToken = () => localStorage.getItem("token");
+function formatCurrency(value){
+return `Rs ${Number(value || 0).toLocaleString()}`;
+}
 
 useEffect(()=>{
 if(!router.isReady) return;
@@ -23,29 +28,27 @@ loadDetails();
 async function loadDetails(){
 
 try{
+setLoading(true);
+setError("");
 
-const token = getToken();
-
-const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/inventory/getPurchaseDetails/",{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-Authorization:`Bearer ${token}`
-},
-body:JSON.stringify({
+const result = await inventoryOfflineRequest(
+`inventory-purchase-details-${id}`,
+"/api/inventory/getPurchaseDetails/",
+{
+body:{
 purchase_id:id
-})
-});
-
-const result = await res.json();
+}
+}
+);
 
 if(result.success){
-setPurchase(result.purchase);
-setItems(result.items);
+setPurchase(result.purchase || null);
+setItems(result.items || []);
 }
 
 }catch(err){
 console.error(err);
+setError(err.message || "Failed to load purchase details");
 }
 finally{
 setLoading(false);
@@ -53,20 +56,41 @@ setLoading(false);
 
 }
 
+useAppRefresh(() => {
+if (router.isReady && id) {
+loadDetails();
+}
+});
+
 if(loading){
 return <Layout title="Purchase Details"><p>Loading...</p></Layout>;
 }
 
+if(!purchase){
+return <Layout title="Purchase Details"><p>{error || "Purchase not found"}</p></Layout>;
+}
+
+return (
+<PurchaseDetailsView
+purchase={purchase}
+items={items}
+error={error}
+onBack={() => router.back()}
+/>
+);
+
 return(
 
-<Layout title="Purchase Details">
+<Layout title={`Purchase: ${purchase.vendor_name || "Details"}`}>
 
-<div className={styles.pageHeader}>
+<section className={styles.heroSection}>
 
-<h2>Purchase Details</h2>
+<div>
+<div className={styles.header}>
+<p className={styles.eyebrow}>Inventory</p>
 
 <button
-className={styles.secondaryBtn}
+className={styles.backbtn}
 onClick={()=>router.back()}
 >
 ← Back
@@ -74,13 +98,41 @@ onClick={()=>router.back()}
 
 </div>
 
-<div className={styles.card}>
+<h1 className={styles.heroTitle}>Purchase Details</h1>
+</div>
+</section>
 
-<p><strong>Vendor:</strong> {purchase.vendor_name || "-"}</p>
+{error ? <p className={styles.errorText}>{error}</p> : null}
 
-<p><strong>Invoice:</strong> {purchase.invoice_number || "-"}</p>
+<section className={styles.infoGrid}>
+<div>
+<span>Vendor</span>
+<strong>{purchase.vendor_name || "-"}</strong>
+</div>
+<div>
+<span>Invoice</span>
+<strong>{purchase.invoice_number || "-"}</strong>
+</div>
+<div>
+<span>Date</span>
+<strong>{new Date(purchase.purchase_date).toLocaleDateString()}</strong>
+</div>
+<div>
+<span>Total</span>
+<strong>{formatCurrency(purchase.total_amount)}</strong>
+</div>
+</section>
 
-<p><strong>Date:</strong> {new Date(purchase.purchase_date).toLocaleDateString()}</p>
+<div className={styles.formCard}>
+<div className={styles.formCardHeader}>
+<div>
+<h3 className={styles.formCardTitle}>Purchased Items</h3>
+<p className={styles.formCardText}>
+{items.length} item{items.length === 1 ? "" : "s"} in this purchase.
+</p>
+</div>
+</div>
+
 
 <p><strong>Total:</strong> ₹ {Number(purchase.total_amount).toLocaleString()}</p>
 

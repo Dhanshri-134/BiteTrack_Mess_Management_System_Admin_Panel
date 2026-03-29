@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     const today = new Date().toISOString().split("T")[0];
 
     const totalStaff = await pgPool.query(
-      `SELECT COUNT(*) FROM staff WHERE mess_id=$1 AND is_active=true`,
+      `SELECT COUNT(*) FROM staff WHERE mess_id=$1`,
       [messId]
     );
 
