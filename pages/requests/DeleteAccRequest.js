@@ -213,6 +213,7 @@ export default function DeleteRequests() {
                 <th>{t("room")}</th>
                 <th>{t("course")}</th>
                 <th>{t("dateOfJoining")}</th>
+                <th>{t("actions")}</th>
               </tr>
             </thead>
 

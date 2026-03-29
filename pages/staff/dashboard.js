@@ -142,9 +142,9 @@ export default function StaffDashboard() {
               {/* <div className={styles.mutedText}>{t("monthlyPayableDescription")}</div> */}
             </div>
             <div className={styles.insightCard}>
-              <span>{t("pendingSalaryRows")}</span>
+              <span>Unpaid Salaries</span>
               <strong>{insights.overduePayroll}</strong>
-              {/* <div className={styles.mutedText}>{t("pendingSalaryRowsDescription")}</div> */}
+              <div className={styles.mutedText}>Salary rows for this month that are not settled yet.</div>
             </div>
             <div className={styles.insightCard}>
               <span>{t("totalProfiles")}</span>

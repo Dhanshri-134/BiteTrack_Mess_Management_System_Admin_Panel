@@ -103,10 +103,11 @@ export default function SalaryHistoryPage() {
             <div className={styles.insightCard}><span>{t("totalPayable")}</span><strong>{formatMoney(totals.final)}</strong></div>
             <div className={styles.insightCard}><span>{t("overtime")}</span><strong>{formatMoney(totals.overtime)}</strong></div>
             <div className={styles.insightCard}><span>{t("penalty")}</span><strong>{formatMoney(totals.penalty)}</strong></div>
-            <div className={styles.insightCard}><span>{t("pendingRows")}</span><strong>{totals.pending}</strong></div>
+            <div className={styles.insightCard}><span>Unpaid Salaries</span><strong>{totals.pending}</strong></div>
           </section>
 
           <section className={styles.paymentFormCard}>
+            <p className={styles.summaryHint}>Salary is auto-calculated from attendance, overtime, penalties, and recorded payments for the selected month.</p>
             <div className={styles.formGridCompact}>
               <div className={styles.formGroup}>
                 <label>{t("month")}</label>

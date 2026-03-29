@@ -85,6 +85,7 @@ LEFT JOIN parents p ON p.user_id = u.id
 
 WHERE u.verified = true
   AND u.mess_id = $1
+  AND u.status ='Active'
 
 GROUP BY 
   u.id,

@@ -27,15 +27,8 @@ i.id,
 i.item_name,
 i.unit,
 COALESCE(s.min_stock, 0) AS min_stock,
-
-COALESCE(SUM(
-CASE
-WHEN t.transaction_type='purchase' THEN t.quantity
-WHEN t.transaction_type='usage' THEN -t.quantity
-WHEN t.transaction_type='adjustment' THEN t.quantity
-ELSE 0
-END
-),0) AS stock
+COALESCE(s.total_stock, 0) AS stock,
+COALESCE(s.is_active, TRUE) AS is_active
 
 FROM inventory_items i
 
@@ -43,13 +36,9 @@ LEFT JOIN inventory_stock s
 ON s.item_id=i.id
 AND s.mess_id=$2
 
-LEFT JOIN inventory_stock_transactions t
-ON t.item_id=i.id
-AND t.mess_id=$2
-
 WHERE i.id=$1
 
-GROUP BY i.id,i.item_name,i.unit,s.min_stock
+GROUP BY i.id,i.item_name,i.unit,s.min_stock,s.total_stock,s.is_active
 `,[item_id,messId]);
 
 res.json({

@@ -117,6 +117,9 @@
   color: white;
 }
 
+.table tr:hover {
+  background: rgb(210, 210, 210);
+}
 /* ================================
    MOBILE / ANDROID VIEW
    TABLE → STACKED CARDS

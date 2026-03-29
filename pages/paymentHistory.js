@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import styles from "../styles/billing.module.css";
+import styles from "../styles/paymentHistory.module.css";
 import toast from "react-hot-toast";
 import { useLanguage } from "../context/LanguageContext";
 import { ChevronDown } from "lucide-react";
@@ -288,7 +288,17 @@ export default function PaymentHistory({ token }) {
                                                     <div className={styles.historyTitle}>
                                                         {t("paymentHistory")}
                                                     </div>
+                                                    
 
+<div className={styles.historyHeader}>
+  <div>Date</div>
+  <div>Amount</div>
+  <div>Type</div>
+  <div>Method</div>
+  <div>Txn ID</div>
+  <div>Period</div>
+  <div>Leave</div>
+</div>
                                                     {expandedPayments.map(h => (
                                                         <div key={h.id} className={styles.historyItem}>
                                                             <div className={styles.historyLabel}>{t("date")}</div>
@@ -307,12 +317,12 @@ export default function PaymentHistory({ token }) {
                                                                 {h.payment_method || "—"}
                                                             </div>
 
-                                                            {h.transaction_id && (
-                                                                <>
+                                                            {/* {h.transaction_id && (
+                                                                <> */}
                                                                     <div className={styles.historyLabel}>{t("transactionId")}</div>
-                                                                    <div className={styles.historyValue}>{h.transaction_id}</div>
-                                                                </>
-                                                            )}
+                                                                    <div className={styles.historyValue}>{h.transaction_id || "-" }</div>
+                                                                {/* </> */}
+                                                            {/* )} */}
 
                                                             <div className={styles.historyLabel}>{t("billingPeriod")}</div>
                                                             <div className={styles.historyValue}>

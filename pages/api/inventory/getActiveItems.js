@@ -23,40 +23,26 @@ const messId=decoded.messId;
 
 const result = await pgPool.query(
 `
-SELECT *
-FROM (
-
 SELECT
 i.id,
 i.item_name,
 i.unit,
 c.category_name,
+COALESCE(s.total_stock, 0) AS current_stock
 
-SUM(
-CASE 
-WHEN t.transaction_type='purchase' THEN t.quantity
-WHEN t.transaction_type='usage' THEN -t.quantity
-WHEN t.transaction_type='adjustment' THEN -t.quantity
-ELSE 0
-END
-) AS current_stock
+FROM inventory_stock s
 
-FROM inventory_items i
+JOIN inventory_items i
+ON i.id=s.item_id
 
 LEFT JOIN inventory_categories c
 ON c.id=i.category_id
 
-LEFT JOIN inventory_stock_transactions t
-ON t.item_id=i.id
-AND t.mess_id=$1
+WHERE s.mess_id=$1
+AND COALESCE(s.is_active, TRUE)=TRUE
+AND COALESCE(s.total_stock, 0) > 0
 
-GROUP BY i.id,i.item_name,i.unit,c.category_name
-
-) stock
-
-WHERE stock.current_stock > 0
-
-ORDER BY stock.item_name
+ORDER BY i.item_name
 `,
 [messId]
 );
@@ -65,8 +51,6 @@ res.json({
 success:true,
 data:result.rows
 });
-
-console.log(result.rows);
 
 }catch(err){
 

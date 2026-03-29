@@ -55,7 +55,7 @@ export default async function handler(req, res) {
 
   try {
     const { rows } = await pgPool.query(
-      `SELECT name FROM users WHERE id = ANY($1::int[]) AND mess_id = $2`,
+      `SELECT name FROM users WHERE id = ANY($1::int[]) AND mess_id = $2 AND verified = true AND status='Active'`,
       [userIds, messId]
     );
     res.status(200).json({ names: rows.map(r => r.name) });

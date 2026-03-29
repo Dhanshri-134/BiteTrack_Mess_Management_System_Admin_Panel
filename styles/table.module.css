@@ -40,15 +40,17 @@
 
 /* ---------- DESKTOP TABLE ---------- */
 .tableContainer {
-  background: #FFFFFF;
+  background: transparent;
   border-radius: 14px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
   overflow-x: auto;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+}
+.table tr:hover {
+  background: rgb(210, 210, 210);
 }
 
 .table th,
@@ -236,6 +238,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 14px;
+  width: 100%;
 }
 
 .searchInput {
@@ -419,4 +422,11 @@
   flex-direction: row;
   gap: 8px;
   margin-top: 10px;
+}
+.merge{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  gap: 20px;
 }

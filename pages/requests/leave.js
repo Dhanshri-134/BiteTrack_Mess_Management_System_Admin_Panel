@@ -255,10 +255,12 @@ function LeaveTable({
 
   const handleAction = async (id, action) => {
     try {
+      console.log("Function Called")
       setActionLoadingId(`${id}-${action}`);
       const token = localStorage.getItem("token");
-
+      
       const res = await fetch(`${API_BASE}/api/leave/update-status/`, {
+      // const res = await fetch(`/api/leave/update-status/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -266,15 +268,18 @@ function LeaveTable({
         },
         body: JSON.stringify({ id, action }),
       });
-
+      console.log("API Hit")
+      
       const result = await res.json();
+      console.log("Result Got",result)
       if (!res.ok) {
         throw new Error(result?.message || result?.error || "Request failed");
       }
-
+      
       toast.success(action === "Approved" ? "Leave approved" : "Leave rejected");
       await refresh();
     } catch (error) {
+      console.log("Error")
       console.error("Leave action error:", error);
       toast.error(error.message || t("somethingWentWrong"));
     } finally {

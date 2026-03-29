@@ -142,6 +142,7 @@ export default function ItemPage() {
                     min_stock: Number(minStockValue || 0),
                 }
             });
+            
             await loadItem();
         } catch (err) {
             console.error(err);

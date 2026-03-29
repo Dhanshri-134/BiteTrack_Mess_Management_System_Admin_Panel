@@ -749,6 +749,18 @@ font-weight:600;
 color:#0f172a;
 }
 
+.tablePrimaryValue{
+font-weight:700;
+color:#0f172a;
+}
+
+.tableSecondaryValue{
+margin-top:4px;
+font-size:12px;
+line-height:1.45;
+color:#64748b;
+}
+
 @media(max-width:768px){
 .heroSection{
 flex-direction:column;

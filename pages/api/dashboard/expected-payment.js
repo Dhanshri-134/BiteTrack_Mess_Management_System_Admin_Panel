@@ -105,7 +105,7 @@ export default async function handler(req, res) {
         activeEnd = freezeDate;
       }
 
-      if (status === "frozen" && freezeDate && freezeDate <= monthStart) {
+      if (status === "inactive" && freezeDate && freezeDate <= monthStart) {
         activeEnd = freezeDate;
       }
 

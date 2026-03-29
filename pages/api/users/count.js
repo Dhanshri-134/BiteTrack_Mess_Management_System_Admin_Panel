@@ -68,7 +68,7 @@ export default async function handler(req, res) {
     const result = await pgPool.query(
       `SELECT COUNT(*) AS count 
        FROM users 
-       WHERE verified = true AND mess_id = $1`,
+       WHERE verified = true AND mess_id = $1 AND status='Active'`,
       [messId]
     );
 

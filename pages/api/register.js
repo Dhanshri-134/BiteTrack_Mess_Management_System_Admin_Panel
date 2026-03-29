@@ -187,13 +187,14 @@ const userId = insert.rows[0].id;
 await client.query(`DELETE FROM parents WHERE user_id = $1`, [userId]);
 if (req.body.parent_name || req.body.parent_contact || req.body.parent_address) {
   await client.query(
-    `INSERT INTO parents (user_id, name, contact, address)
-     VALUES ($1,$2,$3,$4)`,
+    `INSERT INTO parents (user_id, name, contact, address,mess_id)
+     VALUES ($1,$2,$3,$4,$5)`,
     [
       userId,
       req.body.parent_name || null,
       req.body.parent_contact || null,
-      req.body.parent_address || null
+      req.body.parent_address || null,
+      messId
     ]
   );
 }

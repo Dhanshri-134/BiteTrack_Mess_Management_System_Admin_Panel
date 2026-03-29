@@ -62,10 +62,18 @@ LIMIT 5`,
 );
 
 const recentPurchases=await pgPool.query(
-`SELECT p.id,p.purchase_date,v.vendor_name
+`SELECT
+p.id,
+p.purchase_date,
+v.vendor_name,
+COUNT(pi.id) AS items_count,
+ARRAY_REMOVE(ARRAY_AGG(DISTINCT i.item_name), NULL) AS item_names
 FROM inventory_purchases p
 LEFT JOIN inventory_vendors v ON v.id=p.vendor_id
+LEFT JOIN inventory_purchase_items pi ON pi.purchase_id=p.id
+LEFT JOIN inventory_items i ON i.id=pi.item_id
 WHERE p.mess_id=$1
+GROUP BY p.id,v.vendor_name
 ORDER BY p.created_at DESC
 LIMIT 5`,
 [messId]

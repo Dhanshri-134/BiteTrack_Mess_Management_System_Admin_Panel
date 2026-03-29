@@ -34,16 +34,34 @@ export default async function handler(req, res) {
         .json({ success: false, error: "Valid item and min stock required" });
     }
 
-    const result = await pgPool.query(
-      `
-      INSERT INTO inventory_stock (mess_id, item_id, total_stock, min_stock, is_active)
-      VALUES ($1, $2, 0, $3, TRUE)
-      ON CONFLICT (mess_id, item_id)
-      DO UPDATE SET min_stock = EXCLUDED.min_stock
-      RETURNING mess_id, item_id, total_stock, min_stock, is_active
-      `,
-      [messId, itemId, minStock]
+    const existingStock = await pgPool.query(
+      `SELECT id, total_stock, is_active
+       FROM inventory_stock
+       WHERE mess_id=$1
+         AND item_id=$2
+       LIMIT 1`,
+      [messId, itemId]
     );
+
+    let result;
+
+    if (existingStock.rowCount > 0) {
+      result = await pgPool.query(
+        `UPDATE inventory_stock
+         SET min_stock=$1
+         WHERE mess_id=$2
+           AND item_id=$3
+         RETURNING mess_id, item_id, total_stock, min_stock, is_active`,
+        [minStock, messId, itemId]
+      );
+    } else {
+      result = await pgPool.query(
+        `INSERT INTO inventory_stock (mess_id, item_id, total_stock, min_stock, is_active)
+         VALUES ($1, $2, 0, $3, TRUE)
+         RETURNING mess_id, item_id, total_stock, min_stock, is_active`,
+        [messId, itemId, minStock]
+      );
+    }
 
     return res.json({ success: true, data: result.rows[0] });
   } catch (error) {

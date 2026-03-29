@@ -87,6 +87,33 @@ export default async function handler(req, res) {
           ]
         );
 
+        const stockRow = await client.query(
+          `SELECT id
+           FROM inventory_stock
+           WHERE mess_id=$1
+             AND item_id=$2
+           LIMIT 1`,
+          [messId, item.item_id]
+        );
+
+        if (stockRow.rowCount > 0) {
+          await client.query(
+            `UPDATE inventory_stock
+             SET total_stock = COALESCE(total_stock, 0) + $1,
+                 is_active = TRUE
+             WHERE mess_id=$2
+               AND item_id=$3`,
+            [item.quantity, messId, item.item_id]
+          );
+        } else {
+          await client.query(
+            `INSERT INTO inventory_stock
+             (mess_id, item_id, total_stock, min_stock, is_active)
+             VALUES($1, $2, $3, 0, TRUE)`,
+            [messId, item.item_id, item.quantity]
+          );
+        }
+
         await client.query(
           `INSERT INTO inventory_stock_transactions
           (mess_id,item_id,transaction_type,quantity,reference_id,reference_type,notes)

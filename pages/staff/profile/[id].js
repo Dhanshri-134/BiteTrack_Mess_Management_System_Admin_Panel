@@ -56,23 +56,75 @@ function toLocalIsoDate(date) {
   ].join("-");
 }
 
-function buildCalendarRows(dateObj, attendance) {
+function getAttendanceWeight(value) {
+  const type = String(value || "").toUpperCase();
+
+  if (type === "H") return 0.5;
+  if (type === "P" || type === "L") return 1;
+  return 0;
+}
+
+function calculateBaseFromAttendance(profile, attendance) {
+  const salaryType = String(profile?.salary_type || "monthly").toLowerCase();
+  const baseSalary = Number(profile?.base_salary || 0);
+
+  if (salaryType === "monthly") {
+    return baseSalary;
+  }
+
+  if (salaryType === "daily") {
+    const payableUnits = attendance.reduce(
+      (sum, row) => sum + getAttendanceWeight(row?.attendance_type),
+      0
+    );
+
+    return Number((baseSalary * payableUnits).toFixed(2));
+  }
+
+  if (salaryType === "hourly") {
+    const totalWorkMinutes = attendance.reduce(
+      (sum, row) => sum + Number(row?.work_minutes || 0),
+      0
+    );
+
+    return Number((baseSalary * (totalWorkMinutes / 60)).toFixed(2));
+  }
+
+  return baseSalary;
+}
+
+function buildCalendarRows(dateObj, attendance, payments) {
   const year = dateObj.getFullYear();
   const monthIndex = dateObj.getMonth();
+  const firstDay = new Date(year, monthIndex, 1).getDay();
   const lastDay = new Date(year, monthIndex + 1, 0);
   const attendanceMap = new Map(
     attendance.map((row) => [String(row.attendance_date).split("T")[0], row])
   );
+  const paymentMap = payments.reduce((map, payment) => {
+    const key = String(payment?.payment_date || "").split("T")[0];
+    if (!key) return map;
 
-  const days = [];
+    const existingAmount = map.get(key) || 0;
+    map.set(key, existingAmount + Number(payment?.amount || 0));
+    return map;
+  }, new Map());
+
+  const days = Array.from({ length: firstDay }, (_, index) => ({
+    key: `blank-${index}`,
+    isBlank: true,
+  }));
+
   for (let day = 1; day <= lastDay.getDate(); day += 1) {
     const date = new Date(year, monthIndex, day);
     const iso = toLocalIsoDate(date);
     days.push({
+      key: iso,
       iso,
       day,
       weekday: WEEKDAYS[date.getDay()],
       row: attendanceMap.get(iso),
+      paymentAmount: paymentMap.get(iso) || 0,
     });
   }
 
@@ -290,7 +342,10 @@ export default function StaffProfile() {
     return { present, absent, late, overtimeHours, overtimeAmount, advance };
   }, [attendance, payments]);
 
-  const calendar = useMemo(() => buildCalendarRows(dateObj, attendance), [attendance, dateObj]);
+  const calendar = useMemo(
+    () => buildCalendarRows(dateObj, attendance, payments),
+    [attendance, dateObj, payments]
+  );
 
   const paymentSummary = useMemo(() => {
     const paymentTotal = payments.reduce(
@@ -301,12 +356,8 @@ export default function StaffProfile() {
       (sum, row) => sum + Number(row.penalty_amount || 0),
       0
     );
-    const monthlyBase =
-      String(profile?.salary_type || "").toLowerCase() === "monthly"
-        ? Number(profile?.base_salary || 0)
-        : 0;
-
-    const base = Number(salaryDetails?.base_salary ?? monthlyBase);
+    const calculatedBase = calculateBaseFromAttendance(profile, attendance);
+    const base = Number(salaryDetails?.base_salary ?? calculatedBase);
     const overtime = Number(salaryDetails?.overtime_amount ?? stats.overtimeAmount);
     const penalty = Number(salaryDetails?.penalty_amount ?? penaltyFromAttendance);
     const totalPaid = Number(salaryDetails?.total_paid ?? paymentTotal);
@@ -314,7 +365,7 @@ export default function StaffProfile() {
     const finalSalary = Number(salaryDetails?.final_salary ?? gross - totalPaid);
 
     return { base, overtime, penalty, totalPaid, finalSalary, gross };
-  }, [attendance, payments, profile?.base_salary, profile?.salary_type, salaryDetails, stats.overtimeAmount]);
+  }, [attendance, payments, profile, salaryDetails, stats.overtimeAmount]);
 
   if (loading && !profile) {
     return <Layout title={t("staffProfile")}><div className={styles.profileContainer}>{t("loading")}</div></Layout>;
@@ -348,6 +399,9 @@ export default function StaffProfile() {
               <div className={styles.profileMetaRow}>
                 <span className={styles.profileMetaPill}>{profile.role || t("staff")}</span>
                 <span className={styles.profileMetaPill}>{String(profile.salary_type || "monthly").toUpperCase()}</span>
+                <span className={`${styles.profileMetaPill} ${profile.is_active === false ? styles.profileStatusInactive : styles.profileStatusActive}`}>
+                  {profile.is_active === false ? "Inactive" : "Active"}
+                </span>
               </div>
             </div>
           </div>
@@ -420,25 +474,25 @@ export default function StaffProfile() {
             </div>
 
             <div className={styles.calendarShell}>
-              <div className={styles.attendanceHeaderRow}>
-                <span>{t("date")}</span>
-                <span>{t("attendance")}</span>
-                <span>{t("advance")}</span>
+              <div className={styles.calendarWeekdays}>
+                {WEEKDAYS.map((weekday) => (
+                  <span key={weekday}>{weekday}</span>
+                ))}
               </div>
-              <div className={styles.attendanceList}>
-                {calendar.days.map(({ iso, day, weekday, row }) => {
+              <div className={styles.calendarGrid}>
+                {calendar.days.map(({ key, isBlank, iso, day, weekday, row, paymentAmount }) => {
+                  if (isBlank) {
+                    return <div key={key} className={styles.calendarBlank} aria-hidden="true" />;
+                  }
+
                   const attendanceType = row?.attendance_type || "";
                   const label = statusLabel(attendanceType, row);
-                  const paymentForDay = payments.find((payment) => {
-                    if (!payment?.payment_date) return false;
-                    return String(payment.payment_date).split("T")[0] === iso;
-                  });
 
                   return (
                     <button
-                      key={iso}
+                      key={key}
                       type="button"
-                      className={`${styles.attendanceRow} ${row ? styles.attendanceRowMarked : styles.attendanceRowEmpty}`}
+                      className={`${styles.calendarCard} ${row ? styles.calendarCardMarked : styles.calendarCardEmpty}`}
                       onClick={() => {
                         setModalData({
                           date: iso,
@@ -455,17 +509,16 @@ export default function StaffProfile() {
                         setShowModal(true);
                       }}
                     >
-                      <div className={styles.attendanceDateCell}>
+                      <div className={styles.calendarCardHeader}>
                         <strong>{String(day).padStart(2, "0")}</strong>
                         <span>{weekday}</span>
                       </div>
-                      <div className={styles.attendanceStatusCell}>
                       <div className={styles.calendarBadgeRow}>
                         <span className={`${styles.statusPill} ${styles[`status${label}`] || styles.statusOFF}`}>{label}</span>
                         {row?.is_late ? <span className={`${styles.statusPill} ${styles.statusL}`}>L</span> : null}
                         {Number(row?.overtime_amount || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>OT</span> : null}
                       </div>
-                      <div className={styles.attendanceMeta}>
+                      <div className={styles.calendarInfo}>
                         {row ? (
                           <>
                             <span>{t("inLabel", { time: row.check_in ? String(row.check_in).slice(11, 16) : "--:--" })}</span>
@@ -475,11 +528,9 @@ export default function StaffProfile() {
                         ) : (
                           <span className={styles.calendarMuted}>{t("noData")}</span>
                         )}
-                      </div>
-                      </div>
-                      <div className={styles.attendanceAmountCell}>
-                        <strong>{paymentForDay ? formatMoney(paymentForDay.amount) : formatMoney(0)}</strong>
-                        <span>{paymentForDay ? String(paymentForDay.payment_type || "").toUpperCase() : t("noData")}</span>
+                        <span className={paymentAmount > 0 ? styles.calendarAmount : styles.calendarMuted}>
+                          {paymentAmount > 0 ? `${formatMoney(paymentAmount)} paid` : "No payment"}
+                        </span>
                       </div>
                     </button>
                   );
@@ -493,9 +544,11 @@ export default function StaffProfile() {
               <div className={styles.summaryBox}><span>{t("baseSalary")}</span><strong>{formatMoney(paymentSummary.base)}</strong></div>
               <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
               <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
+              <div className={styles.summaryBox}><span>Gross Salary</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
               <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
               <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
             </div>
+            <p className={styles.summaryHint}>Auto-calculated from attendance, overtime, penalties, and recorded payments for {monthName}.</p>
 
             <form className={styles.paymentFormCard} onSubmit={submitPayment}>
               <div className={styles.sectionHead}><div><h3 className={styles.sectionTitle}>{t("addPayment")}</h3><p className={styles.sectionSubtitle}>{t("recordPaymentDescription")}</p></div><Wallet size={18} /></div>

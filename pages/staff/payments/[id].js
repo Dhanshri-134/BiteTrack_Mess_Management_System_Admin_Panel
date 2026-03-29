@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Layout from "../../../components/Layout";
 import styles from "../../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
@@ -80,6 +80,29 @@ export default function StaffPayments() {
     }
   }
 
+  const paymentSummary = useMemo(() => {
+    const totals = payments.reduce(
+      (acc, payment) => {
+        const type = String(payment.payment_type || "").toLowerCase();
+        const amount = Number(payment.amount || 0);
+
+        acc.totalPaid += amount;
+        if (type.includes("advance")) acc.advancePaid += amount;
+        if (type.includes("partial")) acc.partialPaid += amount;
+        if (type.includes("final")) acc.finalPaid += amount;
+
+        return acc;
+      },
+      { totalPaid: 0, advancePaid: 0, partialPaid: 0, finalPaid: 0 }
+    );
+
+    return {
+      ...totals,
+      remainingBalance: Number(profile?.current_balance || 0),
+      paymentCount: payments.length,
+    };
+  }, [payments, profile?.current_balance]);
+
   if (loading && !profile) return <Layout><div className={styles.container}>Loading...</div></Layout>;
   if (!profile) return <Layout><div className={styles.container}>Not Found</div></Layout>;
 
@@ -101,6 +124,29 @@ export default function StaffPayments() {
           <h3>Current Balance</h3>
           <h2>₹ {Number(profile.current_balance || 0).toFixed(2)}</h2>
           <p style={{ fontSize: "0.80rem", opacity: 0.9, marginTop: "0.5rem" }}>Balance = Total Earnings - Total Payments</p>
+        </div>
+
+        <div className={styles.paymentSummaryGrid} style={{ marginBottom: "1.5rem" }}>
+          <div className={styles.summaryBox}>
+            <span>Total Paid</span>
+            <strong>Rs {paymentSummary.totalPaid.toFixed(2)}</strong>
+          </div>
+          <div className={styles.summaryBox}>
+            <span>Advance Paid</span>
+            <strong>Rs {paymentSummary.advancePaid.toFixed(2)}</strong>
+          </div>
+          <div className={styles.summaryBox}>
+            <span>Partial Paid</span>
+            <strong>Rs {paymentSummary.partialPaid.toFixed(2)}</strong>
+          </div>
+          <div className={styles.summaryBox}>
+            <span>Final Paid</span>
+            <strong>Rs {paymentSummary.finalPaid.toFixed(2)}</strong>
+          </div>
+          <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}>
+            <span>Remaining Balance</span>
+            <strong>Rs {paymentSummary.remainingBalance.toFixed(2)}</strong>
+          </div>
         </div>
 
         {/* Add Payment Form */}
@@ -155,6 +201,7 @@ export default function StaffPayments() {
 
         {/* Payment Timeline */}
         <h3 className={styles.sectionTitle}>Payment Timeline</h3>
+        <p className={styles.summaryHint}>{paymentSummary.paymentCount} payment record{paymentSummary.paymentCount === 1 ? "" : "s"} found for this staff member.</p>
         <div className={styles.timelineList}>
           {payments.length === 0 ? <p className={styles.emptyMsg}>No payments found.</p> : (
             payments.map((p, idx) => {

@@ -2,12 +2,14 @@ import { useEffect,useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/inventory.module.css";
 import  Link from "next/link";
+import { useRouter } from "next/router";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function InventoryDashboard(){
 
+const router = useRouter();
 const [loading,setLoading]=useState(true);
 const {t} = useLanguage();
 const [stats,setStats]=useState({
@@ -129,7 +131,13 @@ View Ledger
 {stats.recentPurchases.length===0 && <p>No purchases yet</p>}
 {stats.recentPurchases.map(p=>(
 <div key={p.id} className={styles.listRow}>
+<div>
 <span>{p.vendor_name}</span>
+<div className={styles.tableSecondaryValue}>
+{Array.isArray(p.item_names) && p.item_names.length > 0 ? p.item_names.slice(0, 2).join(", ") : "No items"}
+{Array.isArray(p.item_names) && p.item_names.length > 2 ? ` +${p.item_names.length - 2} more` : ""}
+</div>
+</div>
 <span>{new Date(p.purchase_date).toLocaleDateString()}</span>
 </div>
 ))}

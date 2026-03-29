@@ -30,12 +30,13 @@ export default async function handler(req, res) {
         COALESCE(s.total_stock, 0) AS current_stock,
         COALESCE(s.min_stock, 0) AS min_stock,
         COALESCE(s.is_active, TRUE) AS is_active
-      FROM inventory_items i
+      FROM inventory_stock s
+      JOIN inventory_items i
+        ON i.id=s.item_id
       LEFT JOIN inventory_categories c
         ON c.id=i.category_id
-      LEFT JOIN inventory_stock s
-        ON s.item_id=i.id
-       AND s.mess_id=$1
+      WHERE s.mess_id=$1
+        AND COALESCE(s.is_active, TRUE)=TRUE
       ORDER BY i.item_name`,
       [messId]
     );

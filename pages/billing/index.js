@@ -533,52 +533,175 @@ if (!map[key].parent_mobile && b.parent_mobile) {
   const paidBills = groupedBills.filter(b => !b.has_pending);
   const unpaidBills = groupedBills.filter(b => b.has_pending);
 
-  const exportBillingPDF = async () => {
+const exportBillingPDF = async () => {
+  try {
+    if (!month || !year) return toast.error(t("selectMonthYear"));
+
+    setExportingPDF(true);
+
+    const token = localStorage.getItem("token");
+
+    // ================= FETCH MESS =================
+    const messRes = await fetch(`${API_BASE}/api/mess/details/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const mess = await messRes.json();
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // ================= LOAD LOGO =================
+    const loadImageAsBase64 = (url) =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = url;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = reject;
+      });
+
+    let logoBase64 = null;
     try {
-      if (!month || !year) return toast.error(t("selectMonthYear"));
-      setExportingPDF(true);
-
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
-
-      doc.setFillColor(0, 113, 112);
-      doc.rect(0, 0, pageWidth, 40, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18);
-      doc.text("Billing Report", pageWidth - 14, 15, { align: "right" });
-      doc.setFontSize(10);
-      doc.text(`${month}/${year}`, pageWidth - 14, 25, { align: "right" });
-      doc.setTextColor(0, 0, 0);
-
-      let startY = 50;
-
-      doc.setFontSize(14);
-      doc.text("Paid Users", 14, startY);
-      autoTable(doc, {
-        startY: startY + 5,
-        head: [["Name", "Amount", "Advance", "Pending", "Total"]],
-        body: paidBills.map(b => [
-          b.name, getBillAmount(b).toFixed(2), Number(b.advance_amount || 0).toFixed(2), Number(b.pending_amount || 0).toFixed(2), Number(b.total_payable).toFixed(2)
-        ])
-      });
-
-      startY = doc.lastAutoTable.finalY + 10;
-      doc.text("Unpaid Users", 14, startY);
-      autoTable(doc, {
-        startY: startY + 5,
-        head: [["Name", "Amount", "Advance", "Pending", "Total"]],
-        body: unpaidBills.map(b => [
-          b.name, getBillAmount(b).toFixed(2), Number(b.advance_amount || 0).toFixed(2), Number(b.pending_amount || 0).toFixed(2), Number(b.total_payable).toFixed(2)
-        ])
-      });
-      await saveJsPdfDocument(doc, `Billing_${month}_${year}.pdf`);
-    } catch (err) {
-      console.error(err);
-      toast.error(t("somethingWentWrong"));
-    } finally {
-      setExportingPDF(false);
+      logoBase64 = await loadImageAsBase64(mess.logo || "/Assets/logo_Bite_Track.png");
+    } catch {
+      logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
     }
-  };
+
+    // ================= HEADER =================
+    doc.setFillColor(0, 113, 112);
+    doc.rect(0, 0, pageWidth, 40, "F");
+
+    if (logoBase64) {
+      doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(mess.name || "Mess Name", pageWidth - 14, 15, { align: "right" });
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
+    doc.text(mess.location || "", pageWidth - 14, 22, { align: "right" });
+    doc.text(mess.email || "", pageWidth - 14, 28, { align: "right" });
+    doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" });
+
+    // ✅ Month-Year added clearly
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Billing Month: ${month}/${year}`, pageWidth - 14, 38, {
+      align: "right",
+    });
+
+    doc.setTextColor(0, 0, 0);
+
+    // ================= TITLE =================
+    doc.line(14, 55, pageWidth - 14, 55);
+    doc.setFontSize(14);
+    doc.text("Billing Report", 14, 50);
+
+    let startY = 60;
+
+    // ================= TABLE STYLE =================
+    const commonStyles = {
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: {
+        fillColor: [0, 113, 112],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      alternateRowStyles: { fillColor: [240, 250, 250] },
+    };
+
+    // ================= PAID USERS =================
+    doc.setFontSize(13);
+    doc.text("Paid Users", 14, startY);
+
+    autoTable(doc, {
+      startY: startY + 5,
+      ...commonStyles,
+      head: [[
+        "User",
+        "Course / Hostel",
+        "Parent",
+        "Advance",
+        "Paid Amount"
+      ]],
+      body: paidBills.map(b => [
+        `${b.name || "-"}\n${b.email || ""}\n${b.mobile || ""}`,
+
+        `${b.course || "-"}\n${b.hostel_name || "-"}\nRoom: ${b.room_no || "-"}`,
+
+        `${b.parent_name || "-"}\n${b.parent_mobile || "-"}`,
+
+        Number(b.advance_amount || 0).toFixed(2),
+
+       Number(b.paid_amount || 0),
+      ])
+    });
+
+    // ================= UNPAID USERS =================
+    startY = doc.lastAutoTable.finalY + 12;
+
+    doc.setFontSize(13);
+    doc.text("Unpaid Users", 14, startY);
+
+    autoTable(doc, {
+      startY: startY + 5,
+      ...commonStyles,
+      head: [[
+        "User",
+        "Course / Hostel",
+        "Parent",
+        "Advance",
+        "Total Payable"
+      ]],
+      body: unpaidBills.map(b => [
+        `${b.name || "-"}\n${b.email || ""}\n${b.mobile || ""}`,
+
+        `${b.course || "-"}\n${b.hostel_name || "-"}\nRoom: ${b.room_no || "-"}`,
+
+        `${b.parent_name || "-"}\n${b.parent_mobile || "-"}`,
+
+        Number(b.advance_amount || 0).toFixed(2),
+        Number(b.total_payable || 0).toFixed(2),
+
+        
+
+//   (() => {
+//   const total_payable = Math.max(
+//     0,
+//     Number(b.total_amount || 0) -
+//     Number(b.paid_amount || 0) -
+//     Number(b.advance_amount || 0)
+//   );
+
+//   return total_payable.toFixed(2);
+// })()
+      ])
+    });
+
+    // ================= SAVE =================
+    const fileName = `${mess.name?.replace(/\s+/g, "_") || "Billing"}_${month}_${year}.pdf`;
+
+    await saveJsPdfDocument(doc, fileName);
+
+  } catch (err) {
+    console.error(err);
+    toast.error(t("somethingWentWrong"));
+  } finally {
+    setExportingPDF(false);
+  }
+};
 
   const filtered = groupedBills.filter((b) => {
     if (userIdFromQuery && String(b.user_id) !== String(userIdFromQuery)) return false;
@@ -658,14 +781,13 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                       <DayDropdown options={[{ value: "daily", label: t("dailyBilling") }, { value: "monthly", label: t("monthlyBilling") }]} value={billingType} onChange={setBillingType} />
                     </div>
                   )}
-                  <div className={styles.controlItem}>
-                    <label>{t("search")}</label>
-                    <input placeholder={t("searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} />
-                  </div>
                 </div>
               )}
 
               <br></br>
+                  <div className={styles.controlItem}>
+                    <input placeholder={t("searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} />
+                  </div>
               <div className={styles.controlItemActions}>
                 <button className={styles.btnPrimary} style={{ display:"flex",gap:"16px"}} onClick={fetchBills}><RefreshCcw size={13}/> {t("refresh")}</button>
                 <button className={styles.btnSecondary} style={{ display:"flex",gap:"16px"}} onClick={exportBillingPDF} disabled={exportingPDF}>{exportingPDF ? t("exporting") :( <><DownloadIcon size={13}/> {t("PDF")} </>) }</button>
@@ -689,7 +811,6 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                             <th>{t("parents")}</th>
                             {isMonthYearSelected && <th>{t("duration")}</th>}
                             {messAccess?.per_day_rate && <th>{t("days")}</th>}
-                            {messAccess?.per_day_rate && <th>{t("perDayRate")}</th>}
                             <th>{t("advance")}</th>
                             <th>{t("pending")}</th>
                             <th>{t("totalPayable")}</th>
@@ -726,7 +847,6 @@ if (!map[key].parent_mobile && b.parent_mobile) {
 
                               {isMonthYearSelected && <td>{b.start_date || "-"} {t("to")} {b.end_date || "-"}</td>}
                               {messAccess?.per_day_rate && <td>{b.days_billed}</td>}
-                              {messAccess?.per_day_rate && <td>{Number(b.chosen_per_day_rate).toFixed(2)}</td>}
 
                               <td>{Number(b.advance_amount || 0).toFixed(2)}</td>
                               <td>{Number(b.pending_amount || 0).toFixed(2)}</td>
@@ -797,7 +917,8 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                                         {b.history.sort((a, y) => { if (a.year === y.year) return y.month - a.month; return y.year - a.year }).map(h => (
                                           <tr key={`${h.user_id}-${h.year}-${h.month}`} style={{ borderBottom: "1px solid #e5e7eb" }}>
                                             <td style={{ padding: "10px", fontWeight: "500", color: "#111827", fontSize: "14px" }}>{h.month}/{h.year}</td>
-                                            <td style={{ padding: "10px", color: "#6b7280", fontSize: "13px" }}>{h.start_date || "-"} {t("to")} {h.end_date || "-"}</td>
+                                            <td style={{ padding: "10px", color: "#6b7280", fontSize: "13px" }}>{h.start_date || "-"} {t("to")} <br></br>  
+                                            {h.end_date || "-"}</td>
                                             <td style={{ padding: "10px", textAlign: "right", fontWeight: "600", color: "#111827" }}>
                                               ₹{getBillAmount(h).toFixed(2)}<br/>
                                               <span style={{ fontSize: "12px", color: h.paid ? "#10b981" : "#6b7280" }}>Paid: ₹{Number(h.paid_amount || 0).toFixed(2)}</span>

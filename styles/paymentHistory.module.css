@@ -1007,3 +1007,105 @@
   display: flex;
   justify-content: space-between;
 }
+
+
+
+/* ===========================
+   Payment History Expand
+=========================== */
+
+.historyExpand {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.historyTitle {
+  font-weight: 600;
+  color: #016161;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+/* ===========================
+   MOBILE DEFAULT
+=========================== */
+
+.historyItem {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 6px 12px;
+  padding: 8px 0;
+  border-top: 1px dashed #e2e8f0;
+  font-size: 0.85rem;
+}
+
+.historyItem:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.historyLabel {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.historyValue {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+/* ===========================
+   DESKTOP (TABLE STYLE)
+=========================== */
+/* ===========================
+   DESKTOP (FINAL FIX)
+=========================== */
+
+@media (min-width: 768px) {
+
+  /* HEADER */
+  .historyHeader {
+    display: grid;
+    grid-template-columns: 
+      120px
+      100px
+      120px
+      120px
+      150px
+      200px
+      80px;
+
+    font-weight: 600;
+    padding: 8px 0;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 10px;
+  }
+
+  /* ROW */
+  .historyItem {
+    display: grid;
+    grid-template-columns: 
+      100px
+      90px
+      120px
+      90px
+      150px
+      200px
+      80px;
+
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* 🔥 CRITICAL FIX */
+  .historyItem > .historyLabel {
+    display: none;
+  }
+
+  /* 🔥 ONLY VALUES TAKE GRID CELLS */
+  .historyItem > .historyValue {
+    display: block;
+  }
+}

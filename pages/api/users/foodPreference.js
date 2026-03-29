@@ -43,7 +43,7 @@ export default async function handler(req, res) {
     `
     SELECT id, name, phone, food_preference
     FROM users
-    WHERE food_preference IN ('veg', 'nonveg') AND  verified = true
+    WHERE food_preference IN ('veg', 'nonveg') AND  verified = true AND status='Active'
       AND mess_id = $1
     `,
     [messId]

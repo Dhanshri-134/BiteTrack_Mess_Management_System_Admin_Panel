@@ -536,6 +536,8 @@ const groupedPayments = groupByUser(filtered);
             {t("verifyPayments")}
           </button>
         </div>
+        <div className={styles.merge}>
+
         <div className={styles.filterBar}>
   <input
     type="text"
@@ -543,14 +545,15 @@ const groupedPayments = groupByUser(filtered);
     value={search}
     onChange={(e) => setSearch(e.target.value)}
     className={styles.searchInput}
-  />
-  </div>
+    />
+         </div>
        <div className={styles.filterBar}>
   <DayDropdown
     options={statusOptions}
     value={statusFilter}
     onChange={setStatusFilter}
-  />
+    />
+    </div>
 </div>
 
 

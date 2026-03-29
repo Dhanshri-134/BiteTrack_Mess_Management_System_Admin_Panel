@@ -71,7 +71,7 @@ export default async function handler(req, res) {
               u.room_no, u.hostel_name, u.course, u.date_of_joining,
              u.verified, u.created_at
       FROM users u
-      WHERE u.mess_id = $1
+      WHERE u.mess_id = $1 AND u.verified = true AND u.status='Active'
       ORDER BY u.created_at DESC
       `,
       [messId]

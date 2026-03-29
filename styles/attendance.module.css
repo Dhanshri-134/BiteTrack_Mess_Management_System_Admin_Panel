@@ -269,10 +269,6 @@
 
 /* ===== Mobile Optimizations ===== */
 @media (max-width: 768px) {
-  .main {
-    padding: 1rem;
-  }
-
   .stats {
     gap: 0.75rem;
   }
@@ -330,7 +326,6 @@
   padding: 10px 16px;
   border-radius: 8px;
   border: none;
-  margin-bottom: 16px;
 }
 
 .attendanceModal {
@@ -513,4 +508,13 @@ color:#007171;
   font-weight: 700;
   cursor: pointer;
   height: max-content;
+}
+
+
+.exportBtn{
+  background-color: #005151;
+  color: #fff;
+  border-radius: 8px;
+  padding: 5px 8px;
+  margin-left: 5px;
 }

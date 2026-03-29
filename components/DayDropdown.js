@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import styles from "../styles/customDropdown.module.css";
 import { useLanguage } from "../context/LanguageContext";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function DayDropdown({ options, value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -36,7 +37,7 @@ export default function DayDropdown({ options, value, onChange }) {
             : t(selected)
           : t("selectDay")}
 
-        <span className={styles.arrow}>{open ? "^" : "v"}</span>
+        <span className={styles.arrow}>{open ? <ChevronUp size={18}/> : <ChevronDown size={18}/> }</span>
       </button>
 
       {open ? (

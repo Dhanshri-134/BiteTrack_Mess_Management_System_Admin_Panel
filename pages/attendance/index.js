@@ -8,8 +8,12 @@ import { offlineFetch } from "@/lib/offlineFetch";
 import { queueAction } from "@/lib/queueAction";
 import { useLanguage } from "../../context/LanguageContext";
 import { useRouter } from "next/router";
-import { Trash2Icon } from "lucide-react";
+import { Download, Trash2Icon } from "lucide-react";
 import Link from "next/link";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { saveJsPdfDocument } from "@/lib/fileDownload";
+import { API_BASE } from "../../lib/api";
 
 export default function AttendancePage() {
   const [records, setRecords] = useState([]);
@@ -23,7 +27,9 @@ export default function AttendancePage() {
   const [allUsers, setAllUsers] = useState([]);
   const [userSearch, setUserSearch] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  // const today = todayISO.split('-').reverse().join('-');
+
   const [searchAttendance, setSearchAttendance] = useState("");
   const [attendanceTab, setAttendanceTab] = useState("present");
   const [role, setRole] = useState(null);
@@ -51,6 +57,128 @@ useEffect(() => {
 const absentUsers = allUsers.filter(
   (u) => !presentUserIds.includes(u.id)
 );
+
+
+const loadImageAsBase64 = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = url;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+
+    img.onerror = reject;
+  });
+};
+
+const handleExportAttendancePDF = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    // 👉 Fetch mess details (same as suggestions)
+    const messRes = await fetch(
+      `${API_BASE}/api/mess/details/`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    const mess = await messRes.json();
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // 🎨 HEADER BACKGROUND
+    doc.setFillColor(0, 113, 112);
+    doc.rect(0, 0, pageWidth, 40, "F");
+
+    // 🖼 LOGO
+    let logoBase64 = null;
+    try {
+      logoBase64 = await loadImageAsBase64(mess.logo || "/Assets/logo_Bite_Track.png");
+    } catch {
+      logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
+    }
+
+    if (logoBase64) {
+      doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
+    }
+
+    // 🏷 Mess Info (RIGHT)
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text(mess.name, pageWidth - 14, 15, { align: "right" });
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(String(mess.location || ""), pageWidth - 14, 22, { align: "right" });
+    doc.text(String(mess.email || ""), pageWidth - 14, 28, { align: "right" });
+    doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" });
+
+    const todayDate = new Date().toLocaleDateString("en-IN");
+
+    doc.setFontSize(9);
+    doc.text(`Date: ${todayDate}`, pageWidth - 14, 38, { align: "right" });
+
+    // Divider
+    doc.setTextColor(0, 0, 0);
+    doc.line(14, 55, pageWidth - 14, 55);
+
+    // Title
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Attendance Report", 14, 50);
+
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Present Student List", 14, 65);
+    
+    // ---------------- PRESENT TABLE ----------------
+    autoTable(doc, {
+      startY: 70,
+      head: [["Sr No", "Name"]],
+      body: todayRecords.map((r, i) => [
+        i + 1,
+        r.user_name,
+      ]),
+      headStyles: {
+        fillColor: [0, 113, 112],
+        textColor: [255, 255, 255],
+        halign: "left",
+      },
+    });
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Absent Student List", 14, doc.lastAutoTable.finalY + 10);
+
+    // ---------------- ABSENT TABLE ----------------
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 15,
+      head: [["Sr No", "Name"]],
+      body: filteredAbsentUsers.map((u, i) => [
+        i + 1,
+        u.name,
+      ]),
+      headStyles: {
+        fillColor: [220, 38, 38], // red for absent
+        textColor: [255, 255, 255],
+        halign: "left",
+      },
+    });
+
+    await saveJsPdfDocument(doc, `Attendance_${todayDate}.pdf`);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const filteredAbsentUsers = absentUsers.filter(
   (u) =>
@@ -471,11 +599,6 @@ const filteredAbsentUsers = absentUsers.filter(
 
           {/* Scanner */}
           <section className={styles.scannerSection}>
-            {/* <h3 className={styles.scannerTitle}>
-              {t("markAttendance")}
-            </h3> */}
-
-
             <button
               className={styles.markBtn}
               onClick={() => {
@@ -498,8 +621,11 @@ const filteredAbsentUsers = absentUsers.filter(
 
           {/* Attendance Table */}
           <section>
-            <h2>
-              {t("attendanceRecord")} ({today})
+            <h2 style={{display:"flex",justifyContent:"space-between"}}>
+              {t("attendanceRecord")} ({today.split('-').reverse().join('-')})
+              <button className={styles.exportBtn} onClick={handleExportAttendancePDF}>
+  <Download size={18} />
+</button>
             </h2>
             <div className={styles.attendanceTabs}>
   <button

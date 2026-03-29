@@ -2,6 +2,7 @@ import { useEffect,useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/inventory.module.css";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "../../context/LanguageContext";
@@ -56,9 +57,26 @@ const s = search.toLowerCase();
 setFiltered(
 rows.filter(r =>
 (r.vendor_name || "").toLowerCase().includes(s) ||
-(r.invoice_number || "").toLowerCase().includes(s)
+(r.invoice_number || "").toLowerCase().includes(s) ||
+(r.item_names || []).some((name) => String(name || "").toLowerCase().includes(s))
 )
 );
+
+}
+
+function formatItemPreview(itemNames) {
+
+const names = Array.isArray(itemNames) ? itemNames.filter(Boolean) : [];
+
+if(names.length === 0){
+return "No items";
+}
+
+if(names.length <= 2){
+return names.join(", ");
+}
+
+return `${names.slice(0, 2).join(", ")} +${names.length - 2} more`;
 
 }
 
@@ -83,9 +101,18 @@ return(
         </div>
         </section>
 
+<div className={styles.inlineActions}>
+<Link href="/inventory/add-purchases" className={styles.primaryBtn}>
+Add Purchase
+</Link>
+<div className={styles.totalBox}>
+{filtered.length} purchase{filtered.length === 1 ? "" : "s"} found
+</div>
+</div>
+
 <input
 className={styles.searchInput}
-placeholder="Search vendor or invoice..."
+placeholder="Search vendor, invoice, or item name..."
 value={search}
 onChange={(e)=>setSearch(e.target.value)}
 />
@@ -135,7 +162,8 @@ onClick={()=>router.push(`/inventory/purchase-details/${r.id}`)}
 </td>
 
 <td data-label={t("items")}>
-{r.items_count}
+<div className={styles.tablePrimaryValue}>{r.items_count} item{Number(r.items_count) === 1 ? "" : "s"}</div>
+<div className={styles.tableSecondaryValue}>{formatItemPreview(r.item_names)}</div>
 </td>
 
 <td data-label={t("total")}>

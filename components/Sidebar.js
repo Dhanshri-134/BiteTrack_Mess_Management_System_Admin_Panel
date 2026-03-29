@@ -5,13 +5,18 @@ import { getLocalDB } from "@/lib/localDB";
 import {
   BarChart3,
   BookImageIcon,
+  Boxes,
+  Briefcase,
   ChevronDown,
   ClipboardList,
   CompassIcon,
   CreditCard,
+  LayoutDashboard,
   LogOutIcon,
   MessageSquare,
+  Receipt,
   Settings,
+  ShieldCheck,
   User,
   Users,
   Zap,
@@ -156,7 +161,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
       {
         key: "management",
         title: t("management"),
-        icon: <Users size={22} />,
+        icon: <LayoutDashboard size={22} />,
         items: [
           { path: "/attendance/", label: t("attendance") },
           { path: "/users/", label: t("users") },
@@ -169,7 +174,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
       {
         key: "billing",
         title: t("billing"),
-        icon: <CreditCard size={22} />,
+        icon: <Receipt size={22} />,
         items: [
           { path: "/billing/", label: t("userBilling") },
           { path: "/BillingMess/", label: t("billingMess") },
@@ -178,7 +183,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
       {
         key: "requests",
         title: t("requests"),
-        icon: <BookImageIcon size={22} />,
+        icon: <ClipboardList size={22} />,
         items: [
           { path: "/requests/cash-payments/", label: t("payments") },
           { path: "/requests/bookingRequests/", label: t("bookingRequests") },
@@ -192,7 +197,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
       {
         key: "inventory",
         title: t("inventory"),
-        icon: <CompassIcon size={22} />,
+        icon: <Boxes size={22} />,
         items: [
           { path: "/inventory/dashboard/", label: t("dashboard") },
           { path: "/inventory/categories/", label: t("material") },
@@ -313,7 +318,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
       })}
 
       {messAccess?.staff !== false
-        ? renderLink("/staff/dashboard/", <User size={20} />, t("staff"))
+        ? renderLink("/staff/dashboard/", <Users size={20} />, t("staff"))
         : null}
 
       {renderLink("/settings/", <Settings size={20} />, t("mess_settings"))}

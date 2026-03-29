@@ -152,6 +152,9 @@
   border-collapse: collapse;
   min-width: 760px;
 }
+.table tr:hover {
+  background: rgb(210, 210, 210);
+}
 
 .table th,
 .table td {
@@ -266,6 +269,10 @@
   align-items: flex-start;
 }
 
+.mobileCard strong {
+  font-weight: 700;
+}
+
 .mobileCard p:last-child {
   margin-bottom: 0;
 }
@@ -302,6 +309,7 @@
 .groupHeaderContent {
   display: flex;
   flex-direction: column;
+  margin: auto;
   gap: 0.35rem;
 }
 
