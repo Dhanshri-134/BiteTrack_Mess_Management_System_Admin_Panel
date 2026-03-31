@@ -98,32 +98,6 @@ function calculateBaseFromAttendance(profile, attendance) {
   return baseSalary;
 }
 
-function buildWorkStats(profile, salaryDetails) {
-  const salaryType = String(profile?.salary_type || salaryDetails?.salary_type || "").toLowerCase();
-
-  if (salaryType === "daily") {
-    return [
-      `Payable Days: ${Number(salaryDetails?.payable_units || 0).toFixed(1)}`,
-      `Present: ${Number(salaryDetails?.present_days || 0)}`,
-      `Half Days: ${Number(salaryDetails?.half_days || 0)}`,
-    ];
-  }
-
-  if (salaryType === "hourly") {
-    return [
-      `Worked Hours: ${formatHoursFromMinutes(salaryDetails?.total_work_minutes)}`,
-      `Present: ${Number(salaryDetails?.present_days || 0)}`,
-      `Half Days: ${Number(salaryDetails?.half_days || 0)}`,
-    ];
-  }
-
-  return [
-    `Present: ${Number(salaryDetails?.present_days || 0)}`,
-    `Leave: ${Number(salaryDetails?.leave_days || 0)}`,
-    `Half Days: ${Number(salaryDetails?.half_days || 0)}`,
-  ];
-}
-
 function buildCalendarRows(dateObj, attendance, payments) {
   const year = dateObj.getFullYear();
   const monthIndex = dateObj.getMonth();
@@ -412,34 +386,29 @@ export default function StaffProfile() {
       (sum, payment) => sum + Number(payment.amount || 0),
       0
     );
-    const penaltyFromAttendance = attendance.reduce(
-      (sum, row) => sum + Number(row.penalty_amount || 0),
-      0
-    );
-    const calculatedBase = calculateBaseFromAttendance(profile, attendance);
     const configuredBase = Number(
       salaryDetails?.configured_base_salary ?? profile?.base_salary ?? 0
     );
-    const earnedBase = Number(
-      salaryDetails?.earned_base_salary ?? salaryDetails?.base_salary ?? calculatedBase
-    );
-    const overtime = Number(salaryDetails?.overtime_amount ?? stats.overtimeAmount);
-    const penalty = Number(salaryDetails?.penalty_amount ?? penaltyFromAttendance);
+    const manualSalary = Number(salaryDetails?.base_salary || 0);
+    const overtime = Number(salaryDetails?.overtime_amount || 0);
+    const penalty = Number(salaryDetails?.penalty_amount || 0);
     const totalPaid = Number(salaryDetails?.total_paid ?? paymentTotal);
-    const gross = earnedBase + overtime - penalty;
-    const finalSalary = Number(salaryDetails?.final_salary ?? gross - totalPaid);
+    const gross = Number(salaryDetails?.gross_salary ?? manualSalary + overtime - penalty);
+    const finalSalary = Number(
+      salaryDetails?.final_salary ?? Math.max(gross - totalPaid, 0)
+    );
 
     return {
       configuredBase,
-      earnedBase,
+      manualSalary,
       overtime,
       penalty,
       totalPaid,
       finalSalary,
       gross,
-      overtimeHours: stats.overtimeHours,
+      salaryAdded: Boolean(salaryDetails?.id),
     };
-  }, [attendance, payments, profile, salaryDetails, stats.overtimeAmount, stats.overtimeHours]);
+  }, [payments, profile, salaryDetails]);
 
   if (loading && !profile) {
     return <Layout title={t("staffProfile")}><div className={styles.profileContainer}>{t("loading")}</div></Layout>;
@@ -618,21 +587,19 @@ export default function StaffProfile() {
         ) : (
           <section className={styles.sectionBlock}>
             <div className={styles.paymentSummaryGrid}>
-            <div className={styles.summaryBox}><span>{getConfiguredBaseLabel(profile?.salary_type, t("baseSalary"))}</span><strong>{formatMoney(paymentSummary.configuredBase)}</strong></div>
-            <div className={styles.summaryBox}><span>Earned Base</span><strong>{formatMoney(paymentSummary.earnedBase)}</strong></div>
-            <div className={styles.summaryBox}><span>{t("otHours")}</span><strong>{Number(paymentSummary.overtimeHours || 0).toFixed(2)}</strong></div>
+            <div className={styles.summaryBox}><span>Profile Base</span><strong>{formatMoney(paymentSummary.configuredBase)}</strong></div>
+            <div className={styles.summaryBox}><span>Saved Salary</span><strong>{formatMoney(paymentSummary.manualSalary)}</strong></div>
             <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
             <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
             <div className={styles.summaryBox}><span>{t("grossSalary")}</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
             <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
             <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
           </div>
-            <div className={styles.statusLegend} style={{ marginTop: "0.85rem" }}>
-              {buildWorkStats(profile, salaryDetails).map((item) => (
-                <span key={item} className={styles.statusPill}>{item}</span>
-              ))}
-            </div>
-            <p className={styles.summaryHint}>The configured amount comes from the staff profile. Earned base is calculated for {monthName} using the attendance totals shown above.</p>
+            <p className={styles.summaryHint}>
+              {paymentSummary.salaryAdded
+                ? `This month salary is saved manually for ${monthName}. Attendance does not auto-change salary.`
+                : `Salary is not added yet for ${monthName}. Add it from Salary Management.`}
+            </p>
 
             <form className={styles.paymentFormCard} onSubmit={submitPayment}>
               <div className={styles.sectionHead}><div><h3 className={styles.sectionTitle}>{t("addPayment")}</h3><p className={styles.sectionSubtitle}>{t("recordPaymentDescription")}</p></div><Wallet size={18} /></div>

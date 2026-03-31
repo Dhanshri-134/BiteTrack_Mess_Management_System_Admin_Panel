@@ -1,6 +1,6 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
-import { generateStaffSalaryForPeriod } from "@/lib/staffSalary";
+import { refreshManualStaffSalary } from "@/lib/staffSalary";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -54,8 +54,9 @@ export default async function handler(req, res) {
       payment_date || new Date().toISOString().split("T")[0]
     );
 
-    await generateStaffSalaryForPeriod({
+    await refreshManualStaffSalary({
       messId,
+      staffId: staff_id,
       month: effectiveDate.getMonth() + 1,
       year: effectiveDate.getFullYear(),
     });

@@ -1,6 +1,6 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
-import { generateStaffSalaryForPeriod } from "@/lib/staffSalary";
+import { seedManualSalaryRows } from "@/lib/staffSalary";
 
 export default async function handler(req, res) {
 
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const salaries = await generateStaffSalaryForPeriod({ messId, month, year });
+    const salaries = await seedManualSalaryRows({ messId, month, year });
 
     res.json({
       success: true,
