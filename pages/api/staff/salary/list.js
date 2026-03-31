@@ -44,6 +44,13 @@ ss.base_salary AS earned_base_salary,
 ss.base_salary,
 ss.overtime_amount,
 ss.penalty_amount,
+COALESCE(a.present_days, 0) AS present_days,
+COALESCE(a.leave_days, 0) AS leave_days,
+COALESCE(a.half_days, 0) AS half_days,
+COALESCE(a.absent_days, 0) AS absent_days,
+COALESCE(a.off_days, 0) AS off_days,
+COALESCE(a.payable_units, 0) AS payable_units,
+COALESCE(a.total_work_minutes, 0) AS total_work_minutes,
 ss.base_salary + ss.overtime_amount - ss.penalty_amount AS gross_salary,
 GREATEST((ss.base_salary + ss.overtime_amount - ss.penalty_amount) - COALESCE(p.total_paid,0), 0) AS final_salary,
 CASE
@@ -55,6 +62,33 @@ COALESCE(p.total_paid,0) AS total_paid,
 p.payments
 FROM staff_salary ss
 JOIN staff s ON s.id=ss.staff_id
+LEFT JOIN (
+SELECT
+staff_id,
+mess_id,
+EXTRACT(MONTH FROM attendance_date) AS att_month,
+EXTRACT(YEAR FROM attendance_date) AS att_year,
+COUNT(*) FILTER (WHERE attendance_type='P') AS present_days,
+COUNT(*) FILTER (WHERE attendance_type='A') AS absent_days,
+COUNT(*) FILTER (WHERE attendance_type='L') AS leave_days,
+COUNT(*) FILTER (WHERE attendance_type='H') AS half_days,
+COUNT(*) FILTER (WHERE attendance_type='OFF') AS off_days,
+COALESCE(SUM(
+CASE attendance_type
+WHEN 'P' THEN 1
+WHEN 'H' THEN 0.5
+WHEN 'L' THEN 1
+ELSE 0
+END
+),0) AS payable_units,
+COALESCE(SUM(work_minutes),0) AS total_work_minutes
+FROM staff_attendance
+GROUP BY staff_id, mess_id, EXTRACT(MONTH FROM attendance_date), EXTRACT(YEAR FROM attendance_date)
+) a
+ON a.staff_id=ss.staff_id
+AND a.mess_id=ss.mess_id
+AND a.att_month=ss.month
+AND a.att_year=ss.year
 LEFT JOIN (
 SELECT
 staff_id,

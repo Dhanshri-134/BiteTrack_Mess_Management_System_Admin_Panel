@@ -30,6 +30,18 @@ function formatMoney(value) {
   return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
+function formatHoursFromMinutes(value) {
+  return (Number(value || 0) / 60).toFixed(2);
+}
+
+function getConfiguredBaseLabel(salaryType, fallbackLabel) {
+  const normalized = String(salaryType || "").toLowerCase();
+
+  if (normalized === "daily") return "Daily Rate";
+  if (normalized === "hourly") return "Hourly Rate";
+  return fallbackLabel;
+}
+
 function normalizePaymentType(value) {
   return String(value || "").toLowerCase();
 }
@@ -84,6 +96,32 @@ function calculateBaseFromAttendance(profile, attendance) {
   }
 
   return baseSalary;
+}
+
+function buildWorkStats(profile, salaryDetails) {
+  const salaryType = String(profile?.salary_type || salaryDetails?.salary_type || "").toLowerCase();
+
+  if (salaryType === "daily") {
+    return [
+      `Payable Days: ${Number(salaryDetails?.payable_units || 0).toFixed(1)}`,
+      `Present: ${Number(salaryDetails?.present_days || 0)}`,
+      `Half Days: ${Number(salaryDetails?.half_days || 0)}`,
+    ];
+  }
+
+  if (salaryType === "hourly") {
+    return [
+      `Worked Hours: ${formatHoursFromMinutes(salaryDetails?.total_work_minutes)}`,
+      `Present: ${Number(salaryDetails?.present_days || 0)}`,
+      `Half Days: ${Number(salaryDetails?.half_days || 0)}`,
+    ];
+  }
+
+  return [
+    `Present: ${Number(salaryDetails?.present_days || 0)}`,
+    `Leave: ${Number(salaryDetails?.leave_days || 0)}`,
+    `Half Days: ${Number(salaryDetails?.half_days || 0)}`,
+  ];
 }
 
 function buildCalendarRows(dateObj, attendance, payments) {
@@ -207,7 +245,7 @@ export default function StaffProfile() {
 
       const attendanceKey = `staff-profile-attendance-${found.id}-${month}-${year}-v2`;
       const paymentsKey = `staff-profile-payments-${found.id}-${month}-${year}-v2`;
-      const salaryKey = `staff-profile-salary-${found.id}-${month}-${year}-v3`;
+      const salaryKey = `staff-profile-salary-${found.id}-${month}-${year}-v4`;
 
       const [attendanceRes, paymentsRes, salaryRes] = forceRefresh
         ? await Promise.all([
@@ -580,7 +618,7 @@ export default function StaffProfile() {
         ) : (
           <section className={styles.sectionBlock}>
             <div className={styles.paymentSummaryGrid}>
-            <div className={styles.summaryBox}><span>Configured Base</span><strong>{formatMoney(paymentSummary.configuredBase)}</strong></div>
+            <div className={styles.summaryBox}><span>{getConfiguredBaseLabel(profile?.salary_type, t("baseSalary"))}</span><strong>{formatMoney(paymentSummary.configuredBase)}</strong></div>
             <div className={styles.summaryBox}><span>Earned Base</span><strong>{formatMoney(paymentSummary.earnedBase)}</strong></div>
             <div className={styles.summaryBox}><span>{t("otHours")}</span><strong>{Number(paymentSummary.overtimeHours || 0).toFixed(2)}</strong></div>
             <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
@@ -589,7 +627,12 @@ export default function StaffProfile() {
             <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
             <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
           </div>
-            <p className={styles.summaryHint}>Configured base comes from the staff profile. Earned base is calculated for {monthName} from attendance, overtime, penalties, and recorded payments.</p>
+            <div className={styles.statusLegend} style={{ marginTop: "0.85rem" }}>
+              {buildWorkStats(profile, salaryDetails).map((item) => (
+                <span key={item} className={styles.statusPill}>{item}</span>
+              ))}
+            </div>
+            <p className={styles.summaryHint}>The configured amount comes from the staff profile. Earned base is calculated for {monthName} using the attendance totals shown above.</p>
 
             <form className={styles.paymentFormCard} onSubmit={submitPayment}>
               <div className={styles.sectionHead}><div><h3 className={styles.sectionTitle}>{t("addPayment")}</h3><p className={styles.sectionSubtitle}>{t("recordPaymentDescription")}</p></div><Wallet size={18} /></div>

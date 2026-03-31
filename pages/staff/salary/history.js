@@ -11,6 +11,44 @@ function formatMoney(value) {
   return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
+function formatHoursFromMinutes(value) {
+  return (Number(value || 0) / 60).toFixed(2);
+}
+
+function getConfiguredBaseLabel(row, t) {
+  const salaryType = String(row?.salary_type || "").toLowerCase();
+
+  if (salaryType === "daily") return "Daily Rate";
+  if (salaryType === "hourly") return "Hourly Rate";
+  return t("baseSalary");
+}
+
+function getWorkStats(row) {
+  const salaryType = String(row?.salary_type || "").toLowerCase();
+
+  if (salaryType === "daily") {
+    return [
+      `Payable Days: ${Number(row?.payable_units || 0).toFixed(1)}`,
+      `Present: ${Number(row?.present_days || 0)}`,
+      `Half Days: ${Number(row?.half_days || 0)}`,
+    ];
+  }
+
+  if (salaryType === "hourly") {
+    return [
+      `Worked Hours: ${formatHoursFromMinutes(row?.total_work_minutes)}`,
+      `Present: ${Number(row?.present_days || 0)}`,
+      `Half Days: ${Number(row?.half_days || 0)}`,
+    ];
+  }
+
+  return [
+    `Present: ${Number(row?.present_days || 0)}`,
+    `Leave: ${Number(row?.leave_days || 0)}`,
+    `Half Days: ${Number(row?.half_days || 0)}`,
+  ];
+}
+
 export default function SalaryHistoryPage() {
   const { t } = useLanguage();
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -34,7 +72,7 @@ export default function SalaryHistoryPage() {
   async function fetchSalary(forceRefresh) {
     try {
       setLoading(true);
-      const cacheKey = `staff-salary-history-${month}-${year}-v3`;
+      const cacheKey = `staff-salary-history-${month}-${year}-v4`;
       const response = forceRefresh
         ? await staffRequest("/api/staff/salary/list/", { body: { month, year } })
         : await staffOfflineRequest(cacheKey, "/api/staff/salary/list/", {
@@ -155,7 +193,12 @@ export default function SalaryHistoryPage() {
                     <span>{String(row.salary_type || "monthly").toUpperCase()}</span>
                   </div>
                   <div className={styles.statusLegend} style={{ marginTop: "0.65rem" }}>
-                    <span className={styles.statusPill}>Configured Base: {formatMoney(row.configured_base_salary ?? row.base_salary)}</span>
+                    {getWorkStats(row).map((item) => (
+                      <span key={`${row.id}-${item}`} className={styles.statusPill}>{item}</span>
+                    ))}
+                  </div>
+                  <div className={styles.statusLegend} style={{ marginTop: "0.65rem" }}>
+                    <span className={styles.statusPill}>{getConfiguredBaseLabel(row, t)}: {formatMoney(row.configured_base_salary ?? row.base_salary)}</span>
                     <span className={styles.statusPill}>Earned Base: {formatMoney(row.earned_base_salary ?? row.base_salary)}</span>
                     <span className={`${styles.statusPill} ${styles.statusOT}`}>{t("overtimeAmount", { amount: formatMoney(row.overtime_amount) })}</span>
                     <span className={`${styles.statusPill} ${styles.statusL}`}>{t("penaltyAmount", { amount: formatMoney(row.penalty_amount) })}</span>

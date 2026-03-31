@@ -7,6 +7,48 @@ import toast from "react-hot-toast";
 import { staffRequest } from "@/lib/staffClient";
 import { ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock, CalendarDays } from "lucide-react";
 
+function formatMoney(value) {
+  return `Rs. ${Number(value || 0).toFixed(2)}`;
+}
+
+function formatHoursFromMinutes(value) {
+  return (Number(value || 0) / 60).toFixed(2);
+}
+
+function getConfiguredBaseLabel(salaryType) {
+  const normalized = String(salaryType || "").toLowerCase();
+
+  if (normalized === "daily") return "Daily Rate";
+  if (normalized === "hourly") return "Hourly Rate";
+  return "Monthly Salary";
+}
+
+function getWorkStats(row) {
+  const salaryType = String(row?.salary_type || "").toLowerCase();
+
+  if (salaryType === "daily") {
+    return [
+      `Payable Days: ${Number(row?.payable_units || 0).toFixed(1)}`,
+      `Present: ${Number(row?.present_days || 0)}`,
+      `Half Days: ${Number(row?.half_days || 0)}`,
+    ];
+  }
+
+  if (salaryType === "hourly") {
+    return [
+      `Worked Hours: ${formatHoursFromMinutes(row?.total_work_minutes)}`,
+      `Present: ${Number(row?.present_days || 0)}`,
+      `Half Days: ${Number(row?.half_days || 0)}`,
+    ];
+  }
+
+  return [
+    `Present: ${Number(row?.present_days || 0)}`,
+    `Leave: ${Number(row?.leave_days || 0)}`,
+    `Half Days: ${Number(row?.half_days || 0)}`,
+  ];
+}
+
 export default function StaffReport() {
   const { t } = useLanguage();
 
@@ -130,38 +172,43 @@ export default function StaffReport() {
         <h3 className={styles.sectionTitle}>{t("paymentSummary")}</h3>
         {salaryDetails ? (
           <div className={styles.tableBox} style={{ padding: "1rem", background: "white", marginBottom: "1.5rem" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.85rem" }}>
+              {getWorkStats(salaryDetails).map((item) => (
+                <span key={item} className={styles.statusPill}>{item}</span>
+              ))}
+            </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#4b5563" }}>Configured Base</span>
-              <strong>₹{salaryDetails.configured_base_salary ?? profile.base_salary}</strong>
+              <span style={{ color: "#4b5563" }}>{getConfiguredBaseLabel(salaryDetails.salary_type)}</span>
+              <strong>{formatMoney(salaryDetails.configured_base_salary ?? profile.base_salary)}</strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
               <span style={{ color: "#4b5563" }}>Earned Base</span>
-              <strong>₹{salaryDetails.earned_base_salary ?? salaryDetails.base_salary}</strong>
+              <strong>{formatMoney(salaryDetails.earned_base_salary ?? salaryDetails.base_salary)}</strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
               <span style={{ color: "#4b5563" }}>+ Overtime Earnings</span>
-              <strong style={{ color: "#16a34a" }}>₹{salaryDetails.overtime_amount}</strong>
+              <strong style={{ color: "#16a34a" }}>{formatMoney(salaryDetails.overtime_amount)}</strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px dashed #d1d5db" }}>
               <span style={{ color: "#4b5563" }}>- Late Penalty</span>
-              <strong style={{ color: "#dc2626" }}>₹{salaryDetails.penalty_amount}</strong>
+              <strong style={{ color: "#dc2626" }}>{formatMoney(salaryDetails.penalty_amount)}</strong>
             </div>
             
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb" }}>
               <span style={{ fontWeight: 600 }}>{t("grossEarnings")}</span>
               <strong style={{ fontSize: "1.1rem" }}>
-                ₹{Number(salaryDetails.earned_base_salary ?? salaryDetails.base_salary) + Number(salaryDetails.overtime_amount) - Number(salaryDetails.penalty_amount)}
+                {formatMoney(Number(salaryDetails.earned_base_salary ?? salaryDetails.base_salary) + Number(salaryDetails.overtime_amount) - Number(salaryDetails.penalty_amount))}
               </strong>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px dashed #d1d5db" }}>
               <span style={{ color: "#4b5563" }}>- Advance Paid</span>
-              <strong style={{ color: "#dc2626" }}>₹{salaryDetails.total_paid}</strong>
+              <strong style={{ color: "#dc2626" }}>{formatMoney(salaryDetails.total_paid)}</strong>
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#111827" }}>{t("netPayable")}</span>
-              <strong style={{ fontSize: "1.5rem", color: "#007170" }}>₹{salaryDetails.final_salary}</strong>
+              <strong style={{ fontSize: "1.5rem", color: "#007170" }}>{formatMoney(salaryDetails.final_salary)}</strong>
             </div>
           </div>
         ) : (
