@@ -7,6 +7,12 @@ import { useLanguage } from "../../context/LanguageContext";
 import { offlineFetch } from "../../lib/offlineFetch";
 
 export default function StaffHandling() {
+  if (typeof window !== "undefined") {
+    window.location.replace("/staff/list/");
+  }
+
+  return null;
+
   const { t } = useLanguage();
 
   const [staffs, setStaffs] = useState([]);

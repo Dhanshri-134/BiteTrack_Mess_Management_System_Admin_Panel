@@ -1,3 +1,5 @@
+export { default } from "./history";
+
 import { useLanguage } from "../../../context/LanguageContext";
 import { useState, useEffect } from "react";
 import Layout from "../../../components/Layout";
@@ -6,7 +8,7 @@ import mStyles from "../../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffRequest } from "@/lib/staffClient";
 
-export default function SalaryPage() {
+function SalaryPageLegacy() {
   const { t } = useLanguage();
 
     const [month, setMonth] = useState(new Date().getMonth() + 1);

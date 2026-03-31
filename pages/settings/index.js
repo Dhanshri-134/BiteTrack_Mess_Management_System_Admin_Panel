@@ -3,7 +3,6 @@ import Layout from "@/components/Layout";
 import styles from "../../styles/settings.module.css";
 import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
-import StaffHandling from "./staff_setting";
 import { useLanguage } from "../../context/LanguageContext";
 import { offlineFetch } from "@/lib/offlineFetch";
 import { useAppRefresh } from "@/lib/useAppRefresh";
@@ -36,7 +35,6 @@ export default function SettingsPage() {
     signature_image: "",
   });
 
-  const [activeTab, setActiveTab] = useState("mess");
 
   const [hostels, setHostels] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -350,31 +348,6 @@ if(saving) return (
       <div className={styles.container}>
         <h1>{t("mess_settings")}</h1>
 
-        <div className={styles.tabs}>
-          {/* Sliding indicator */}
-          <div
-            className={`${styles.slider} ${activeTab === "staff" ? styles.right : ""
-              }`}
-          />
-
-          <button
-            className={`${styles.tab} ${activeTab === "mess" ? styles.active : ""
-              }`}
-            onClick={() => setActiveTab("mess")}
-          >
-            {t("mess_settings")}
-          </button>
-
-          <button
-            className={`${styles.tab} ${activeTab === "staff" ? styles.active : ""
-              }`}
-            onClick={() => setActiveTab("staff")}
-          >
-            {t("staff_handling")}
-          </button>
-        </div>
-
-        {activeTab === "mess" && (
           <>
             <div className={styles.group}>
               <label>{t("mess_name")}</label>
@@ -625,8 +598,6 @@ if(saving) return (
 
             <button onClick={saveSettings}>{t("save_changes")}</button>
           </>
-        )}
-        {activeTab === "staff" && <StaffHandling />}
 
       </div>
     </Layout>
