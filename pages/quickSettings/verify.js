@@ -51,12 +51,12 @@ export default function Verify() {
       <div className={styles.main}>
 
       <div className={styles.card}>
-        <h1>Verify Email</h1>
+        <h1>{t("verifyEmail")}</h1>
         <form onSubmit={handleSubmit} className={styles.form}>
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder={t("email")}
             value={form.email}
             onChange={handleChange}
             required
@@ -64,12 +64,12 @@ export default function Verify() {
           <input
             type="text"
             name="code"
-            placeholder="Verification Code"
+            placeholder={t("verificationCode")}
             value={form.code}
             onChange={handleChange}
             required
             />
-          <button type="submit">Verify</button>
+          <button type="submit">{t("verify")}</button>
         </form>
         {message && (
           <p

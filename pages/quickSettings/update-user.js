@@ -214,13 +214,13 @@ const handleSelectUser = (u) => {
 
     <div className={styles.container}>
       <main className={styles.main}>
-        <h1>Update User</h1>
+        <h1>{t("updateUser")}</h1>
 
         {/* Search */}
         <div className={styles.searchWrapper}>
           <input
             type="text"
-            placeholder="Search by Name, Email, or Mobile"
+            placeholder={t("searchByNameEmailOrMobile")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             />

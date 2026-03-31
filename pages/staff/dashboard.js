@@ -144,18 +144,18 @@ export default function StaffDashboard() {
               {/* <div className={styles.mutedText}>{t("monthlyPayableDescription")}</div> */}
             </div>
             {/* <div className={styles.insightCard}>
-              <span>Inactive Staff</span>
+              <span>{t("inactiveStaff")}</span>
               <strong>{insights.inactiveStaff}</strong>
             </div>
             <div className={styles.insightCard}>
-              <span>Unpaid Salaries</span>
+              <span>{t("unpaidSalaries")}</span>
               <strong>{insights.overduePayroll}</strong>
               <div className={styles.mutedText}>Staff salary rows for this month with remaining balance due.</div>
             </div>
             <div className={styles.insightCard}>
               <span>{t("totalProfiles")}</span>
               <strong>{stats.total_staff || 0}</strong>
-              <div className={styles.mutedText}>All staff profiles, active and inactive.</div>
+              <div className={styles.mutedText}>{t("allStaffProfilesActiveAndInactive")}</div>
             </div> */}
           </section>
 
@@ -181,7 +181,7 @@ export default function StaffDashboard() {
               <ArrowRight size={18} />
             </Link>
             {/* <Link href="/settings/staff_setting" className={styles.actionLinkCard}>
-              <span>Staff Settings</span>
+              <span>{t("staffSettings")}</span>
               <ArrowRight size={18} />
             </Link> */}
           </section>

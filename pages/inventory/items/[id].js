@@ -185,13 +185,13 @@ export default function ItemPage() {
             <div className={styles.formCard}>
                 <div className={styles.formCardHeader}>
                     <div>
-                        <h3 className={styles.formCardTitle}>Min Stock</h3>
-                        <p className={styles.formCardText}>Set the low stock threshold for this item.</p>
+                        <h3 className={styles.formCardTitle}>{t("minStock")}</h3>
+                        <p className={styles.formCardText}>{t("setTheLowStockThresholdForThisItem")}</p>
                     </div>
                 </div>
                 <div className={styles.formGrid}>
                     <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>Minimum Stock</label>
+                        <label className={styles.fieldLabel}>{t("minimumStock")}</label>
                         <input
                             type="number"
                             min="0"
@@ -201,7 +201,7 @@ export default function ItemPage() {
                         />
                     </div>
                     <div className={styles.fieldGroup}>
-                        <label className={styles.fieldLabel}>Current Threshold</label>
+                        <label className={styles.fieldLabel}>{t("currentThreshold")}</label>
                         <div className={styles.readonlyValue}>{Number(item.min_stock || 0)} {item.unit}</div>
                     </div>
                 </div>

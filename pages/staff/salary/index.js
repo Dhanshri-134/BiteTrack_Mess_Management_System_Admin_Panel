@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import { useState, useEffect } from "react";
 import Layout from "../../../components/Layout";
 import styles from "../../../styles/staff.module.css";
@@ -6,6 +7,8 @@ import toast from "react-hot-toast";
 import { staffRequest } from "@/lib/staffClient";
 
 export default function SalaryPage() {
+  const { t } = useLanguage();
+
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [salary, setSalary] = useState([]);
@@ -56,11 +59,11 @@ export default function SalaryPage() {
     }
 
     return (
-        <Layout title="Salary Report">
+        <Layout title={t("salaryReport")}>
             <div className={styles.container}>
                 <section className={styles.heroSection}>
                     <div>
-                        <h1 className={styles.heroTitle}>Payroll Report</h1>
+                        <h1 className={styles.heroTitle}>{t("payrollReport")}</h1>
                         <p className={styles.heroSubtitle}>
                             View attendance summary, deductions, advances, and net payable.
                         </p>
@@ -94,7 +97,7 @@ export default function SalaryPage() {
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    {salary.length === 0 && !loading && <p>No records found for this month.</p>}
+                    {salary.length === 0 && !loading && <p>{t("noRecordsFoundForThisMonth")}</p>}
                     {salary.map(s => (
                         <div key={s.id} className={mStyles.attendanceCard} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "20px" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginBottom: "16px" }}>
@@ -103,7 +106,7 @@ export default function SalaryPage() {
                                     <span style={{ fontSize: "12px", color: "#6b7280" }}>{s.role || "Staff"} • {s.salary_type}</span>
                                 </div>
                                 <div style={{ textAlign: "right" }}>
-                                    <span style={{ display: "block", fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Status</span>
+                                    <span style={{ display: "block", fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>{t("status")}</span>
                                     <span style={{
                                         background: s.payment_status === "paid" ? "#dcfce7" : "#fef9c3",
                                         color: s.payment_status === "paid" ? "#15803d" : "#854d0e",
@@ -119,26 +122,26 @@ export default function SalaryPage() {
                                 width: "100%", background: "#f9fafb", padding: "12px", borderRadius: "8px", marginBottom: "16px"
                             }}>
                                 <div>
-                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>Base Pay</div>
+                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>{t("basePay")}</div>
                                     <div style={{ fontWeight: 600 }}>₹{s.base_salary}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>Overtime</div>
+                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>{t("overtime")}</div>
                                     <div style={{ fontWeight: 600, color: "#16a34a" }}>+ ₹{s.overtime_amount}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>Penalty</div>
+                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>{t("penalty")}</div>
                                     <div style={{ fontWeight: 600, color: "#dc2626" }}>- ₹{s.penalty_amount}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>Advances</div>
+                                    <div style={{ fontSize: "11px", color: "#6b7280", textTransform: "uppercase" }}>{t("advances")}</div>
                                     <div style={{ fontWeight: 600, color: "#dc2626" }}>- ₹{s.total_paid || 0}</div>
                                 </div>
                             </div>
 
                             <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                                 <div>
-                                    <div style={{ fontSize: "12px", color: "#6b7280" }}>Net Payable</div>
+                                    <div style={{ fontSize: "12px", color: "#6b7280" }}>{t("netPayable")}</div>
                                     <div style={{ fontSize: "24px", fontWeight: 700, color: "#4f46e5" }}>₹{s.final_salary}</div>
                                 </div>
 

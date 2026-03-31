@@ -166,7 +166,7 @@ export default function RegisterMess() {
             <label>{t("openTime")}</label>
             <input
               name="open_time"
-              placeholder="8 AM – 10 PM"
+              placeholder={t("8AM10PM")}
               value={form.open_time}
               onChange={handleChange}
             />

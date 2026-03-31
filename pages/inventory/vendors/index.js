@@ -199,7 +199,7 @@ export default function Vendors() {
 
             {/* {v.phone && <p>{v.phone}</p>} */}
               <p>
-                <strong>Total Purchases:</strong> ₹{Number(v.total_purchases || 0).toLocaleString()}
+                <strong>{t("totalPurchases")}</strong> ₹{Number(v.total_purchases || 0).toLocaleString()}
               </p>
 
               <p>

@@ -73,12 +73,12 @@ export default function DatabaseViewer() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>🗄️ Database Viewer</h1>
-        <p>View your PostgreSQL database tables and data</p>
+        <p>{t("viewYourPostgreSQLDatabaseTablesAndData")}</p>
       </div>
 
       <div className={styles.content}>
         <div className={styles.sidebar}>
-          <h3>Tables</h3>
+          <h3>{t("tables")}</h3>
           <div className={styles.tableList}>
             {tables.map((table) => (
               <button
@@ -138,7 +138,7 @@ export default function DatabaseViewer() {
                       {columns.map((column) => (
                         <td key={column.name}>
                           {row[column.name] === null ? (
-                            <span className={styles.nullValue}>NULL</span>
+                            <span className={styles.nullValue}>{t("nULL")}</span>
                           ) : (
                             String(row[column.name])
                           )}

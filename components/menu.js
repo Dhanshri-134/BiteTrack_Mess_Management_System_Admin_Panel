@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/menu.module.css";
@@ -7,6 +8,8 @@ import { queueAction } from "@/lib/queueAction";
 import { API_BASE } from "../lib/api";
 
 export default function MenuPage() {
+  const { t } = useLanguage();
+
   const [menu, setMenu] = useState({});
   const [selectedDay, setSelectedDay] = useState("Monday");
   const [breakfast, setBreakfast] = useState("");
@@ -128,7 +131,7 @@ export default function MenuPage() {
         <div className={styles.formCard}>
           <div className={styles.row}>
             <div className={styles.field}>
-              <label>Select Day</label>
+              <label>{t("selectDay")}</label>
               <select
                 value={selectedDay}
                 onChange={(e) => setSelectedDay(e.target.value)}
@@ -143,7 +146,7 @@ export default function MenuPage() {
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label>Breakfast</label>
+              <label>{t("breakfast")}</label>
               <input
                 type="text"
                 
@@ -153,7 +156,7 @@ export default function MenuPage() {
               />
             </div>
             <div className={styles.field}>
-              <label>Lunch</label>
+              <label>{t("lunch")}</label>
               <input
                 type="text"
                 value={lunch}
@@ -162,7 +165,7 @@ export default function MenuPage() {
               />
             </div>
             <div className={styles.field}>
-              <label>Dinner</label>
+              <label>{t("dinner")}</label>
               <input
                 type="text"
                 value={dinner}
@@ -209,7 +212,7 @@ export default function MenuPage() {
               </div>
             ))
           ) : (
-            <p>No votes yet for Sunday specials.</p>
+            <p>{t("noVotesYetForSundaySpecials")}</p>
           )}
         </div>
 

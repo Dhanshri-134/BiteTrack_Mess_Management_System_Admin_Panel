@@ -82,7 +82,7 @@ return `${names.slice(0, 2).join(", ")} +${names.length - 2} more`;
 
 return(
 
-<Layout title="Purchase History">
+<Layout title={t("purchaseHistory")}>
 
       <section className={styles.heroSection}>
         <div>
@@ -112,7 +112,7 @@ Add Purchase
 
 <input
 className={styles.searchInput}
-placeholder="Search vendor, invoice, or item name..."
+placeholder={t("searchVendorInvoiceOrItemName")}
 value={search}
 onChange={(e)=>setSearch(e.target.value)}
 />
@@ -122,11 +122,11 @@ onChange={(e)=>setSearch(e.target.value)}
 <thead>
 
 <tr>
-<th>Date</th>
-<th>Vendor</th>
-<th>Invoice</th>
-<th>Items</th>
-<th>Total</th>
+<th>{t("date")}</th>
+<th>{t("vendor")}</th>
+<th>{t("invoice")}</th>
+<th>{t("items")}</th>
+<th>{t("total")}</th>
 </tr>
 
 </thead>
@@ -136,7 +136,7 @@ onChange={(e)=>setSearch(e.target.value)}
 {filtered.length===0 && (
 
 <tr>
-<td colSpan="5">No purchases found</td>
+<td colSpan="5">{t("noPurchasesFound")}</td>
 </tr>
 
 )}

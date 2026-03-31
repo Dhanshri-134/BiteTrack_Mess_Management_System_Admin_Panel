@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import { useRouter } from "next/router";
 import { useEffect, useState, useMemo } from "react";
 import Layout from "../../../components/Layout";
@@ -7,6 +8,8 @@ import { staffRequest } from "@/lib/staffClient";
 import { ChevronLeft, ChevronRight, CheckCircle, XCircle, Clock, CalendarDays } from "lucide-react";
 
 export default function StaffReport() {
+  const { t } = useLanguage();
+
   const router = useRouter();
   const { id } = router.query;
 
@@ -74,8 +77,8 @@ export default function StaffReport() {
     return { present, absent, late, off };
   }, [attendance]);
 
-  if (loading && !profile) return <Layout><div className={styles.container}>Loading...</div></Layout>;
-  if (!profile) return <Layout><div className={styles.container}>Not Found</div></Layout>;
+  if (loading && !profile) return <Layout><div className={styles.container}>{t("loading")}</div></Layout>;
+  if (!profile) return <Layout><div className={styles.container}>{t("notFound")}</div></Layout>;
 
   return (
     <Layout title={`Report: ${profile.name}`}>
@@ -89,9 +92,9 @@ export default function StaffReport() {
           <p className={styles.profilePhone} style={{ margin: 0 }}>{profile.phone || 'No phone'}</p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginTop: "0.5rem", fontSize: "0.9rem", color: "#374151" }}>
-            <div><strong>Type:</strong> <span style={{ textTransform: "capitalize" }}>{profile.salary_type}</span></div>
-            <div><strong>Base:</strong> ₹{profile.base_salary}</div>
-            <div><strong>OT Rate:</strong> ₹{profile.overtime_rate}/hr</div>
+            <div><strong>{t("type")}</strong> <span style={{ textTransform: "capitalize" }}>{profile.salary_type}</span></div>
+            <div><strong>{t("base")}</strong> ₹{profile.base_salary}</div>
+            <div><strong>{t("oTRate")}</strong> ₹{profile.overtime_rate}/hr</div>
           </div>
         </div>
 
@@ -103,7 +106,7 @@ export default function StaffReport() {
         </div>
 
         {/* Attendance Summary */}
-        <h3 className={styles.sectionTitle}>Attendance Summary</h3>
+        <h3 className={styles.sectionTitle}>{t("attendanceSummary")}</h3>
         <div className={styles.statsGrid} style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
           <div className={styles.statCard}>
             <span><CheckCircle size={14}/> Present</span>
@@ -124,11 +127,11 @@ export default function StaffReport() {
         </div>
 
         {/* Payment Summary */}
-        <h3 className={styles.sectionTitle}>Payment Summary</h3>
+        <h3 className={styles.sectionTitle}>{t("paymentSummary")}</h3>
         {salaryDetails ? (
           <div className={styles.tableBox} style={{ padding: "1rem", background: "white", marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#4b5563" }}>Basic Salary</span>
+              <span style={{ color: "#4b5563" }}>{t("basicSalary")}</span>
               <strong>₹{salaryDetails.base_salary}</strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
@@ -141,7 +144,7 @@ export default function StaffReport() {
             </div>
             
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb" }}>
-              <span style={{ fontWeight: 600 }}>Gross Earnings</span>
+              <span style={{ fontWeight: 600 }}>{t("grossEarnings")}</span>
               <strong style={{ fontSize: "1.1rem" }}>
                 ₹{Number(salaryDetails.base_salary) + Number(salaryDetails.overtime_amount) - Number(salaryDetails.penalty_amount)}
               </strong>
@@ -153,7 +156,7 @@ export default function StaffReport() {
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#111827" }}>Net Payable</span>
+              <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#111827" }}>{t("netPayable")}</span>
               <strong style={{ fontSize: "1.5rem", color: "#007170" }}>₹{salaryDetails.final_salary}</strong>
             </div>
           </div>
@@ -164,9 +167,9 @@ export default function StaffReport() {
         )}
 
         {/* Attendance Details Table */}
-        <h3 className={styles.sectionTitle}>Attendance Details</h3>
+        <h3 className={styles.sectionTitle}>{t("attendanceDetails")}</h3>
         <div className={styles.tableBox}>
-          {attendance.length === 0 && <p className={styles.emptyMsg}>No attendance marked.</p>}
+          {attendance.length === 0 && <p className={styles.emptyMsg}>{t("noAttendanceMarked")}</p>}
           {attendance.map((row, i) => (
             <div key={i} className={styles.tlRow} style={{ alignItems: "center" }}>
               <div style={{ flex: 1 }}>

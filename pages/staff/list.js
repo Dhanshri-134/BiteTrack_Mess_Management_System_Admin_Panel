@@ -103,10 +103,10 @@ export default function StaffList() {
   }
 
   return (
-    <Layout title="Staff List">
+    <Layout title={t("staffList")}>
       <div className={styles.container}>
         <section className={styles.heroPanel}>
-          <p className={styles.heroKicker}>Staff</p>
+          <p className={styles.heroKicker}>{t("staff")}</p>
           <div className={styles.header}>
             <h1 className={styles.heroHeading}>{t("Staff List")}</h1>
             <button className={styles.backBtn} onClick={() => window.history.back()}>
@@ -174,7 +174,7 @@ export default function StaffList() {
                   </div>
 
                   <div className={styles.staffCardBalance}>
-                    <span className={styles.balanceLabel}>Balance</span>
+                    <span className={styles.balanceLabel}>{t("balance")}</span>
                     <span className={styles.balanceAmount}> {Number(member.current_balance || 0).toLocaleString()}</span>
                   </div>
                   <div className={styles.staffCardActions}>

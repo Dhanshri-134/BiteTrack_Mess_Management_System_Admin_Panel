@@ -1,5 +1,6 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
+import { generateStaffSalaryForPeriod } from "@/lib/staffSalary";
 
 export default async function handler(req, res) {
 
@@ -44,12 +45,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Salary record not found" });
     }
 
-    const now = new Date();
     const salaryRow = salaryRes.rows[0];
-    const grossSalary =
-      Number(salaryRow.base_salary || 0) +
-      Number(salaryRow.overtime_amount || 0) -
-      Number(salaryRow.penalty_amount || 0);
     const payAmount = Number(amount || salaryRow.final_salary || 0);
 
     await pgPool.query(
@@ -67,51 +63,26 @@ export default async function handler(req, res) {
       ]
     );
 
-    const payments = await pgPool.query(
-      `SELECT COALESCE(SUM(amount),0) AS total_paid
-       FROM staff_payments
-       WHERE mess_id=$1
-       AND staff_id=$2
-       AND EXTRACT(MONTH FROM payment_date)=$3
-       AND EXTRACT(YEAR FROM payment_date)=$4`,
-      [messId, salaryRow.staff_id, salaryRow.month, salaryRow.year]
+    await generateStaffSalaryForPeriod({
+      messId,
+      month: Number(salaryRow.month),
+      year: Number(salaryRow.year),
+    });
+
+    const refreshedSalary = await pgPool.query(
+      `SELECT final_salary, payment_status
+       FROM staff_salary
+       WHERE id=$1
+         AND mess_id=$2
+       LIMIT 1`,
+      [salary_id, messId]
     );
 
-    const totalPaid = Number(payments.rows[0].total_paid || 0);
-    const remaining = Number((grossSalary - totalPaid).toFixed(2));
-
-    await pgPool.query(
-      `UPDATE staff_salary
-       SET payment_status=$1,
-           payment_date=$2,
-           final_salary=$3
-       WHERE id=$4
-       AND mess_id=$5`,
-      [
-        remaining <= 0 ? "paid" : "partial",
-        payment_date || new Date().toISOString().slice(0, 10),
-        Math.max(remaining, 0),
-        salary_id,
-        messId,
-      ]
-    );
-
-    const isCurrentPeriod =
-      Number(salaryRow.month) === now.getMonth() + 1 &&
-      Number(salaryRow.year) === now.getFullYear();
-
-    if (isCurrentPeriod) {
-      await pgPool.query(
-        `UPDATE staff
-         SET current_balance=$1,
-             updated_at=NOW()
-         WHERE id=$2
-         AND mess_id=$3`,
-        [remaining, salaryRow.staff_id, messId]
-      );
-    }
-
-    res.json({ success: true, remaining_balance: remaining });
+    res.json({
+      success: true,
+      remaining_balance: Number(refreshedSalary.rows[0]?.final_salary || 0),
+      payment_status: refreshedSalary.rows[0]?.payment_status || "pending",
+    });
 
   } catch (err) {
 

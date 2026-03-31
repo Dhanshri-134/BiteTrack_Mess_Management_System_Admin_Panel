@@ -1,9 +1,12 @@
+import { useLanguage } from "../context/LanguageContext";
 import styles from "../styles/quickSettingsModal.module.css";
 import UpdateUser from "../pages/update-user";
 import { useState } from "react";
 
 
 export default function QuickSettingsModal({ action, onClose }) {
+  const { t } = useLanguage();
+
 
   const [closing, setClosing] = useState(false);
 
@@ -41,7 +44,7 @@ const handleClose = () => {
 
         <iframe
           src={getUrl()}
-          title="Quick Settings Action"
+          title={t("quickSettingsAction")}
           className={styles.iframe}
         />
       </div>

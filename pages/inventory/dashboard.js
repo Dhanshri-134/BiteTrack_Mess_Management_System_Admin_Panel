@@ -52,7 +52,7 @@ setLoading(false);
 
 return(
 
-<Layout title="Inventory Dashboard">
+<Layout title={t("inventoryDashboard")}>
 
 <div className={styles.container}>
 
@@ -76,13 +76,13 @@ return(
 <div className={styles.cards}>
 
 <Link href="/inventory/items/">
-    <Card title="Total Items" value={stats.totalItems} loading={loading}/>
+    <Card title={t("totalItems")} value={stats.totalItems} loading={loading}/>
 </Link>
 <Link href="/inventory/vendors/">
-    <Card title="Vendors" value={stats.totalVendors} loading={loading}/>
+    <Card title={t("vendors")} value={stats.totalVendors} loading={loading}/>
 </Link>
 <Link href="/inventory/low-stock/">
-    <Card title="Low Stock" value={stats.lowStock} loading={loading}/>
+    <Card title={t("lowStock")} value={stats.lowStock} loading={loading}/>
 </Link>
 <Link href="/inventory/usage/">
     <Card title="Today's Usage" value={stats.todayUsage} loading={loading}/>
@@ -113,8 +113,8 @@ View Ledger
 
 <div className={styles.panel}>
 
-<h3>Top Used Items</h3>
-{stats.topItems.length===0 && <p>No usage data</p>}
+<h3>{t("topUsedItems")}</h3>
+{stats.topItems.length===0 && <p>{t("noUsageData")}</p>}
 
 {stats.topItems.map(i=>(
 <div key={i.item_name} className={styles.listRow}>
@@ -127,8 +127,8 @@ View Ledger
 
 <div className={styles.panel}>
 
-<h3>Recent Purchases</h3>
-{stats.recentPurchases.length===0 && <p>No purchases yet</p>}
+<h3>{t("recentPurchases")}</h3>
+{stats.recentPurchases.length===0 && <p>{t("noPurchasesYet")}</p>}
 {stats.recentPurchases.map(p=>(
 <div key={p.id} className={styles.listRow}>
 <div>

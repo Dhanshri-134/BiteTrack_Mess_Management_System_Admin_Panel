@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../../../components/Layout";
@@ -7,6 +8,8 @@ import { staffRequest } from "@/lib/staffClient";
 import { Banknote } from "lucide-react";
 
 export default function StaffPayments() {
+  const { t } = useLanguage();
+
   const router = useRouter();
   const { id } = router.query;
 
@@ -103,8 +106,8 @@ export default function StaffPayments() {
     };
   }, [payments, profile?.current_balance]);
 
-  if (loading && !profile) return <Layout><div className={styles.container}>Loading...</div></Layout>;
-  if (!profile) return <Layout><div className={styles.container}>Not Found</div></Layout>;
+  if (loading && !profile) return <Layout><div className={styles.container}>{t("loading")}</div></Layout>;
+  if (!profile) return <Layout><div className={styles.container}>{t("notFound")}</div></Layout>;
 
   return (
     <Layout title={`Payments: ${profile.name}`}>
@@ -121,76 +124,76 @@ export default function StaffPayments() {
 
         {/* Outstanding Balance Context */}
         <div className={styles.balanceCard}>
-          <h3>Current Balance</h3>
+          <h3>{t("currentBalance")}</h3>
           <h2>₹ {Number(profile.current_balance || 0).toFixed(2)}</h2>
-          <p style={{ fontSize: "0.80rem", opacity: 0.9, marginTop: "0.5rem" }}>Balance = Total Earnings - Total Payments</p>
+          <p style={{ fontSize: "0.80rem", opacity: 0.9, marginTop: "0.5rem" }}>{t("balanceTotalEarningsTotalPayments")}</p>
         </div>
 
         <div className={styles.paymentSummaryGrid} style={{ marginBottom: "1.5rem" }}>
           <div className={styles.summaryBox}>
-            <span>Total Paid</span>
+            <span>{t("totalPaid")}</span>
             <strong>Rs {paymentSummary.totalPaid.toFixed(2)}</strong>
           </div>
           <div className={styles.summaryBox}>
-            <span>Advance Paid</span>
+            <span>{t("advancePaid")}</span>
             <strong>Rs {paymentSummary.advancePaid.toFixed(2)}</strong>
           </div>
           <div className={styles.summaryBox}>
-            <span>Partial Paid</span>
+            <span>{t("partialPaid")}</span>
             <strong>Rs {paymentSummary.partialPaid.toFixed(2)}</strong>
           </div>
           <div className={styles.summaryBox}>
-            <span>Final Paid</span>
+            <span>{t("finalPaid")}</span>
             <strong>Rs {paymentSummary.finalPaid.toFixed(2)}</strong>
           </div>
           <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}>
-            <span>Remaining Balance</span>
+            <span>{t("remainingBalance")}</span>
             <strong>Rs {paymentSummary.remainingBalance.toFixed(2)}</strong>
           </div>
         </div>
 
         {/* Add Payment Form */}
-        <h3 className={styles.sectionTitle}>Add Payment</h3>
+        <h3 className={styles.sectionTitle}>{t("addPayment")}</h3>
         <form onSubmit={handleSubmit} className={styles.tableBox} style={{ padding: "1rem", marginBottom: "1.5rem" }}>
           
           <div className={styles.formGroup}>
-            <label>Amount (₹)</label>
+            <label>{t("amount")}</label>
             <input 
               type="number" 
               className={styles.formInput} 
               value={form.amount} 
               onChange={e => setForm({...form, amount: e.target.value})} 
-              placeholder="0.00"
+              placeholder={t("000")}
             />
           </div>
 
           <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
             <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 500, marginBottom: "0.5rem", color: "#374151" }}>Type</label>
+              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 500, marginBottom: "0.5rem", color: "#374151" }}>{t("type")}</label>
               <select className={styles.formInput} value={form.payment_type} onChange={e => setForm({...form, payment_type: e.target.value})}>
-                <option>Advance</option>
-                <option>Partial</option>
-                <option>Final</option>
+                <option>{t("advance")}</option>
+                <option>{t("partial")}</option>
+                <option>{t("final")}</option>
               </select>
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 500, marginBottom: "0.5rem", color: "#374151" }}>Mode</label>
+              <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 500, marginBottom: "0.5rem", color: "#374151" }}>{t("mode")}</label>
               <select className={styles.formInput} value={form.payment_mode} onChange={e => setForm({...form, payment_mode: e.target.value})}>
-                <option>Cash</option>
-                <option>UPI</option>
-                <option>Bank Transfer</option>
+                <option>{t("cash")}</option>
+                <option>{t("uPI")}</option>
+                <option>{t("bankTransfer")}</option>
               </select>
             </div>
           </div>
 
           <div className={styles.formGroup}>
-            <label>Note</label>
+            <label>{t("note")}</label>
             <input 
               type="text" 
               className={styles.formInput} 
               value={form.notes} 
               onChange={e => setForm({...form, notes: e.target.value})} 
-              placeholder="e.g. November Advance"
+              placeholder={t("eGNovemberAdvance")}
             />
           </div>
 
@@ -200,10 +203,10 @@ export default function StaffPayments() {
         </form>
 
         {/* Payment Timeline */}
-        <h3 className={styles.sectionTitle}>Payment Timeline</h3>
+        <h3 className={styles.sectionTitle}>{t("paymentTimeline")}</h3>
         <p className={styles.summaryHint}>{paymentSummary.paymentCount} payment record{paymentSummary.paymentCount === 1 ? "" : "s"} found for this staff member.</p>
         <div className={styles.timelineList}>
-          {payments.length === 0 ? <p className={styles.emptyMsg}>No payments found.</p> : (
+          {payments.length === 0 ? <p className={styles.emptyMsg}>{t("noPaymentsFound")}</p> : (
             payments.map((p, idx) => {
               return (
                 <div key={p.id} className={styles.timelineItem} style={{ borderLeft: "4px solid #007170" }}>

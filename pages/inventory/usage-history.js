@@ -28,16 +28,16 @@ setUsage(result.data || []);
 
 return(
 
-<Layout title="Usage History">
+<Layout title={t("usageHistory")}>
 
-<h2>Usage History</h2>
+<h2>{t("usageHistory")}</h2>
 
 <table className={styles.table}>
 
 <thead>
 <tr>
-<th>Date</th>
-<th>Items</th>
+<th>{t("date")}</th>
+<th>{t("items")}</th>
 </tr>
 </thead>
 

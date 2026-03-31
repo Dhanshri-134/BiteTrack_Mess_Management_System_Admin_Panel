@@ -187,7 +187,7 @@ export default function PaymentHistory({ token }) {
                     <iframe
                         src={receiptModal}
                         className={styles.receiptFrame}
-                        title="Receipt"
+                        title={t("receipt")}
                     />
 
                 </div>
@@ -291,13 +291,13 @@ export default function PaymentHistory({ token }) {
                                                     
 
 <div className={styles.historyHeader}>
-  <div>Date</div>
-  <div>Amount</div>
-  <div>Type</div>
-  <div>Method</div>
-  <div>Txn ID</div>
-  <div>Period</div>
-  <div>Leave</div>
+  <div>{t("date")}</div>
+  <div>{t("amount")}</div>
+  <div>{t("type")}</div>
+  <div>{t("method")}</div>
+  <div>{t("txnID")}</div>
+  <div>{t("period")}</div>
+  <div>{t("leave")}</div>
 </div>
                                                     {expandedPayments.map(h => (
                                                         <div key={h.id} className={styles.historyItem}>
@@ -539,7 +539,7 @@ export default function PaymentHistory({ token }) {
       <iframe
         src={receiptModal}
         className={styles.receiptFrame}
-        title="Receipt"
+        title={t("receipt")}
       />
     </div>
   </div>

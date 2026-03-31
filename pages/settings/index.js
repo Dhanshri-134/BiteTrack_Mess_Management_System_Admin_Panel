@@ -420,7 +420,7 @@ if(saving) return (
               <input
                 type="text"
                 value={hostelText}
-                placeholder="Boys Hostel A, Girls Hostel B"
+                placeholder={t("boysHostelAGirlsHostelB")}
                 onChange={(e) => {
                   const text = e.target.value;
                   setHostelText(text);     // ← raw typing
@@ -440,7 +440,7 @@ if(saving) return (
               <input
                 type="text"
                 value={courseText}
-                placeholder="B.Tech, MBA, MCA"
+                placeholder={t("bTechMBAMCA")}
                 onChange={(e) => {
                   const text = e.target.value;
                   setCourseText(text);
@@ -499,10 +499,10 @@ if(saving) return (
 <div className={styles.group}>
   <h3>{t("UPI_Payment_Settings")}</h3>
 
-  <label>UPI ID</label>
+  <label>{t("uPIID")}</label>
   <input
     value={paymentConfig.upi_id}
-    placeholder="example@upi"
+    placeholder={t("exampleUpi")}
     onChange={(e) =>
       setPaymentConfig({ ...paymentConfig, upi_id: e.target.value })
     }
@@ -511,7 +511,7 @@ if(saving) return (
   <label>{t("Receiver_Name")}</label>
   <input
     value={paymentConfig.receiver_name}
-    placeholder="Mess Owner Name"
+    placeholder={t("messOwnerName")}
     onChange={(e) =>
       setPaymentConfig({ ...paymentConfig, receiver_name: e.target.value })
     }

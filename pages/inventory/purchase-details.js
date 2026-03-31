@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import { useRouter } from "next/router";
 import { useEffect,useState } from "react";
 import Layout from "../../components/Layout";
@@ -6,6 +7,8 @@ import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 
 export default function PurchaseDetails(){
+  const { t } = useLanguage();
+
 
 const router=useRouter();
 const {id}=router.query;
@@ -42,9 +45,9 @@ if(!purchase) return null;
 
 return(
 
-<Layout title="Purchase Details">
+<Layout title={t("purchaseDetails")}>
 
-<h2>Purchase Details</h2>
+<h2>{t("purchaseDetails")}</h2>
 
 <p>Vendor: {purchase.vendor_name || "-"}</p>
 <p>Date: {new Date(purchase.purchase_date).toLocaleDateString()}</p>
@@ -53,9 +56,9 @@ return(
 
 <thead>
 <tr>
-<th>Item</th>
-<th>Qty</th>
-<th>Price</th>
+<th>{t("item")}</th>
+<th>{t("qty")}</th>
+<th>{t("price")}</th>
 </tr>
 </thead>
 

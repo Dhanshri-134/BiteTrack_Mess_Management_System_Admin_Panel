@@ -648,7 +648,7 @@ const filteredAbsentUsers = absentUsers.filter(
 </div>
             <input
               type="text"
-              placeholder="Search by name"
+              placeholder={t("searchByName")}
               value={searchAttendance}
               onChange={(e) => setSearchAttendance(e.target.value)}
               className={styles.searchInput}
@@ -698,7 +698,7 @@ const filteredAbsentUsers = absentUsers.filter(
                           {attendanceTab === "present" && (
                             <div className={styles.user}>
                             {r.source_type === "owner" && (
-                              <span className={styles.ownerBadge}>Owner</span>
+                              <span className={styles.ownerBadge}>{t("owner")}</span>
                             )}
                             <span
                               className={
@@ -765,7 +765,7 @@ const filteredAbsentUsers = absentUsers.filter(
                             {attendanceTab === "present" && (
                               <td>
                                 {r.source_type === "owner" && (
-                                  <span className={styles.ownerBadge}>Owner</span>
+                                  <span className={styles.ownerBadge}>{t("owner")}</span>
                                 )}
                                 <span className={r.paid ? styles.badgePaid : styles.badgeUnpaid}>
                                   {r.paid ? "Paid" : "Unpaid"}

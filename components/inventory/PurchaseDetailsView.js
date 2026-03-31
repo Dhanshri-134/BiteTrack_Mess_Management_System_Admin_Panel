@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import Layout from "../../components/Layout";
 import styles from "../../styles/inventory.module.css";
 
@@ -6,17 +7,19 @@ function formatCurrency(value) {
 }
 
 export default function PurchaseDetailsView({ purchase, items, error, onBack }) {
+  const { t } = useLanguage();
+
   return (
     <Layout title={`Purchase: ${purchase?.vendor_name || "Details"}`}>
       <section className={styles.heroSection}>
         <div>
           <div className={styles.header}>
-            <p className={styles.eyebrow}>Inventory</p>
+            <p className={styles.eyebrow}>{t("inventory")}</p>
             <button className={styles.backbtn} onClick={onBack}>
               Back
             </button>
           </div>
-          <h1 className={styles.heroTitle}>Purchase Details</h1>
+          <h1 className={styles.heroTitle}>{t("purchaseDetails")}</h1>
         </div>
       </section>
 
@@ -24,19 +27,19 @@ export default function PurchaseDetailsView({ purchase, items, error, onBack }) 
 
       <section className={styles.infoGrid}>
         <div>
-          <span>Vendor</span>
+          <span>{t("vendor")}</span>
           <strong>{purchase?.vendor_name || "-"}</strong>
         </div>
         <div>
-          <span>Invoice</span>
+          <span>{t("invoice")}</span>
           <strong>{purchase?.invoice_number || "-"}</strong>
         </div>
         <div>
-          <span>Date</span>
+          <span>{t("date")}</span>
           <strong>{purchase?.purchase_date ? new Date(purchase.purchase_date).toLocaleDateString() : "-"}</strong>
         </div>
         <div>
-          <span>Total</span>
+          <span>{t("total")}</span>
           <strong>{formatCurrency(purchase?.total_amount)}</strong>
         </div>
       </section>
@@ -44,7 +47,7 @@ export default function PurchaseDetailsView({ purchase, items, error, onBack }) 
       <div className={styles.formCard}>
         <div className={styles.formCardHeader}>
           <div>
-            <h3 className={styles.formCardTitle}>Purchased Items</h3>
+            <h3 className={styles.formCardTitle}>{t("purchasedItems")}</h3>
             <p className={styles.formCardText}>
               {items.length} item{items.length === 1 ? "" : "s"} in this purchase.
             </p>
@@ -54,23 +57,23 @@ export default function PurchaseDetailsView({ purchase, items, error, onBack }) 
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Unit</th>
-              <th>Unit Price</th>
-              <th>Total</th>
+              <th>{t("item")}</th>
+              <th>{t("qty")}</th>
+              <th>{t("unit")}</th>
+              <th>{t("unitPrice")}</th>
+              <th>{t("total")}</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>
-                <td data-label="Item">
+                <td data-label={t("item")}>
                   <div className={styles.tablePrimaryValue}>{item.item_name}</div>
                 </td>
-                <td data-label="Qty">{item.quantity}</td>
-                <td data-label="Unit">{item.unit}</td>
-                <td data-label="Unit Price">{formatCurrency(item.unit_price)}</td>
-                <td data-label="Total">{formatCurrency(item.total_price)}</td>
+                <td data-label={t("qty")}>{item.quantity}</td>
+                <td data-label={t("unit")}>{item.unit}</td>
+                <td data-label={t("unitPrice")}>{formatCurrency(item.unit_price)}</td>
+                <td data-label={t("total")}>{formatCurrency(item.total_price)}</td>
               </tr>
             ))}
           </tbody>

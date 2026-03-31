@@ -120,7 +120,7 @@ export default function CategoriesPage() {
 
     return (
 
-        <Layout title="Categories">
+        <Layout title={t("categories")}>
 
 <section className={styles.heroSection}>
         <div>
@@ -152,14 +152,14 @@ export default function CategoriesPage() {
 
             <input
                 className={styles.searchInput}
-                placeholder="Search category..."
+                placeholder={t("searchCategory")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
             />
 
             {loading ? (
 
-                <p>Loading categories...</p>
+                <p>{t("loadingCategories")}</p>
 
             ) : (
 
@@ -191,10 +191,10 @@ export default function CategoriesPage() {
 
                     <div className={styles.modalCard}>
 
-                        <h3>Add Category</h3>
+                        <h3>{t("addCategory")}</h3>
 
                         <input
-                            placeholder="Category Name"
+                            placeholder={t("categoryName")}
                             value={categoryName}
                             onChange={(e) => {
                                 setCategoryName(e.target.value);
@@ -205,7 +205,7 @@ export default function CategoriesPage() {
                         />
 
                         <textarea
-                            placeholder="Description"
+                            placeholder={t("description")}
                             value={categoryDescription}
                             onChange={(e) => setCategoryDescription(e.target.value)}
                         />

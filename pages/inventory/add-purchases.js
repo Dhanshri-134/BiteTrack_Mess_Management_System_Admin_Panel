@@ -121,7 +121,7 @@ export default function AddPurchase() {
   }
 
   return (
-    <Layout title="Add Purchase">
+    <Layout title={t("addPurchase")}>
       <section className={styles.heroSection}>
         <div>
           <div className={styles.header}>
@@ -153,7 +153,7 @@ export default function AddPurchase() {
               value={vendor}
               onChange={(e) => setVendor(e.target.value)}
             >
-              <option value="">Select Vendor</option>
+              <option value="">{t("selectVendor")}</option>
               {vendors.map((vendorItem) => (
                 <option key={vendorItem.id} value={vendorItem.id}>
                   {vendorItem.vendor_name}
@@ -166,7 +166,7 @@ export default function AddPurchase() {
             <label className={styles.fieldLabel}>{t("invoice")}</label>
             <input
               className={styles.formControl}
-              placeholder="Invoice Number"
+              placeholder={t("invoiceNumber")}
               value={invoice}
               onChange={(e) => setInvoice(e.target.value)}
             />
@@ -186,7 +186,7 @@ export default function AddPurchase() {
             <label className={styles.fieldLabel}>{t("notes")}</label>
             <textarea
               className={styles.formControl}
-              placeholder="Notes"
+              placeholder={t("notes")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -215,7 +215,7 @@ export default function AddPurchase() {
                   value={row.item_id}
                   onChange={(e) => updateRow(index, "item_id", e.target.value)}
                 >
-                  <option value="">Select Item</option>
+                  <option value="">{t("selectItem")}</option>
                   {items.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.item_name}

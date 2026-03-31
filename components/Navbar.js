@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 
 import { useEffect, useState } from "react";
 import { Menu, Bell, LogOutIcon, RefreshCcw ,Zap} from "lucide-react";
@@ -9,6 +10,8 @@ import { triggerRefresh } from "@/lib/refreshBus";
 import toast from "react-hot-toast";
 
 export default function Navbar({ sidebarOpen, setSidebarOpen,isDesktop }) {
+  const { t } = useLanguage();
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
@@ -32,7 +35,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen,isDesktop }) {
           <Menu size={22} />
         </button>
 
-        <span className={styles.logo}>BiteTrack</span>
+        <span className={styles.logo}>{t("biteTrack")}</span>
       </div>
 
       {/* RIGHT */}
@@ -48,7 +51,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen,isDesktop }) {
     triggerRefresh();
   }}
   className={styles.refreshBtn}
-  title="Refresh"
+  title={t("refresh")}
 >
   <RefreshCcw size={20} />
 </button>

@@ -202,7 +202,7 @@ export default function StaffHandling() {
           <button
       className={styles.closeBtn}
       onClick={() => setShowAddModal(false)}
-      aria-label="Close"
+      aria-label={t("close")}
     >
       ✕
     </button>
@@ -255,7 +255,7 @@ export default function StaffHandling() {
         setEditStaff(null);
         setCredForm({ newEmail: "", newPassword: "" });
       }}
-      aria-label="Close"
+      aria-label={t("close")}
     >
       ✕
     </button>

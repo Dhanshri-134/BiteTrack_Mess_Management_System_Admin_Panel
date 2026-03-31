@@ -8,7 +8,7 @@ import { ArrowLeft, RefreshCw } from "lucide-react";
 import { useLanguage } from "../../../context/LanguageContext";
 
 function formatMoney(value) {
-  return `Rs ${Number(value || 0).toFixed(2)}`;
+  return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
 export default function SalaryHistoryPage() {
@@ -88,26 +88,26 @@ export default function SalaryHistoryPage() {
         <div className={styles.pageStack}>
 
           <section className={styles.heroPanel}>
-            <p className={styles.heroKicker}>{t("salary")}</p>
             <div className={styles.header}>
+            <p className={styles.heroKicker}>{t("salary")}</p>
                
-            <h1 className={styles.heroHeading}>{t("salaryManagement")}</h1>
           <button type="button" className={styles.backBtn} onClick={() => window.history.back()}>
             <ArrowLeft size={16} /> {t("back")}
           </button>
             </div>
-            <p className={styles.heroText}>{t("salaryManagementDescription")}</p>
+            <h1 className={styles.heroHeading}>{t("salaryManagement")}</h1>
+            {/* <p className={styles.heroText}>{t("salaryManagementDescription")}</p> */}
           </section>
 
           <section className={styles.insightGrid}>
             <div className={styles.insightCard}><span>{t("totalPayable")}</span><strong>{formatMoney(totals.final)}</strong></div>
             <div className={styles.insightCard}><span>{t("overtime")}</span><strong>{formatMoney(totals.overtime)}</strong></div>
             <div className={styles.insightCard}><span>{t("penalty")}</span><strong>{formatMoney(totals.penalty)}</strong></div>
-            <div className={styles.insightCard}><span>Unpaid Salaries</span><strong>{totals.pending}</strong></div>
+            <div className={styles.insightCard}><span>{t("unpaidSalaries")}</span><strong>{totals.pending}</strong></div>
           </section>
 
           <section className={styles.paymentFormCard}>
-            <p className={styles.summaryHint}>Salary is auto-calculated from attendance, overtime, penalties, and recorded payments for the selected month.</p>
+            {/* <p className={styles.summaryHint}>Salary is auto-calculated from attendance, overtime, penalties, and recorded payments for the selected month.</p> */}
             <div className={styles.formGridCompact}>
               <div className={styles.formGroup}>
                 <label>{t("month")}</label>

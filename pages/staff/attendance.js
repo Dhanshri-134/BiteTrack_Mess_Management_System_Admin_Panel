@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/staffMobile.module.css";
@@ -5,19 +6,22 @@ import toast from "react-hot-toast";
 import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
 import { ArrowLeft, CalendarDays, CheckCircle, Clock3, UserRound } from "lucide-react";
 
-const ATTENDANCE_OPTIONS = [
-  { label: "P", value: "P", help: "Present" },
-  { label: "HF", value: "H", help: "Half Day" },
-  { label: "A", value: "A", help: "Absent" },
-  { label: "L", value: "L", help: "Leave" },
-  { label: "OFF", value: "OFF", help: "Off" },
-];
 
 function formatMoney(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
 }
 
 export default function StaffAttendance() {
+  const { t } = useLanguage();
+
+  const ATTENDANCE_OPTIONS = [
+    { label: "P", value: "P", help: "Present" },
+    { label: t("hF"), value: "H", help: "Half Day" },
+    { label: "A", value: "A", help: "Absent" },
+    { label: "L", value: "L", help: "Leave" },
+    { label: t("oFF"), value: "OFF", help: "Off" },
+  ];
+
   const [staff, setStaff] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(true);
@@ -140,18 +144,18 @@ export default function StaffAttendance() {
   }, [staff]);
 
   return (
-    <Layout title="Staff Attendance">
+    <Layout title={t("staffAttendance")}>
       <div className={styles.container}>
         <div className={styles.pageStack}>
 
           <section className={styles.heroPanel}>
              <div className={styles.header}>
-            <p className={styles.heroKicker}>Attendance</p>
+            <p className={styles.heroKicker}>{t("attendance")}</p>
               <button type="button" className={styles.backBtn} onClick={() => window.history.back()}>
                 <ArrowLeft size={16} /> Back
               </button>
           </div>
-                <h1 className={styles.heroHeading}>Mark Attendance</h1>
+                <h1 className={styles.heroHeading}>{t("markAttendance")}</h1>
           
             <br></br>
             <div className={styles.statusLegend}>
@@ -160,23 +164,23 @@ export default function StaffAttendance() {
                   {option.label} : {option.help}
                 </span>
               ))}
-              <span className={`${styles.statusPill} ${styles.statusL}`}>Late</span>
-              <span className={`${styles.statusPill} ${styles.statusOT}`}>OT Overtime</span>
+              <span className={`${styles.statusPill} ${styles.statusL}`}>{t("late")}</span>
+              <span className={`${styles.statusPill} ${styles.statusOT}`}>{t("oTOvertime")}</span>
             </div>
           </section>
 
           <section>
-            {/* <div className={styles.insightCard}><span>Staff Cards</span><strong>{summary.total}</strong></div>
-            <div className={styles.insightCard}><span>Late Rules</span><strong>{summary.lateRules}</strong></div>
-            <div className={styles.insightCard}><span>OT Rules</span><strong>{summary.overtimeRules}</strong></div> */}
+            {/* <div className={styles.insightCard}><span>{t("staffCards")}</span><strong>{summary.total}</strong></div>
+            <div className={styles.insightCard}><span>{t("lateRules")}</span><strong>{summary.lateRules}</strong></div>
+            <div className={styles.insightCard}><span>{t("oTRules")}</span><strong>{summary.overtimeRules}</strong></div> */}
             <div className={styles.surfaceCard}>
-              <label style={{ display: "flex", fontWeight: 700, marginBottom: "0.5rem", color: "#334155" }}>Attendance Date</label>
+              <label style={{ display: "flex", fontWeight: 700, marginBottom: "0.5rem", color: "#334155" }}>{t("attendanceDate")}</label>
               <input className={styles.formInput} type="date" value={date} onChange={(event) => setDate(event.target.value)} />
             </div>
           </section>
 
           <section className={styles.cardList}>
-            {loading ? <div className={styles.emptyMsg}>Loading...</div> : null}
+            {loading ? <div className={styles.emptyMsg}>{t("loading")}</div> : null}
             {!loading && staff.map((row, index) => (
               <button type="button" key={row.id} className={styles.staffCard} onClick={() => setSelectedIndex(index)}>
                 <div className={styles.staffCardHeader}>
@@ -221,7 +225,7 @@ export default function StaffAttendance() {
                 ) : null}
 
                 <div className={styles.formGroup}>
-                  <label>Status</label>
+                  <label>{t("status")}</label>
                   <div className={styles.btnTypes}>
                     {ATTENDANCE_OPTIONS.map((option) => (
                       <button
@@ -238,16 +242,16 @@ export default function StaffAttendance() {
 
                 <div className={styles.formGridCompact}>
                   <div className={styles.formGroup}>
-                    <label>Check In</label>
+                    <label>{t("checkIn")}</label>
                     <input className={styles.formInput} type="time" value={selected.check_in} onChange={(event) => updateField("check_in", event.target.value)} />
                   </div>
                   <div className={styles.formGroup}>
-                    <label>Check Out</label>
+                    <label>{t("checkOut")}</label>
                     <input className={styles.formInput} type="time" value={selected.check_out || ""} onChange={(event) => updateField("check_out", event.target.value)} />
                   </div>
                   <div className={`${styles.formGroup} ${styles.formGroupWide}`}>
-                    <label>Notes</label>
-                    <input className={styles.formInput} type="text" value={selected.notes || ""} placeholder="Optional note" onChange={(event) => updateField("notes", event.target.value)} />
+                    <label>{t("notes")}</label>
+                    <input className={styles.formInput} type="text" value={selected.notes || ""} placeholder={t("optionalNote")} onChange={(event) => updateField("notes", event.target.value)} />
                   </div>
                 </div>
 

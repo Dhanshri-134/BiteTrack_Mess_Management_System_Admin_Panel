@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import { useEffect,useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/table.module.css";
@@ -5,6 +6,8 @@ import { inventoryOfflineRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 
 export default function LowStock(){
+  const { t } = useLanguage();
+
 
 const [items,setItems]=useState([]);
 
@@ -26,18 +29,18 @@ setItems(result.data || []);
 
 return(
 
-<Layout title="Low Stock">
+<Layout title={t("lowStock")}>
 
-<h2>Low Stock Items</h2>
+<h2>{t("lowStockItems")}</h2>
 
 <table className={styles.table}>
 
 <thead>
 <tr>
-<th>Item</th>
-<th>Current</th>
-<th>Minimum</th>
-<th>Unit</th>
+<th>{t("item")}</th>
+<th>{t("current")}</th>
+<th>{t("minimum")}</th>
+<th>{t("unit")}</th>
 </tr>
 </thead>
 

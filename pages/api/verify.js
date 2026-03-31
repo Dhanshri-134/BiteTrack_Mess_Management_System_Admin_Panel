@@ -1,3 +1,4 @@
+import { useLanguage } from "../../context/LanguageContext";
 import { pgPool } from "../../lib/db";
 import QRCode from "qrcode";
 
@@ -64,16 +65,16 @@ export default async function handler(req, res) {
   <p>Dear ${user.name},</p>
 
   <p>Thank you for completing your registration process with 
-  <b>Sanskruti Mess and Kitchen</b> under the <b>BiteTrack (by Shris Tech)</b> system. 🎉</p>
+  <b>{t("sanskrutiMessAndKitchen")}</b> under the <b>{t("biteTrackByShrisTech")}</b> system. 🎉</p>
 
-  <p>✅ <b>Your registration is now complete.</b><br/>
+  <p>✅ <b>{t("yourRegistrationIsNowComplete")}</b><br/>
   Your unique QR Code is attached below.</p>
 
   <p><b>📌 Usage of QR Code:</b></p>
   <ul>
-    <li>Required for <b>daily mess entry & attendance</b> starting from <b>1st October</b>.</li>
-    <li>Please keep it safe.</li>
-    <li>Do not share your QR Code with others.</li>
+    <li>Required for <b>{t("dailyMessEntryAttendance")}</b> starting from <b>1st October</b>.</li>
+    <li>{t("pleaseKeepItSafe")}</li>
+    <li>{t("doNotShareYourQRCodeWithOthers")}</li>
   </ul>
 
   <p><b>⚠ Reminder:</b><br/>
@@ -82,8 +83,8 @@ export default async function handler(req, res) {
   <p>🙏 Thank you for your cooperation.</p>
 
   <p>Best Regards,<br/>
-  <b>Sanskruti Mess and Kitchen</b><br/>
-  Powered by <b>BiteTrack – Shris Tech</b></p>
+  <b>{t("sanskrutiMessAndKitchen")}</b><br/>
+  Powered by <b>{t("biteTrackShrisTech")}</b></p>
         `,
 
         // ⬇⬇⬇ FIXED ONLY THIS PART ⬇⬇⬇

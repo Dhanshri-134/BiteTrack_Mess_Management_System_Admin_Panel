@@ -149,7 +149,7 @@ export default function BillsPage() {
           <iframe
             src={receiptModal}
             className={styles.receiptFrame}
-            title="Receipt"
+            title={t("receipt")}
           />
 
         </div>
@@ -1115,7 +1115,7 @@ const exportBillingPDF = async () => {
                       <select value={paymentData.payment_method} onChange={(e) => setPaymentData({ ...paymentData, payment_method: e.target.value })}>
                         <option value="">{t("selectMethod")}</option>
                         <option value="Cash">{t("cash")}</option>
-                        <option value="UPI">UPI</option>
+                        <option value="UPI">{t("uPI")}</option>
                       </select>
                     </div>
                     {paymentData.payment_method === "UPI" && (
@@ -1202,7 +1202,7 @@ const exportBillingPDF = async () => {
                   <select value={advanceData.payment_method} onChange={(e) => setAdvanceData({ ...advanceData, payment_method: e.target.value })}>
                     <option value="">{t("select")}</option>
                     <option value="Cash">{t("cash") || "Cash"}</option>
-                    <option value="UPI">UPI</option>
+                    <option value="UPI">{t("uPI")}</option>
                   </select>
                 </div>
                 <div className={styles.formGroup}>

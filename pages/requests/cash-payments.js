@@ -380,7 +380,7 @@ const status = normalizeStatus(rawStatus);
         <button
           className={styles.expandBtn}
           onClick={() => setOpen(!open)}
-          aria-label="Toggle details"
+          aria-label={t("toggleDetails")}
         >
           {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </button>

@@ -9,13 +9,6 @@ import { offlineFetch } from "../../lib/offlineFetch";
 import { API_BASE } from "../../lib/api";
 import styles from "../../styles/bookingRequests.module.css";
 
-const STATUS_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "pending", label: "Pending" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "rejected", label: "Rejected" },
-  { value: "completed", label: "Completed" },
-];
 
 const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -55,7 +48,7 @@ function MobileBookingCard({ booking, onStatusChange, t }) {
         <button
           className={styles.expandBtn}
           onClick={() => setOpen(!open)}
-          aria-label="Toggle details"
+          aria-label={t("toggleDetails")}
         >
           {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </button>
@@ -107,6 +100,14 @@ export default function BookingRequests() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [confirmData, setConfirmData] = useState(null);
+
+  const STATUS_OPTIONS = [
+    { value: "all", label: t("all") },
+    { value: "pending", label: t("pending") },
+    { value: "confirmed", label: t("confirmed") },
+    { value: "rejected", label: t("rejected") },
+    { value: "completed", label: t("completed") },
+  ];
 
   const fetchBookings = async () => {
     setLoading(true);

@@ -9,16 +9,6 @@ import { useAppRefresh } from "@/lib/useAppRefresh";
 import { API_BASE } from "../../lib/api";
 import styles from "../../styles/leave.module.css";
 
-const HISTORY_STATUS_OPTIONS = [
-  { value: "all", label: "All statuses" },
-  { value: "Approved", label: "Approved" },
-  { value: "Rejected", label: "Rejected" },
-];
-
-const HISTORY_SORT_OPTIONS = [
-  { value: "latest", label: "Latest first" },
-  { value: "oldest", label: "Oldest first" },
-];
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -45,6 +35,17 @@ export default function LeaveManagement() {
   const [historySort, setHistorySort] = useState("latest");
   const [groupByUser, setGroupByUser] = useState(false);
   const [showHistoryFilters, setShowHistoryFilters] = useState(true);
+
+  const HISTORY_STATUS_OPTIONS = [
+    { value: "all", label: t("allStatuses") },
+    { value: t("approved"), label: "Approved" },
+    { value: t("rejected"), label: "Rejected" },
+  ];
+
+  const HISTORY_SORT_OPTIONS = [
+    { value: "latest", label: t("latestFirst") },
+    { value: "oldest", label: t("oldestFirst") },
+  ];
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -305,7 +306,7 @@ function LeaveTable({
           {showFilters ? (
             <div className={styles.filterBar}>
               <label className={styles.filterField}>
-                <span>Search</span>
+                <span>{t("search")}</span>
                 <input
                   type="text"
                   placeholder={t("searchByNameOrEmail")}
@@ -336,25 +337,32 @@ function LeaveTable({
               </label>
 
               <label className={styles.filterField}>
-                <span>Status</span>
+                <span>{t("status")}</span>
                 <DayDropdown
-                  options={HISTORY_STATUS_OPTIONS}
+                  options={[
+                    { value: "all", label: t("allStatuses") },
+                    { value: t("approved"), label: "Approved" },
+                    { value: t("rejected"), label: "Rejected" },
+                  ]}
                   value={statusFilter}
                   onChange={setStatusFilter}
                 />
               </label>
 
               <label className={styles.filterField}>
-                <span>Sort</span>
+                <span>{t("sort")}</span>
                 <DayDropdown
-                  options={HISTORY_SORT_OPTIONS}
+                  options={[
+                    { value: "latest", label: t("latestFirst") },
+                    { value: "oldest", label: t("oldestFirst") },
+                  ]}
                   value={sortOrder}
                   onChange={setSortOrder}
                 />
               </label>
 
               <label className={`${styles.filterField} ${styles.checkboxField}`}>
-                <span>Group by user</span>
+                <span>{t("groupByUser")}</span>
                 <input
                   type="checkbox"
                   checked={groupByUser}

@@ -204,7 +204,7 @@ export default function Usage() {
                                         type="number"
                                         min="0"
                                         value={r.quantity}
-                                        placeholder="Quantity"
+                                        placeholder={t("quantity")}
                                         onChange={(e) => updateRow(i, "quantity", e.target.value)}
                                     />
                                 </td>

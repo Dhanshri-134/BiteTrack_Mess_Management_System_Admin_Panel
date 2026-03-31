@@ -1,19 +1,22 @@
+import { useLanguage } from "../../context/LanguageContext";
 import Layout from "../../components/Layout";
 
 export default function Reports(){
+  const { t } = useLanguage();
+
 
 return(
 
-<Layout title="Inventory Reports">
+<Layout title={t("inventoryReports")}>
 
-<h2>Inventory Reports</h2>
+<h2>{t("inventoryReports")}</h2>
 
 <ul>
 
-<li>Stock Summary</li>
-<li>Low Stock Report</li>
-<li>Purchase Report</li>
-<li>Usage Report</li>
+<li>{t("stockSummary")}</li>
+<li>{t("lowStockReport")}</li>
+<li>{t("purchaseReport")}</li>
+<li>{t("usageReport")}</li>
 
 </ul>
 

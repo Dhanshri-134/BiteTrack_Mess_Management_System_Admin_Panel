@@ -49,5 +49,13 @@ export function LanguageProvider({ children }) {
 }
 
 export function useLanguage() {
-  return useContext(LanguageContext);
+  const context = useContext(LanguageContext);
+  if (context === undefined) {
+    return {
+      t: (key) => key,
+      lang: "en",
+      toggleLanguage: () => {}
+    };
+  }
+  return context;
 }

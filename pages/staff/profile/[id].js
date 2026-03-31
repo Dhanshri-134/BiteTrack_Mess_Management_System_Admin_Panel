@@ -24,13 +24,6 @@ import {
 } from "lucide-react";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const ATTENDANCE_OPTIONS = [
-  { label: "P", value: "P" },
-  { label: "HF", value: "H" },
-  { label: "A", value: "A" },
-  { label: "L", value: "L" },
-  { label: "OFF", value: "OFF" },
-];
 const PAYMENT_TYPES = ["advance", "partial", "final"];
 
 function formatMoney(value) {
@@ -135,6 +128,14 @@ export default function StaffProfile() {
   const router = useRouter();
   const { id } = router.query;
   const { t } = useLanguage();
+
+  const ATTENDANCE_OPTIONS = [
+    { label: "P", value: "P" },
+    { label: t("hF"), value: "H" },
+    { label: "A", value: "A" },
+    { label: "L", value: "L" },
+    { label: t("oFF"), value: "OFF" },
+  ];
 
   const [profile, setProfile] = useState(null);
   const [attendance, setAttendance] = useState([]);
@@ -548,7 +549,7 @@ export default function StaffProfile() {
                       <div className={styles.calendarBadgeRow}>
                         <span className={`${styles.statusPill} ${styles[`status${label}`] || styles.statusOFF}`}>{label}</span>
                         {row?.is_late ? <span className={`${styles.statusPill} ${styles.statusL}`}>L</span> : null}
-                        {Number(row?.overtime_amount || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>OT</span> : null}
+                        {Number(row?.overtime_amount || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>{t("oT")}</span> : null}
                       </div>
                       <div className={styles.calendarInfo}>
                         {row ? (
@@ -577,7 +578,7 @@ export default function StaffProfile() {
               <div className={styles.summaryBox}><span>{t("otHours")}</span><strong>{Number(paymentSummary.overtimeHours || 0).toFixed(2)}</strong></div>
               <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
               <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
-              <div className={styles.summaryBox}><span>Gross Salary</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("grossSalary")}</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
               <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
               <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
             </div>

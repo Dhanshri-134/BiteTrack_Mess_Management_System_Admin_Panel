@@ -1,9 +1,12 @@
+import { useLanguage } from "../../context/LanguageContext";
 import { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { queueAction } from "@/lib/queueAction";
 import toast from "react-hot-toast";
 
 export default function Scanner({ onAttendanceMarked }) {
+  const { t } = useLanguage();
+
   const scannerRef = useRef(null);
   const scannerInstance = useRef(null);
   const [lastScan, setLastScan] = useState(null);
@@ -133,7 +136,7 @@ const handleScanSuccess = async (decodedText) => {
 
   return (
     <div>
-      <h2>QR Scanner</h2>
+      <h2>{t("qRScanner")}</h2>
       <div
         ref={scannerRef}
         

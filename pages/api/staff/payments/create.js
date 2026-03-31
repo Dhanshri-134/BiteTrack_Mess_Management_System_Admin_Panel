@@ -1,5 +1,6 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
+import { generateStaffSalaryForPeriod } from "@/lib/staffSalary";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -49,15 +50,15 @@ export default async function handler(req, res) {
       ]
     );
 
-    // Update staff current_balance if it's an advance or settlement payment that affects balance
-    // the problem didn't specify the exact balance formula, but final salary = base + OT - pen - SUM(payments)
-    // We already adjust the balance on salary generation. Doing it here might double count unless we decide on one place.
-    // For now, let's just create the payment. User just said "Update optional current_balance in staff".
-    // I will decrement the balance by the payment amount. 
-    await pgPool.query(
-      `UPDATE staff SET current_balance = current_balance - $1 WHERE id=$2 AND mess_id=$3`,
-      [amount, staff_id, messId]
+    const effectiveDate = new Date(
+      payment_date || new Date().toISOString().split("T")[0]
     );
+
+    await generateStaffSalaryForPeriod({
+      messId,
+      month: effectiveDate.getMonth() + 1,
+      year: effectiveDate.getFullYear(),
+    });
 
     res.json({ success: true, data: newPayment.rows[0] });
   } catch (err) {

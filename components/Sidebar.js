@@ -215,7 +215,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
               title: t("staff"),
               icon: <Users size={22} />,
               items: [
-                { path: "/staff/dashboard/", label: t("dashboard") },
+                // { path: "/staff/dashboard/", label: t("dashboard") },
                 { path: "/staff/list/", label: t("staffDirectory") },
                 { path: "/staff/attendance/", label: t("attendance") },
                 { path: "/staff/attendance-history/", label: t("attendanceHistory") },
@@ -225,11 +225,11 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
           ]),
       {
         key: "settings",
-        title: "Settings",
+        title: t("settings"),
         icon: <Settings size={22} />,
         items: [
-          { path: "/settings/", label: "Mess Setting" },
-          { path: "/settings/app_settings/", label: "App Setting" },
+          { path: "/settings/", label: t("messSetting") },
+          { path: "/settings/app_settings/", label: t("appSetting") },
         ],
       },
     ];

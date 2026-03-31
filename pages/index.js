@@ -43,7 +43,7 @@ export default function Splash() {
           Get Started
         </Link> */}
         {/* <Link href="/login/" legacyBehavior>
-          <a className={styles.ctaBtn}>Get Started</a>
+          <a className={styles.ctaBtn}>{t("getStarted")}</a>
         </Link> */}
         <button
           className={styles.ctaBtn}

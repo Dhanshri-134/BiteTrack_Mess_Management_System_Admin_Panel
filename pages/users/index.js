@@ -363,13 +363,13 @@ useEffect(() => {
     },
     {
       key: "actions",
-      label: "Actions",
+      label: t("actions"),
       render: (u) => {
         if (activeTab !== "verified") return null;
 
         return (
           <div className={styles.buttonwrapper}>
-            {/* <span className={styles.actionTrigger}>Click Here</span> */}
+            {/* <span className={styles.actionTrigger}>{t("clickHere")}</span> */}
 
            {/* <div className={styles.actionMenu}> */}
               <button  className={styles.btn}onClick={() => openModal(u)}>Edit</button>
@@ -617,7 +617,7 @@ useEffect(() => {
             className={styles.expandBtnr}
             onClick={() => setOpenAccordionId(openAccordionId === user.id ? null : user.id)
             }
-            aria-label="Toggle details"
+            aria-label={t("toggleDetails")}
           >
             {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
@@ -1090,7 +1090,7 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                   <button
                     className={styles.modalClose}
                     onClick={() => setModalUser(null)}
-                    aria-label="Close modal"
+                    aria-label={t("closeModal")}
                   >
                     <X size={20} />
                   </button>

@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import { pgPool } from "../../../lib/db";
 import bcrypt from "bcryptjs";
 
@@ -66,10 +67,10 @@ export default async function handler(req, res) {
         to: [{ email }],
         subject: "Your BiteTrack Login Credentials",
         htmlContent: `
-          <p>Your BiteTrack password has been reset.</p>
+          <p>{t("yourBiteTrackPasswordHasBeenReset")}</p>
 
-          <p><b>Email:</b> ${email}</p>
-          <p><b>New Password:</b> ${newPassword}</p>
+          <p><b>{t("email")}</b> ${email}</p>
+          <p><b>{t("newPassword")}</b> ${newPassword}</p>
 
           <p>
             Please log in using this password.

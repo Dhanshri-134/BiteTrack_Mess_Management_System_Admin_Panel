@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Layout from "../../../components/Layout";
@@ -7,6 +8,8 @@ import { useAppRefresh } from "@/lib/useAppRefresh";
 import PurchaseDetailsView from "../../../components/inventory/PurchaseDetailsView";
 
 export default function PurchaseDetails(){
+  const { t } = useLanguage();
+
 
 const router = useRouter();
 const { id } = router.query;
@@ -63,11 +66,11 @@ loadDetails();
 });
 
 if(loading){
-return <Layout title="Purchase Details"><p>Loading...</p></Layout>;
+return <Layout title={t("purchaseDetails")}><p>{t("loading")}</p></Layout>;
 }
 
 if(!purchase){
-return <Layout title="Purchase Details"><p>{error || "Purchase not found"}</p></Layout>;
+return <Layout title={t("purchaseDetails")}><p>{error || "Purchase not found"}</p></Layout>;
 }
 
 return (
@@ -87,7 +90,7 @@ return(
 
 <div>
 <div className={styles.header}>
-<p className={styles.eyebrow}>Inventory</p>
+<p className={styles.eyebrow}>{t("inventory")}</p>
 
 <button
 className={styles.backbtn}
@@ -98,7 +101,7 @@ onClick={()=>router.back()}
 
 </div>
 
-<h1 className={styles.heroTitle}>Purchase Details</h1>
+<h1 className={styles.heroTitle}>{t("purchaseDetails")}</h1>
 </div>
 </section>
 
@@ -106,19 +109,19 @@ onClick={()=>router.back()}
 
 <section className={styles.infoGrid}>
 <div>
-<span>Vendor</span>
+<span>{t("vendor")}</span>
 <strong>{purchase.vendor_name || "-"}</strong>
 </div>
 <div>
-<span>Invoice</span>
+<span>{t("invoice")}</span>
 <strong>{purchase.invoice_number || "-"}</strong>
 </div>
 <div>
-<span>Date</span>
+<span>{t("date")}</span>
 <strong>{new Date(purchase.purchase_date).toLocaleDateString()}</strong>
 </div>
 <div>
-<span>Total</span>
+<span>{t("total")}</span>
 <strong>{formatCurrency(purchase.total_amount)}</strong>
 </div>
 </section>
@@ -126,7 +129,7 @@ onClick={()=>router.back()}
 <div className={styles.formCard}>
 <div className={styles.formCardHeader}>
 <div>
-<h3 className={styles.formCardTitle}>Purchased Items</h3>
+<h3 className={styles.formCardTitle}>{t("purchasedItems")}</h3>
 <p className={styles.formCardText}>
 {items.length} item{items.length === 1 ? "" : "s"} in this purchase.
 </p>
@@ -134,7 +137,7 @@ onClick={()=>router.back()}
 </div>
 
 
-<p><strong>Total:</strong> ₹ {Number(purchase.total_amount).toLocaleString()}</p>
+<p><strong>{t("total")}</strong> ₹ {Number(purchase.total_amount).toLocaleString()}</p>
 
 </div>
 
@@ -143,11 +146,11 @@ onClick={()=>router.back()}
 <thead>
 
 <tr>
-<th>Item</th>
-<th>Qty</th>
-<th>Unit</th>
-<th>Price</th>
-<th>Total</th>
+<th>{t("item")}</th>
+<th>{t("qty")}</th>
+<th>{t("unit")}</th>
+<th>{t("price")}</th>
+<th>{t("total")}</th>
 </tr>
 
 </thead>

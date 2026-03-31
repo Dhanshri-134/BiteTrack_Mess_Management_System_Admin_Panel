@@ -1,3 +1,4 @@
+import { useLanguage } from "../context/LanguageContext";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
@@ -9,6 +10,8 @@ import styles from "../styles/layout.module.css";
 import { API_BASE } from "../lib/api";
 
 export default function Layout({ children }) {
+  const { t } = useLanguage();
+
   useAuth(); 
   const router = useRouter();
 
@@ -86,8 +89,8 @@ useEffect(() => {
     return (
       <div className={styles.expiredWrapper}>
         <h1>🚫 Subscription Expired</h1>
-        <p>Your subscription has ended.</p>
-        <p>Please renew to continue using BiteTrack.</p>
+        <p>{t("yourSubscriptionHasEnded")}</p>
+        <p>{t("pleaseRenewToContinueUsingBiteTrack")}</p>
       </div>
     );
   }

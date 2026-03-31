@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../context/LanguageContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Layout from "../../../components/Layout";
@@ -7,6 +8,8 @@ import { staffRequest } from "@/lib/staffClient";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 
 export default function EditStaff() {
+  const { t } = useLanguage();
+
   const router = useRouter();
   const { id } = router.query;
   const [loading, setLoading] = useState(true);
@@ -94,7 +97,7 @@ export default function EditStaff() {
   }
 
   return (
-    <Layout title="Edit Staff">
+    <Layout title={t("editStaff")}>
       <div className={styles.container}>
         <div className={styles.pageStack}>
           <button type="button" className={styles.backBtn} onClick={() => router.back()}>
@@ -102,28 +105,28 @@ export default function EditStaff() {
           </button>
 
           <section className={styles.heroPanel}>
-            <p className={styles.heroKicker}>Staff</p>
-            <h1 className={styles.heroHeading}>Edit Staff Profile</h1>
+            <p className={styles.heroKicker}>{t("staff")}</p>
+            <h1 className={styles.heroHeading}>{t("editStaffProfile")}</h1>
             <p className={styles.heroText}>Update salary rules, time rules, and balance without leaving the staff flow.</p>
           </section>
 
           {loading ? (
-            <div className={styles.emptyMsg}>Loading...</div>
+            <div className={styles.emptyMsg}>{t("loading")}</div>
           ) : (
             <form onSubmit={handleSave} className={styles.paymentFormCard}>
               <div className={styles.formGridCompact}>
-                <div className={styles.formGroup}><label>Name</label><input className={styles.formInput} name="name" value={form.name} onChange={handleChange} required /></div>
-                <div className={styles.formGroup}><label>Phone</label><input className={styles.formInput} name="phone" value={form.phone} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Role</label><input className={styles.formInput} name="role" value={form.role} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Joining Date</label><input className={styles.formInput} type="date" name="joining_date" value={form.joining_date} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Salary Type</label><select className={styles.formInput} name="salary_type" value={form.salary_type} onChange={handleChange}><option value="monthly">Monthly</option><option value="daily">Daily</option><option value="hourly">Hourly</option></select></div>
-                <div className={styles.formGroup}><label>Base Salary</label><input className={styles.formInput} type="number" name="base_salary" value={form.base_salary} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Overtime Rate / Hour</label><input className={styles.formInput} type="number" name="overtime_rate" value={form.overtime_rate} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Late Penalty / Minute</label><input className={styles.formInput} type="number" name="late_penalty" value={form.late_penalty} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Current Balance</label><input className={styles.formInput} type="number" name="current_balance" value={form.current_balance} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Shift Start</label><input className={styles.formInput} type="time" name="shift_start" value={form.shift_start} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Late After</label><input className={styles.formInput} type="time" name="late_after" value={form.late_after} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>Shift End</label><input className={styles.formInput} type="time" name="shift_end" value={form.shift_end} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("name")}</label><input className={styles.formInput} name="name" value={form.name} onChange={handleChange} required /></div>
+                <div className={styles.formGroup}><label>{t("phone")}</label><input className={styles.formInput} name="phone" value={form.phone} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("role")}</label><input className={styles.formInput} name="role" value={form.role} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("joiningDate")}</label><input className={styles.formInput} type="date" name="joining_date" value={form.joining_date} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("salaryType")}</label><select className={styles.formInput} name="salary_type" value={form.salary_type} onChange={handleChange}><option value="monthly">{t("monthly")}</option><option value="daily">{t("daily")}</option><option value="hourly">{t("hourly")}</option></select></div>
+                <div className={styles.formGroup}><label>{t("baseSalary")}</label><input className={styles.formInput} type="number" name="base_salary" value={form.base_salary} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("overtimeRateHour")}</label><input className={styles.formInput} type="number" name="overtime_rate" value={form.overtime_rate} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("latePenaltyMinute")}</label><input className={styles.formInput} type="number" name="late_penalty" value={form.late_penalty} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("currentBalance")}</label><input className={styles.formInput} type="number" name="current_balance" value={form.current_balance} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("shiftStart")}</label><input className={styles.formInput} type="time" name="shift_start" value={form.shift_start} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("lateAfter")}</label><input className={styles.formInput} type="time" name="late_after" value={form.late_after} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("shiftEnd")}</label><input className={styles.formInput} type="time" name="shift_end" value={form.shift_end} onChange={handleChange} /></div>
               </div>
 
               <div className={styles.heroActions}>
