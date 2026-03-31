@@ -31,6 +31,7 @@ export default async function handler(req, res) {
         s.name,
         s.phone,
         s.role,
+        s.is_active,
         s.salary_type,
         s.base_salary AS configured_base_salary,
         COALESCE(ss.base_salary, 0) AS base_salary,
@@ -38,13 +39,15 @@ export default async function handler(req, res) {
         COALESCE(ss.overtime_amount, 0) AS overtime_amount,
         COALESCE(ss.penalty_amount, 0) AS penalty_amount,
         COALESCE(ss.base_salary, 0) + COALESCE(ss.overtime_amount, 0) - COALESCE(ss.penalty_amount, 0) AS gross_salary,
-        GREATEST((COALESCE(ss.base_salary, 0) + COALESCE(ss.overtime_amount, 0) - COALESCE(ss.penalty_amount, 0)) - COALESCE(p.total_paid, 0), 0) AS final_salary,
+        CASE
+          WHEN ss.id IS NULL THEN 0
+          ELSE COALESCE(ss.final_salary, 0)
+        END AS final_salary,
         CASE
           WHEN ss.id IS NULL THEN 'not_added'
-          WHEN (COALESCE(ss.base_salary, 0) + COALESCE(ss.overtime_amount, 0) - COALESCE(ss.penalty_amount, 0)) - COALESCE(p.total_paid, 0) <= 0 THEN 'paid'
-          WHEN COALESCE(p.total_paid, 0) > 0 THEN 'partial'
-          ELSE 'pending'
+          ELSE COALESCE(ss.payment_status, 'pending')
         END AS payment_status,
+        ss.payment_date,
         COALESCE(p.total_paid, 0) AS total_paid,
         p.payments
       FROM staff s
@@ -77,7 +80,6 @@ export default async function handler(req, res) {
        AND p.pay_month=$2
        AND p.pay_year=$3
       WHERE s.mess_id=$1
-        AND s.is_active=true
       ORDER BY s.name`,
       [messId, month, year]
     );

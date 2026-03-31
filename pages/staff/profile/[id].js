@@ -219,7 +219,7 @@ export default function StaffProfile() {
 
       const attendanceKey = `staff-profile-attendance-${found.id}-${month}-${year}-v2`;
       const paymentsKey = `staff-profile-payments-${found.id}-${month}-${year}-v2`;
-      const salaryKey = `staff-profile-salary-${found.id}-${month}-${year}-v4`;
+      const salaryKey = `staff-profile-salary-${found.id}-${month}-${year}-v5`;
 
       const [attendanceRes, paymentsRes, salaryRes] = forceRefresh
         ? await Promise.all([

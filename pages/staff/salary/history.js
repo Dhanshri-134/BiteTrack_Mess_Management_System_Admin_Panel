@@ -54,7 +54,7 @@ export default function SalaryHistoryPage() {
   async function fetchSalary(forceRefresh) {
     try {
       setLoading(true);
-      const cacheKey = `staff-salary-history-${month}-${year}-manual-v1`;
+      const cacheKey = `staff-salary-history-${month}-${year}-manual-v2`;
       const response = forceRefresh
         ? await staffRequest("/api/staff/salary/list/", { body: { month, year } })
         : await staffOfflineRequest(cacheKey, "/api/staff/salary/list/", {
