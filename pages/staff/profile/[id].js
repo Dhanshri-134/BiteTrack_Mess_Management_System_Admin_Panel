@@ -207,7 +207,7 @@ export default function StaffProfile() {
 
       const attendanceKey = `staff-profile-attendance-${found.id}-${month}-${year}-v2`;
       const paymentsKey = `staff-profile-payments-${found.id}-${month}-${year}-v2`;
-      const salaryKey = `staff-profile-salary-${found.id}-${month}-${year}-v2`;
+      const salaryKey = `staff-profile-salary-${found.id}-${month}-${year}-v3`;
 
       const [attendanceRes, paymentsRes, salaryRes] = forceRefresh
         ? await Promise.all([
@@ -379,15 +379,21 @@ export default function StaffProfile() {
       0
     );
     const calculatedBase = calculateBaseFromAttendance(profile, attendance);
-    const base = Number(salaryDetails?.base_salary ?? calculatedBase);
+    const configuredBase = Number(
+      salaryDetails?.configured_base_salary ?? profile?.base_salary ?? 0
+    );
+    const earnedBase = Number(
+      salaryDetails?.earned_base_salary ?? salaryDetails?.base_salary ?? calculatedBase
+    );
     const overtime = Number(salaryDetails?.overtime_amount ?? stats.overtimeAmount);
     const penalty = Number(salaryDetails?.penalty_amount ?? penaltyFromAttendance);
     const totalPaid = Number(salaryDetails?.total_paid ?? paymentTotal);
-    const gross = base + overtime - penalty;
+    const gross = earnedBase + overtime - penalty;
     const finalSalary = Number(salaryDetails?.final_salary ?? gross - totalPaid);
 
     return {
-      base,
+      configuredBase,
+      earnedBase,
       overtime,
       penalty,
       totalPaid,
@@ -574,15 +580,16 @@ export default function StaffProfile() {
         ) : (
           <section className={styles.sectionBlock}>
             <div className={styles.paymentSummaryGrid}>
-              <div className={styles.summaryBox}><span>{t("baseSalary")}</span><strong>{formatMoney(paymentSummary.base)}</strong></div>
-              <div className={styles.summaryBox}><span>{t("otHours")}</span><strong>{Number(paymentSummary.overtimeHours || 0).toFixed(2)}</strong></div>
-              <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
-              <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
-              <div className={styles.summaryBox}><span>{t("grossSalary")}</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
-              <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
-              <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
-            </div>
-            <p className={styles.summaryHint}>Auto-calculated from attendance, overtime, penalties, and recorded payments for {monthName}.</p>
+            <div className={styles.summaryBox}><span>Configured Base</span><strong>{formatMoney(paymentSummary.configuredBase)}</strong></div>
+            <div className={styles.summaryBox}><span>Earned Base</span><strong>{formatMoney(paymentSummary.earnedBase)}</strong></div>
+            <div className={styles.summaryBox}><span>{t("otHours")}</span><strong>{Number(paymentSummary.overtimeHours || 0).toFixed(2)}</strong></div>
+            <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
+            <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
+            <div className={styles.summaryBox}><span>{t("grossSalary")}</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
+            <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
+            <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
+          </div>
+            <p className={styles.summaryHint}>Configured base comes from the staff profile. Earned base is calculated for {monthName} from attendance, overtime, penalties, and recorded payments.</p>
 
             <form className={styles.paymentFormCard} onSubmit={submitPayment}>
               <div className={styles.sectionHead}><div><h3 className={styles.sectionTitle}>{t("addPayment")}</h3><p className={styles.sectionSubtitle}>{t("recordPaymentDescription")}</p></div><Wallet size={18} /></div>

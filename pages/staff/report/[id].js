@@ -131,8 +131,12 @@ export default function StaffReport() {
         {salaryDetails ? (
           <div className={styles.tableBox} style={{ padding: "1rem", background: "white", marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#4b5563" }}>{t("basicSalary")}</span>
-              <strong>₹{salaryDetails.base_salary}</strong>
+              <span style={{ color: "#4b5563" }}>Configured Base</span>
+              <strong>₹{salaryDetails.configured_base_salary ?? profile.base_salary}</strong>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+              <span style={{ color: "#4b5563" }}>Earned Base</span>
+              <strong>₹{salaryDetails.earned_base_salary ?? salaryDetails.base_salary}</strong>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
               <span style={{ color: "#4b5563" }}>+ Overtime Earnings</span>
@@ -146,7 +150,7 @@ export default function StaffReport() {
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb" }}>
               <span style={{ fontWeight: 600 }}>{t("grossEarnings")}</span>
               <strong style={{ fontSize: "1.1rem" }}>
-                ₹{Number(salaryDetails.base_salary) + Number(salaryDetails.overtime_amount) - Number(salaryDetails.penalty_amount)}
+                ₹{Number(salaryDetails.earned_base_salary ?? salaryDetails.base_salary) + Number(salaryDetails.overtime_amount) - Number(salaryDetails.penalty_amount)}
               </strong>
             </div>
 

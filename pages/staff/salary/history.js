@@ -34,7 +34,7 @@ export default function SalaryHistoryPage() {
   async function fetchSalary(forceRefresh) {
     try {
       setLoading(true);
-      const cacheKey = `staff-salary-history-${month}-${year}-v2`;
+      const cacheKey = `staff-salary-history-${month}-${year}-v3`;
       const response = forceRefresh
         ? await staffRequest("/api/staff/salary/list/", { body: { month, year } })
         : await staffOfflineRequest(cacheKey, "/api/staff/salary/list/", {
@@ -155,7 +155,8 @@ export default function SalaryHistoryPage() {
                     <span>{String(row.salary_type || "monthly").toUpperCase()}</span>
                   </div>
                   <div className={styles.statusLegend} style={{ marginTop: "0.65rem" }}>
-                    <span className={styles.statusPill}>{t("baseAmount", { amount: formatMoney(row.base_salary) })}</span>
+                    <span className={styles.statusPill}>Configured Base: {formatMoney(row.configured_base_salary ?? row.base_salary)}</span>
+                    <span className={styles.statusPill}>Earned Base: {formatMoney(row.earned_base_salary ?? row.base_salary)}</span>
                     <span className={`${styles.statusPill} ${styles.statusOT}`}>{t("overtimeAmount", { amount: formatMoney(row.overtime_amount) })}</span>
                     <span className={`${styles.statusPill} ${styles.statusL}`}>{t("penaltyAmount", { amount: formatMoney(row.penalty_amount) })}</span>
                     <span className={styles.statusPill}>{t("paidAmountLabel", { amount: formatMoney(row.total_paid) })}</span>
