@@ -119,7 +119,7 @@ export default async function handler(req, res) {
           ) AS parents
         FROM users u
         LEFT JOIN parents p ON p.user_id = u.id
-        WHERE u.verified = false AND u.mail_sent = true AND u.mess_id = $1 ND u.status = 'Active'
+        WHERE u.verified = false AND u.mail_sent = true AND u.mess_id = $1 AND u.status = 'Active'
         GROUP BY u.id
         ORDER BY u.created_at DESC
         `,

@@ -8,7 +8,7 @@ import { staffRequest } from "@/lib/staffClient";
 import styles from "../../styles/staffMobile.module.css";
 import Link from "next/link";
 
-const EMPTY_STATS = { present: 0, absent: 0, leave: 0, halfDay: 0, off: 0 };
+const EMPTY_STATS = { present: 0, absent: 0, leave: 0, halfDay: 0 };
 
 export default function StaffList() {
   const { t } = useLanguage();
@@ -54,7 +54,6 @@ export default function StaffList() {
           else if (attendanceType === "A") map[staffId].absent += 1;
           else if (attendanceType === "L") map[staffId].leave += 1;
           else if (attendanceType === "H" || attendanceType === "HF") map[staffId].halfDay += 1;
-          else if (attendanceType === "OFF") map[staffId].off += 1;
         });
         setStatsMap(map);
       }
@@ -170,7 +169,6 @@ export default function StaffList() {
                     <div className={styles.statPill} style={{ background: "#fee2e2", color: "#991b1b" }}>A {stats.absent}</div>
                     <div className={styles.statPill} style={{ background: "#ffedd5", color: "#c2410c" }}>L {stats.leave}</div>
                     <div className={styles.statPill} style={{ background: "#fef3c7", color: "#b45309" }}>HF {stats.halfDay}</div>
-                    <div className={styles.statPill} style={{ background: "#e5e7eb", color: "#4b5563" }}>OFF {stats.off}</div>
                   </div>
 
                   <div className={styles.staffCardBalance}>

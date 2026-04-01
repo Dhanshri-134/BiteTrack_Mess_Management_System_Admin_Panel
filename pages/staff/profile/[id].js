@@ -30,18 +30,6 @@ function formatMoney(value) {
   return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
-function formatHoursFromMinutes(value) {
-  return (Number(value || 0) / 60).toFixed(2);
-}
-
-function getConfiguredBaseLabel(salaryType, fallbackLabel) {
-  const normalized = String(salaryType || "").toLowerCase();
-
-  if (normalized === "daily") return "Daily Rate";
-  if (normalized === "hourly") return "Hourly Rate";
-  return fallbackLabel;
-}
-
 function normalizePaymentType(value) {
   return String(value || "").toLowerCase();
 }
@@ -59,43 +47,6 @@ function toLocalIsoDate(date) {
     String(date.getMonth() + 1).padStart(2, "0"),
     String(date.getDate()).padStart(2, "0"),
   ].join("-");
-}
-
-function getAttendanceWeight(value) {
-  const type = String(value || "").toUpperCase();
-
-  if (type === "H") return 0.5;
-  if (type === "P" || type === "L") return 1;
-  return 0;
-}
-
-function calculateBaseFromAttendance(profile, attendance) {
-  const salaryType = String(profile?.salary_type || "monthly").toLowerCase();
-  const baseSalary = Number(profile?.base_salary || 0);
-
-  if (salaryType === "monthly") {
-    return baseSalary;
-  }
-
-  if (salaryType === "daily") {
-    const payableUnits = attendance.reduce(
-      (sum, row) => sum + getAttendanceWeight(row?.attendance_type),
-      0
-    );
-
-    return Number((baseSalary * payableUnits).toFixed(2));
-  }
-
-  if (salaryType === "hourly") {
-    const totalWorkMinutes = attendance.reduce(
-      (sum, row) => sum + Number(row?.work_minutes || 0),
-      0
-    );
-
-    return Number((baseSalary * (totalWorkMinutes / 60)).toFixed(2));
-  }
-
-  return baseSalary;
 }
 
 function buildCalendarRows(dateObj, attendance, payments) {

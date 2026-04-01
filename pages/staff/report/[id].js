@@ -11,10 +11,6 @@ function formatMoney(value) {
   return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
-function formatHoursFromMinutes(value) {
-  return (Number(value || 0) / 60).toFixed(2);
-}
-
 export default function StaffReport() {
   const { t } = useLanguage();
 
@@ -85,6 +81,26 @@ export default function StaffReport() {
     return { present, absent, late, off };
   }, [attendance]);
 
+  const paymentSummary = useMemo(() => {
+    const baseSalary = Number(salaryDetails?.base_salary || 0);
+    const overtime = Number(salaryDetails?.overtime_amount || 0);
+    const penalty = Number(salaryDetails?.penalty_amount || 0);
+    const gross = Number(salaryDetails?.gross_salary ?? baseSalary + overtime - penalty);
+    const totalPaid = Number(salaryDetails?.total_paid || 0);
+    const finalSalary = Number(salaryDetails?.final_salary || 0);
+
+    return {
+      profileBase: Number(salaryDetails?.configured_base_salary ?? profile?.base_salary ?? 0),
+      baseSalary,
+      overtime,
+      penalty,
+      gross,
+      totalPaid,
+      finalSalary,
+      paymentStatus: String(salaryDetails?.payment_status || "not_added").toLowerCase(),
+    };
+  }, [profile?.base_salary, salaryDetails]);
+
   if (loading && !profile) return <Layout><div className={styles.container}>{t("loading")}</div></Layout>;
   if (!profile) return <Layout><div className={styles.container}>{t("notFound")}</div></Layout>;
 
@@ -137,44 +153,32 @@ export default function StaffReport() {
         {/* Payment Summary */}
         <h3 className={styles.sectionTitle}>{t("paymentSummary")}</h3>
         {salaryDetails ? (
-          <div className={styles.tableBox} style={{ padding: "1rem", background: "white", marginBottom: "1.5rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#4b5563" }}>Profile Base</span>
-              <strong>{formatMoney(salaryDetails.configured_base_salary ?? profile.base_salary)}</strong>
+          <section className={styles.sectionBlock}>
+            <div className={styles.tlRow} style={{ marginBottom: "0.85rem" }}>
+              <strong>Salary Status</strong>
+              <span className={`${styles.statusPill} ${
+                paymentSummary.paymentStatus === "paid"
+                  ? styles.statusP
+                  : paymentSummary.paymentStatus === "partial"
+                    ? styles.statusOT
+                    : styles.statusL
+              }`}>
+                {paymentSummary.paymentStatus}
+              </span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#4b5563" }}>Saved Salary</span>
-              <strong>{formatMoney(salaryDetails.base_salary)}</strong>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#4b5563" }}>+ Overtime Earnings</span>
-              <strong style={{ color: "#16a34a" }}>{formatMoney(salaryDetails.overtime_amount)}</strong>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px dashed #d1d5db" }}>
-              <span style={{ color: "#4b5563" }}>- Late Penalty</span>
-              <strong style={{ color: "#dc2626" }}>{formatMoney(salaryDetails.penalty_amount)}</strong>
-            </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb" }}>
-              <span style={{ fontWeight: 600 }}>{t("grossEarnings")}</span>
-              <strong style={{ fontSize: "1.1rem" }}>
-                {formatMoney(Number(salaryDetails.base_salary) + Number(salaryDetails.overtime_amount) - Number(salaryDetails.penalty_amount))}
-              </strong>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px dashed #d1d5db" }}>
-              <span style={{ color: "#4b5563" }}>- Advance Paid</span>
-              <strong style={{ color: "#dc2626" }}>{formatMoney(salaryDetails.total_paid)}</strong>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#111827" }}>{t("netPayable")}</span>
-              <strong style={{ fontSize: "1.5rem", color: "#007170" }}>{formatMoney(salaryDetails.final_salary)}</strong>
+            <div className={styles.paymentSummaryGrid}>
+              <div className={styles.summaryBox}><span>Profile Base</span><strong>{formatMoney(paymentSummary.profileBase)}</strong></div>
+              <div className={styles.summaryBox}><span>Saved Salary</span><strong>{formatMoney(paymentSummary.baseSalary)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("grossSalary")}</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
+              <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
             </div>
             <p className={styles.summaryHint} style={{ marginTop: "0.85rem" }}>
-              This salary record is manual for {monthName}. Attendance stats are shown above for reference only.
+              Manual salary values are shown here directly from the salary record for {monthName}. Attendance remains separate.
             </p>
-          </div>
+          </section>
         ) : (
           <div className={styles.emptyMsg} style={{ marginBottom: "1.5rem" }}>
             Salary is not added for this month yet.
