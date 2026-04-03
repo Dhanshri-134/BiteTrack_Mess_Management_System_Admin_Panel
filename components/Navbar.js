@@ -47,7 +47,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen,isDesktop }) {
 
 <button
   onClick={() => {
-    toast.success("Refreshing...");
+    toast.success(t("Refreshing..."));
     triggerRefresh();
   }}
   className={styles.refreshBtn}

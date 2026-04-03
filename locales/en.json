@@ -858,5 +858,9 @@
   "breakfast": "Breakfast",
   "quickSettingsAction": "Quick Settings Action",
   "appSetting": "App Setting",
-  "messSetting": "Mess Setting"
+  "messSetting": "Mess Setting",
+  "editPayment":"Edit Payment",
+  "material":"Material",
+  "SaveMinStock":"Save Min Stock",
+  "attendanceHistory":"Attendance History"
 }

@@ -44,12 +44,8 @@ export default function SalaryHistoryPage() {
     return rows.reduce((acc, row) => {
       acc[String(row.staff_id)] = {
         base_salary: String(row.id ? row.base_salary : row.configured_base_salary || 0),
-        overtime_amount: String(
-          row.id ? row.overtime_amount || 0 : row.default_overtime_amount || row.overtime_amount || 0
-        ),
-        penalty_amount: String(
-          row.id ? row.penalty_amount || 0 : row.default_penalty_amount || row.penalty_amount || 0
-        ),
+        overtime_amount: String(row.default_overtime_amount || 0),
+penalty_amount: String(row.default_penalty_amount || 0),
       };
       return acc;
     }, {});
@@ -148,7 +144,7 @@ export default function SalaryHistoryPage() {
               </button>
             </div>
             <h1 className={styles.heroHeading}>{t("salaryManagement")}</h1>
-            <p className={styles.heroText}>Salary is now manual. Add or update monthly salary values for each staff member, then record payments against that saved amount.</p>
+            {/* <p className={styles.heroText}>{t("Salary is now manual. Add or update monthly salary values for each staff member, then record payments against that saved amount.")}</p> */}
           </section>
 
           <section className={styles.insightGrid}>
@@ -190,35 +186,37 @@ export default function SalaryHistoryPage() {
             {!loading && salary.length === 0 ? <div className={styles.emptyMsg}>{t("noSalaryRecordsFound")}</div> : null}
             {!loading && salary.map((row) => {
               const draft = drafts[String(row.staff_id)] || {
-                base_salary: String(row.configured_base_salary || 0),
-                overtime_amount: "0",
-                penalty_amount: "0",
-              };
+  base_salary: String(row.configured_base_salary || 0),
+  overtime_amount: String(row.default_overtime_amount || 0),
+  penalty_amount: String(row.default_penalty_amount || 0),
+};
 
               return (
                 <div key={row.staff_id} className={styles.timelineItem}>
                   <div className={styles.tlDetails}>
                     <div className={styles.tlRow}>
-                      <strong>{row.name}</strong>
+                      <strong onClick={() => (window.location.href = `/staff/profile/${row.staff_id}`)}>{row.name}</strong>
                       <span className={`${styles.statusPill} ${getStatusClass(String(row.payment_status || "").toLowerCase(), styles)}`}>
-                        {row.payment_status === "not_added" ? "not added" : row.payment_status || t("pending")}
+                        {row.payment_status === "not_added" ? t("not added") : row.payment_status || t("pending")}
                       </span>
                     </div>
                     <div className={styles.tlRow2}>
                       <span>{row.role || t("staff")}</span>
                       <span>{String(row.salary_type || "monthly").toUpperCase()}</span>
                     </div>
-                    <p className={styles.summaryHint} style={{ marginTop: "0.6rem" }}>
-                      Profile base: {formatMoney(row.configured_base_salary)}. Saved monthly salary can be different and is fully owner-controlled.
-                    </p>
-                    <div className={styles.statusLegend} style={{ marginTop: "0.65rem" }}>
-                      <span className={styles.statusPill}>Auto OT: {formatMoney(row.default_overtime_amount)}</span>
-                      <span className={styles.statusPill}>Auto Penalty: {formatMoney(row.default_penalty_amount)}</span>
-                    </div>
+                    {/* <p className={styles.summaryHint} style={{ marginTop: "0.6rem" }}>
+                      {t("Profile base: {{amount}}. Saved monthly salary can be different and is fully owner-controlled.", {
+                        amount: formatMoney(row.configured_base_salary),
+                      })}
+                    </p> */}
+                    {/* <div className={styles.statusLegend} style={{ marginTop: "0.65rem" }}>
+                      <span className={styles.statusPill}>{t("Auto OT")}: {formatMoney(row.default_overtime_amount)}</span>
+                      <span className={styles.statusPill}>{t("Auto Penalty")}: {formatMoney(row.default_penalty_amount)}</span>
+                    </div> */}
 
                     <div className={styles.formGridCompact} style={{ marginTop: "0.9rem" }}>
                       <div className={styles.formGroup}>
-                        <label>Base Salary</label>
+                        <label>{t("Base Salary")}</label>
                         <input
                           className={styles.formInput}
                           type="number"
@@ -229,7 +227,7 @@ export default function SalaryHistoryPage() {
                         />
                       </div>
                       <div className={styles.formGroup}>
-                        <label>Overtime</label>
+                        <label>{t("overtime")}</label>
                         <input
                           className={styles.formInput}
                           type="number"
@@ -240,7 +238,7 @@ export default function SalaryHistoryPage() {
                         />
                       </div>
                       <div className={styles.formGroup}>
-                        <label>Penalty</label>
+                        <label>{t("penalty")}</label>
                         <input
                           className={styles.formInput}
                           type="number"
@@ -253,19 +251,20 @@ export default function SalaryHistoryPage() {
                     </div>
 
                     <div className={styles.statusLegend} style={{ marginTop: "0.85rem" }}>
-                      <span className={styles.statusPill}>Gross: {formatMoney(row.gross_salary)}</span>
-                      <span className={styles.statusPill}>Paid: {formatMoney(row.total_paid)}</span>
-                      <span className={styles.statusPill}>Net: {formatMoney(row.final_salary)}</span>
+                      <span className={styles.statusPill}>{t("base")} {formatMoney(row.configured_base_salary)}</span>
+                      <span className={styles.statusPill}>{t("Gross")}: {formatMoney(row.gross_salary)}</span>
+                      <span className={styles.statusPill}>{t("Paid")}: {formatMoney(row.total_paid)}</span>
+                      <span className={styles.statusPill}>{t("Net")}: {formatMoney(row.final_salary)}</span>
                     </div>
 
-                    <div className={styles.heroActions} style={{ marginTop: "0.9rem" }}>
+                    <div className={styles.header}>
                       <button
                         type="button"
-                        className={styles.btnPrimary}
+                        className={styles.addstaff}
                         onClick={() => saveSalary(row.staff_id)}
                         disabled={savingId === `save-${row.staff_id}`}
                       >
-                        <Save size={16} /> {savingId === `save-${row.staff_id}` ? "Saving..." : row.id ? "Update Salary" : "Add Salary"}
+                        <Save size={16} /> {savingId === `save-${row.staff_id}` ? t("Saving...") : row.id ? t("Update Salary") : t("Add Salary")}
                       </button>
                       {row.id ? (
                         <button
@@ -274,7 +273,7 @@ export default function SalaryHistoryPage() {
                           onClick={() => markPaid(row.id)}
                           disabled={savingId === `pay-${row.id}` || Number(row.final_salary || 0) <= 0}
                         >
-                          {savingId === `pay-${row.id}` ? "Saving..." : t("markPaid")}
+                          {savingId === `pay-${row.id}` ? t("Saving...") : t("markPaid")}
                         </button>
                       ) : null}
                     </div>

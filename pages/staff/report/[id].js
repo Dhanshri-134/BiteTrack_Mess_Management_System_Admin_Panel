@@ -133,19 +133,19 @@ export default function StaffReport() {
         <h3 className={styles.sectionTitle}>{t("attendanceSummary")}</h3>
         <div className={styles.statsGrid} style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
           <div className={styles.statCard}>
-            <span><CheckCircle size={14}/> Present</span>
+            <span><CheckCircle size={14}/> {t("present")}</span>
             <strong>{stats.present}</strong>
           </div>
           <div className={styles.statCard}>
-            <span><XCircle size={14}/> Absent</span>
+            <span><XCircle size={14}/> {t("absent")}</span>
             <strong>{stats.absent}</strong>
           </div>
           <div className={styles.statCard} style={{ background: "#fef9c3" }}>
-            <span style={{ color: "#854d0e" }}><Clock size={14}/> Late</span>
+            <span style={{ color: "#854d0e" }}><Clock size={14}/> {t("late")}</span>
             <strong style={{ color: "#854d0e" }}>{stats.late}</strong>
           </div>
           <div className={styles.statCard}>
-            <span><CalendarDays size={14}/> OFF</span>
+            <span><CalendarDays size={14}/> {t("oFF")}</span>
             <strong>{stats.off}</strong>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function StaffReport() {
         {salaryDetails ? (
           <section className={styles.sectionBlock}>
             <div className={styles.tlRow} style={{ marginBottom: "0.85rem" }}>
-              <strong>Salary Status</strong>
+              <strong>{t("Salary Status")}</strong>
               <span className={`${styles.statusPill} ${
                 paymentSummary.paymentStatus === "paid"
                   ? styles.statusP
@@ -167,8 +167,8 @@ export default function StaffReport() {
               </span>
             </div>
             <div className={styles.paymentSummaryGrid}>
-              <div className={styles.summaryBox}><span>Profile Base</span><strong>{formatMoney(paymentSummary.profileBase)}</strong></div>
-              <div className={styles.summaryBox}><span>Saved Salary</span><strong>{formatMoney(paymentSummary.baseSalary)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("Profile Base")}</span><strong>{formatMoney(paymentSummary.profileBase)}</strong></div>
+              <div className={styles.summaryBox}><span>{t("Saved Salary")}</span><strong>{formatMoney(paymentSummary.baseSalary)}</strong></div>
               <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
               <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
               <div className={styles.summaryBox}><span>{t("grossSalary")}</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
@@ -176,12 +176,12 @@ export default function StaffReport() {
               <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
             </div>
             <p className={styles.summaryHint} style={{ marginTop: "0.85rem" }}>
-              Manual salary values are shown here directly from the salary record for {monthName}. Attendance remains separate.
+              {t("Manual salary values are shown here directly from the salary record for {{month}}. Attendance remains separate.", { month: monthName })}
             </p>
           </section>
         ) : (
           <div className={styles.emptyMsg} style={{ marginBottom: "1.5rem" }}>
-            Salary is not added for this month yet.
+            {t("Salary is not added for this month yet.")}
           </div>
         )}
 
@@ -194,8 +194,8 @@ export default function StaffReport() {
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.25rem" }}>{new Date(row.attendance_date).toLocaleDateString()}</div>
                 <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>
-                  {row.is_late && <span style={{ color: "#b91c1c", marginRight: "0.5rem" }}>Late: {row.late_minutes}m</span>}
-                  {row.overtime_hours > 0 && <span style={{ color: "#059669" }}>OT: {row.overtime_hours}h</span>}
+                  {row.is_late && <span style={{ color: "#b91c1c", marginRight: "0.5rem" }}>{t("Late: {{minutes}}m", { minutes: row.late_minutes })}</span>}
+                  {row.overtime_hours > 0 && <span style={{ color: "#059669" }}>{t("OT: {{hours}}h", { hours: row.overtime_hours })}</span>}
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>

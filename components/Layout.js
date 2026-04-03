@@ -88,7 +88,7 @@ useEffect(() => {
   if (expired) {
     return (
       <div className={styles.expiredWrapper}>
-        <h1>🚫 Subscription Expired</h1>
+        <h1>{t("Subscription Expired")}</h1>
         <p>{t("yourSubscriptionHasEnded")}</p>
         <p>{t("pleaseRenewToContinueUsingBiteTrack")}</p>
       </div>

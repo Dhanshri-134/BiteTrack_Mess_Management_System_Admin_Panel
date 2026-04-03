@@ -210,7 +210,7 @@ export default function ItemPage() {
                     onClick={saveMinStock}
                     disabled={savingMinStock}
                 >
-                    {savingMinStock ? t("saving") : "Save Min Stock"}
+                    {savingMinStock ? t("saving") : t("SaveMinStock")}
                 </button>
             </div>
             <div className={styles.operations}>

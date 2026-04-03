@@ -118,7 +118,7 @@ export default function StaffPayments() {
           <div className={styles.avatar}>{profile.name.charAt(0)}</div>
           <div className={styles.profileInfo}>
             <h1 className={styles.profileName}>{profile.name}</h1>
-            <span style={{ fontSize: "0.9rem", color: "#6b7280" }}>Role: {profile.role}</span>
+            <span style={{ fontSize: "0.9rem", color: "#6b7280" }}>{t("role")}: {profile.role}</span>
           </div>
         </div>
 

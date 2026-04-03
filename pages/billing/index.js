@@ -536,381 +536,381 @@ if (!map[key].parent_mobile && b.parent_mobile) {
 
 
 
-const generateUserPDF = async (user) => {
-  try {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
+  const generateUserPDF = async (user) => {
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
 
-    // ================= FETCH MESS =================
-    const messRes = await fetch(`${API_BASE}/api/mess/details/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const mess = await messRes.json();
+      // ================= FETCH MESS =================
+      const messRes = await fetch(`${API_BASE}/api/mess/details/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const mess = await messRes.json();
 
-    // ================= LOAD LOGO =================
-    const loadImageAsBase64 = (url) =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = url;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        };
-        img.onerror = reject;
+      // ================= LOAD LOGO =================
+      const loadImageAsBase64 = (url) =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "Anonymous";
+          img.src = url;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL("image/png"));
+          };
+          img.onerror = reject;
+        });
+
+      let logoBase64 = null;
+      try {
+        logoBase64 = await loadImageAsBase64(mess.logo || "/Assets/logo_Bite_Track.png");
+      } catch {
+        logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
+      }
+
+      // ================= HEADER =================
+      doc.setFillColor(0, 113, 112);
+      doc.rect(0, 0, pageWidth, 40, "F");
+
+      if (logoBase64) {
+        doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
+      }
+
+      doc.setTextColor(255, 255, 255);
+
+      // LEFT TITLE
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Billing Statement", 14, 10);
+
+      // RIGHT SIDE (MESS INFO)
+      doc.setFontSize(14);
+      doc.text(mess.name || "Mess Name", pageWidth - 14, 14, { align: "right" });
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(mess.location || "", pageWidth - 14, 20, { align: "right" });
+      doc.text(mess.email || "", pageWidth - 14, 25, { align: "right" });
+      doc.text(String(mess.contact_info || ""), pageWidth - 14, 30, { align: "right" });
+
+      // DATE (separate line)
+      doc.setFontSize(9);
+      doc.text(
+        `Generated: ${new Date().toLocaleDateString()}`,
+        pageWidth - 14,
+        36,
+        { align: "right" }
+      );
+
+      doc.setTextColor(0, 0, 0);
+
+      // ================= USER INFO =================
+      let y = 50;
+
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text("User Information", 14, y);
+
+      y += 8;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(`Name: ${user.name}`, 14, y);
+      doc.text(`Mobile: ${user.mobile}`, 100, y);
+
+      y += 6;
+
+      doc.text(`Course: ${user.course || "-"}`, 14, y);
+      doc.text(`Hostel: ${user.hostel_name || "-"}`, 100, y);
+
+      y += 6;
+
+      doc.text(`Parent: ${user.parent_name || "-"}`, 14, y);
+      doc.text(`Parent Mobile: ${user.parent_mobile || "-"}`, 100, y);
+
+      // ================= TABLE =================
+      y += 12;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Monthly Billing Details", 14, y);
+
+      autoTable(doc, {
+        startY: y + 5,
+        head: [["Month", "Duration", "Bill", "Paid", "Status"]],
+        body: user.history.map((h) => [
+          `${h.month}/${h.year}`,
+          `${h.start_date || "-"} to ${h.end_date || "-"}`,
+          `Rs.${getBillAmount(h).toFixed(2)}`,
+          `Rs.${Number(h.paid_amount || 0).toFixed(2)}`,
+          h.paid ? "Paid" : "Unpaid",
+        ]),
+        styles: { fontSize: 9 },
+        headStyles: {
+          fillColor: [0, 113, 112],
+          textColor: [255, 255, 255],
+        },
       });
 
-    let logoBase64 = null;
-    try {
-      logoBase64 = await loadImageAsBase64(mess.logo || "/Assets/logo_Bite_Track.png");
-    } catch {
-      logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
-    }
+      let finalY = doc.lastAutoTable.finalY + 10;
 
-    // ================= HEADER =================
-    doc.setFillColor(0, 113, 112);
-    doc.rect(0, 0, pageWidth, 40, "F");
+      // ================= SUMMARY =================
+      doc.setCharSpace(0);
+  const advance = Number(user.advance_amount || 0);
+  const pending = Number(user.pending_amount || 0);
+  const total = Number(user.total_payable || 0);
 
-    if (logoBase64) {
-      doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
-    }
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Summary", 14, finalY);
 
-    doc.setTextColor(255, 255, 255);
+  finalY += 8;
 
-    // LEFT TITLE
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+
+  // Always show advance & pending
+  doc.text(`Advance Paid: Rs.${advance.toFixed(2)}`, 14, finalY);
+  finalY += 6;
+
+  doc.text(`Pending Amount: Rs.${pending.toFixed(2)}`, 14, finalY);
+  finalY += 8;
+
+  // ================= HANDLE NEGATIVE =================
+  if (total < 0) {
+    const credit = Math.abs(total);
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("Billing Statement", 14, 10);
+    doc.setTextColor(0, 128, 0); // green
 
-    // RIGHT SIDE (MESS INFO)
-    doc.setFontSize(14);
-    doc.text(mess.name || "Mess Name", pageWidth - 14, 14, { align: "right" });
+    doc.text(`Advance Balance: Rs.${credit.toFixed(2)}`, 14, finalY);
+    finalY += 6;
 
-    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text(mess.location || "", pageWidth - 14, 20, { align: "right" });
-    doc.text(mess.email || "", pageWidth - 14, 25, { align: "right" });
-    doc.text(String(mess.contact_info || ""), pageWidth - 14, 30, { align: "right" });
+    doc.setTextColor(0, 0, 0);
 
-    // DATE (separate line)
-    doc.setFontSize(9);
     doc.text(
-      `Generated: ${new Date().toLocaleDateString()}`,
-      pageWidth - 14,
-      36,
-      { align: "right" }
+      "No dues pending. The advance will be adjusted in upcoming bills.",
+      14,
+      finalY
     );
 
+  } else if (total === 0) {
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 128, 0);
+
+    doc.text("All dues are cleared.", 14, finalY);
+
     doc.setTextColor(0, 0, 0);
 
-    // ================= USER INFO =================
-    let y = 50;
+  } else {
 
-    doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.text("User Information", 14, y);
+    doc.setTextColor(200, 0, 0); // red
 
-    y += 8;
+    doc.text(`Total Payable: Rs.${total.toFixed(2)}`, 14, finalY);
+    finalY += 6;
 
-    doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(0, 0, 0);
 
-    doc.text(`Name: ${user.name}`, 14, y);
-    doc.text(`Mobile: ${user.mobile}`, 100, y);
+    doc.text(
+      "Kindly clear the pending dues at the earliest.",
+      14,
+      finalY
+    );
+  } 
 
-    y += 6;
+      // ================= FOOTER =================
+      finalY += 15;
 
-    doc.text(`Course: ${user.course || "-"}`, 14, y);
-    doc.text(`Hostel: ${user.hostel_name || "-"}`, 100, y);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      doc.text("This is a system generated statement.", 14, finalY);
 
-    y += 6;
+      // ================= SAVE =================
+      const fileName = `Statement_${user.name}_${Date.now()}.pdf`;
+      await saveJsPdfDocument(doc, fileName);
 
-    doc.text(`Parent: ${user.parent_name || "-"}`, 14, y);
-    doc.text(`Parent Mobile: ${user.parent_mobile || "-"}`, 100, y);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF");
+    }
+  };
 
-    // ================= TABLE =================
-    y += 12;
+  const exportBillingPDF = async () => {
+    try {
+      if (!month || !year) return toast.error(t("selectMonthYear"));
 
-    doc.setFont("helvetica", "bold");
-    doc.text("Monthly Billing Details", 14, y);
+      setExportingPDF(true);
 
-    autoTable(doc, {
-      startY: y + 5,
-      head: [["Month", "Duration", "Bill", "Paid", "Status"]],
-      body: user.history.map((h) => [
-        `${h.month}/${h.year}`,
-        `${h.start_date || "-"} to ${h.end_date || "-"}`,
-        `Rs.${getBillAmount(h).toFixed(2)}`,
-        `Rs.${Number(h.paid_amount || 0).toFixed(2)}`,
-        h.paid ? "Paid" : "Unpaid",
-      ]),
-      styles: { fontSize: 9 },
-      headStyles: {
-        fillColor: [0, 113, 112],
-        textColor: [255, 255, 255],
-      },
-    });
+      const token = localStorage.getItem("token");
 
-    let finalY = doc.lastAutoTable.finalY + 10;
-
-    // ================= SUMMARY =================
-    doc.setCharSpace(0);
-const advance = Number(user.advance_amount || 0);
-const pending = Number(user.pending_amount || 0);
-const total = Number(user.total_payable || 0);
-
-doc.setFont("helvetica", "bold");
-doc.setFontSize(12);
-doc.text("Summary", 14, finalY);
-
-finalY += 8;
-
-doc.setFont("helvetica", "normal");
-doc.setFontSize(11);
-
-// Always show advance & pending
-doc.text(`Advance Paid: Rs.${advance.toFixed(2)}`, 14, finalY);
-finalY += 6;
-
-doc.text(`Pending Amount: Rs.${pending.toFixed(2)}`, 14, finalY);
-finalY += 8;
-
-// ================= HANDLE NEGATIVE =================
-if (total < 0) {
-  const credit = Math.abs(total);
-
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 128, 0); // green
-
-  doc.text(`Advance Balance: Rs.${credit.toFixed(2)}`, 14, finalY);
-  finalY += 6;
-
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
-
-  doc.text(
-    "No dues pending. The advance will be adjusted in upcoming bills.",
-    14,
-    finalY
-  );
-
-} else if (total === 0) {
-
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 128, 0);
-
-  doc.text("All dues are cleared.", 14, finalY);
-
-  doc.setTextColor(0, 0, 0);
-
-} else {
-
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(200, 0, 0); // red
-
-  doc.text(`Total Payable: Rs.${total.toFixed(2)}`, 14, finalY);
-  finalY += 6;
-
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
-
-  doc.text(
-    "Kindly clear the pending dues at the earliest.",
-    14,
-    finalY
-  );
-} 
-
-    // ================= FOOTER =================
-    finalY += 15;
-
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "italic");
-    doc.text("This is a system generated statement.", 14, finalY);
-
-    // ================= SAVE =================
-    const fileName = `Statement_${user.name}_${Date.now()}.pdf`;
-    await saveJsPdfDocument(doc, fileName);
-
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to generate PDF");
-  }
-};
-
-const exportBillingPDF = async () => {
-  try {
-    if (!month || !year) return toast.error(t("selectMonthYear"));
-
-    setExportingPDF(true);
-
-    const token = localStorage.getItem("token");
-
-    // ================= FETCH MESS =================
-    const messRes = await fetch(`${API_BASE}/api/mess/details/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const mess = await messRes.json();
-
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    // ================= LOAD LOGO =================
-    const loadImageAsBase64 = (url) =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = url;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        };
-        img.onerror = reject;
+      // ================= FETCH MESS =================
+      const messRes = await fetch(`${API_BASE}/api/mess/details/`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-    let logoBase64 = null;
-    try {
-      logoBase64 = await loadImageAsBase64(mess.logo || "/Assets/logo_Bite_Track.png");
-    } catch {
-      logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
+      const mess = await messRes.json();
+
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      // ================= LOAD LOGO =================
+      const loadImageAsBase64 = (url) =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "Anonymous";
+          img.src = url;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL("image/png"));
+          };
+          img.onerror = reject;
+        });
+
+      let logoBase64 = null;
+      try {
+        logoBase64 = await loadImageAsBase64(mess.logo || "/Assets/logo_Bite_Track.png");
+      } catch {
+        logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
+      }
+
+      // ================= HEADER =================
+      doc.setFillColor(0, 113, 112);
+      doc.rect(0, 0, pageWidth, 40, "F");
+
+      if (logoBase64) {
+        doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
+      }
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text(mess.name || "Mess Name", pageWidth - 14, 15, { align: "right" });
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(mess.location || "", pageWidth - 14, 22, { align: "right" });
+      doc.text(mess.email || "", pageWidth - 14, 28, { align: "right" });
+      doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" });
+
+      // ✅ Month-Year added clearly
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Billing Month: ${month}/${year}`, pageWidth - 14, 38, {
+        align: "right",
+      });
+
+      doc.setTextColor(0, 0, 0);
+
+      // ================= TITLE =================
+      doc.line(14, 55, pageWidth - 14, 55);
+      doc.setFontSize(14);
+      doc.text("Billing Report", 14, 50);
+
+      let startY = 60;
+
+      // ================= TABLE STYLE =================
+      const commonStyles = {
+        styles: { fontSize: 9, cellPadding: 4 },
+        headStyles: {
+          fillColor: [0, 113, 112],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+        },
+        alternateRowStyles: { fillColor: [240, 250, 250] },
+      };
+
+      // ================= PAID USERS =================
+      doc.setFontSize(13);
+      doc.text("Paid Users", 14, startY);
+
+      autoTable(doc, {
+        startY: startY + 5,
+        ...commonStyles,
+        head: [[
+          "User",
+          "Course / Hostel",
+          "Parent",
+          "Advance",
+          "Paid Amount"
+        ]],
+        body: paidBills.map(b => [
+          `${b.name || "-"}\n${b.email || ""}\n${b.mobile || ""}`,
+
+          `${b.course || "-"}\n${b.hostel_name || "-"}\nRoom: ${b.room_no || "-"}`,
+
+          `${b.parent_name || "-"}\n${b.parent_mobile || "-"}`,
+
+          Number(b.advance_amount || 0).toFixed(2),
+
+        Number(b.paid_amount || 0),
+        ])
+      });
+
+      // ================= UNPAID USERS =================
+      startY = doc.lastAutoTable.finalY + 12;
+
+      doc.setFontSize(13);
+      doc.text("Unpaid Users", 14, startY);
+
+      autoTable(doc, {
+        startY: startY + 5,
+        ...commonStyles,
+        head: [[
+          "User",
+          "Course / Hostel",
+          "Parent",
+          "Advance",
+          "Total Payable"
+        ]],
+        body: unpaidBills.map(b => [
+          `${b.name || "-"}\n${b.email || ""}\n${b.mobile || ""}`,
+
+          `${b.course || "-"}\n${b.hostel_name || "-"}\nRoom: ${b.room_no || "-"}`,
+
+          `${b.parent_name || "-"}\n${b.parent_mobile || "-"}`,
+
+          Number(b.advance_amount || 0).toFixed(2),
+          Number(b.total_payable || 0).toFixed(2),
+
+          
+
+  //   (() => {
+  //   const total_payable = Math.max(
+  //     0,
+  //     Number(b.total_amount || 0) -
+  //     Number(b.paid_amount || 0) -
+  //     Number(b.advance_amount || 0)
+  //   );
+
+  //   return total_payable.toFixed(2);
+  // })()
+        ])
+      });
+
+      // ================= SAVE =================
+      const fileName = `${mess.name?.replace(/\s+/g, "_") || "Billing"}_${month}_${year}.pdf`;
+
+      await saveJsPdfDocument(doc, fileName);
+
+    } catch (err) {
+      console.error(err);
+      toast.error(t("somethingWentWrong"));
+    } finally {
+      setExportingPDF(false);
     }
-
-    // ================= HEADER =================
-    doc.setFillColor(0, 113, 112);
-    doc.rect(0, 0, pageWidth, 40, "F");
-
-    if (logoBase64) {
-      doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
-    }
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text(mess.name || "Mess Name", pageWidth - 14, 15, { align: "right" });
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-
-    doc.text(mess.location || "", pageWidth - 14, 22, { align: "right" });
-    doc.text(mess.email || "", pageWidth - 14, 28, { align: "right" });
-    doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" });
-
-    // ✅ Month-Year added clearly
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Billing Month: ${month}/${year}`, pageWidth - 14, 38, {
-      align: "right",
-    });
-
-    doc.setTextColor(0, 0, 0);
-
-    // ================= TITLE =================
-    doc.line(14, 55, pageWidth - 14, 55);
-    doc.setFontSize(14);
-    doc.text("Billing Report", 14, 50);
-
-    let startY = 60;
-
-    // ================= TABLE STYLE =================
-    const commonStyles = {
-      styles: { fontSize: 9, cellPadding: 4 },
-      headStyles: {
-        fillColor: [0, 113, 112],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-      },
-      alternateRowStyles: { fillColor: [240, 250, 250] },
-    };
-
-    // ================= PAID USERS =================
-    doc.setFontSize(13);
-    doc.text("Paid Users", 14, startY);
-
-    autoTable(doc, {
-      startY: startY + 5,
-      ...commonStyles,
-      head: [[
-        "User",
-        "Course / Hostel",
-        "Parent",
-        "Advance",
-        "Paid Amount"
-      ]],
-      body: paidBills.map(b => [
-        `${b.name || "-"}\n${b.email || ""}\n${b.mobile || ""}`,
-
-        `${b.course || "-"}\n${b.hostel_name || "-"}\nRoom: ${b.room_no || "-"}`,
-
-        `${b.parent_name || "-"}\n${b.parent_mobile || "-"}`,
-
-        Number(b.advance_amount || 0).toFixed(2),
-
-       Number(b.paid_amount || 0),
-      ])
-    });
-
-    // ================= UNPAID USERS =================
-    startY = doc.lastAutoTable.finalY + 12;
-
-    doc.setFontSize(13);
-    doc.text("Unpaid Users", 14, startY);
-
-    autoTable(doc, {
-      startY: startY + 5,
-      ...commonStyles,
-      head: [[
-        "User",
-        "Course / Hostel",
-        "Parent",
-        "Advance",
-        "Total Payable"
-      ]],
-      body: unpaidBills.map(b => [
-        `${b.name || "-"}\n${b.email || ""}\n${b.mobile || ""}`,
-
-        `${b.course || "-"}\n${b.hostel_name || "-"}\nRoom: ${b.room_no || "-"}`,
-
-        `${b.parent_name || "-"}\n${b.parent_mobile || "-"}`,
-
-        Number(b.advance_amount || 0).toFixed(2),
-        Number(b.total_payable || 0).toFixed(2),
-
-        
-
-//   (() => {
-//   const total_payable = Math.max(
-//     0,
-//     Number(b.total_amount || 0) -
-//     Number(b.paid_amount || 0) -
-//     Number(b.advance_amount || 0)
-//   );
-
-//   return total_payable.toFixed(2);
-// })()
-      ])
-    });
-
-    // ================= SAVE =================
-    const fileName = `${mess.name?.replace(/\s+/g, "_") || "Billing"}_${month}_${year}.pdf`;
-
-    await saveJsPdfDocument(doc, fileName);
-
-  } catch (err) {
-    console.error(err);
-    toast.error(t("somethingWentWrong"));
-  } finally {
-    setExportingPDF(false);
-  }
-};
+  };
 
   const filtered = groupedBills.filter((b) => {
     if (userIdFromQuery && String(b.user_id) !== String(userIdFromQuery)) return false;
@@ -1014,7 +1014,7 @@ const exportBillingPDF = async () => {
                       <table className={styles.table}>
                         <thead>
                           <tr>
-                            <th>{t("srNo")}</th>
+                            <th>{t("ID")}</th>
                             <th>{t("user")}</th>
                             <th>{t("hostel")}</th>
                             <th>{t("parents")}</th>
@@ -1032,6 +1032,7 @@ const exportBillingPDF = async () => {
                             <React.Fragment key={b.user_id}>
                             <tr style={{ background: expandedCard === b.user_id ? "#f3f4f6" : "transparent" }}>
                               <td>{idx + 1}</td>
+                              {/* <td>{b.mess_user_id}</td> */}
                               <td>
                                 <strong onClick={()=> goToUsers(b)}>{b.name || b.user_name || "-"}</strong><br />
                                 <span style={{ fontSize: "12px", color: "#6b7280" }}>{b.email || "-"}</span><br />
@@ -1160,7 +1161,7 @@ const exportBillingPDF = async () => {
                                               {h.note || "-"}
                                             </td>
                                             <td style={{ padding: "10px", textAlign: "center", display: "flex", gap: "6px", justifyContent: "center" }}>
-                                              <button onClick={() => openPaymentModal(h, true)} style={{ padding: "6px 14px", background: h.paid ? "#f3f4f6" : "#007171", color: h.paid ? "black" : "white", border: "1px solid", borderColor: h.paid ? "#d1d5db" : "transparent", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "0.2s" }} onMouseOver={(e) => {if(!h.paid) e.currentTarget.style.background = "#007170"}} onMouseOut={(e) => {if(!h.paid) e.currentTarget.style.background = "#007171"}}>
+                                              <button onClick={(e) => {e.stopPropagation();openPaymentModal(h, true)}} style={{ padding: "6px 14px", background: h.paid ? "#f3f4f6" : "#007171", color: h.paid ? "black" : "white", border: "1px solid", borderColor: h.paid ? "#d1d5db" : "transparent", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "0.2s" }} onMouseOver={(e) => {if(!h.paid) e.currentTarget.style.background = "#007170"}} onMouseOut={(e) => {if(!h.paid) e.currentTarget.style.background = "#007171"}}>
                                                 {h.paid ? (t("editPaidAmount") || "Edit Paid Amount") : t("markPaid")}
                                               </button>
                                               <button onClick={() => setSelectedAttendance({ year: h.year, month: h.month, attendanceMap: h.attendance_map || {}, name: h.name, ownerMarkedDates: h.owner_marked_dates || [] })} style={{ padding: "6px 14px", background: "white", color: "#374151", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "#f3f4f6"} onMouseOut={(e) => e.currentTarget.style.background = "white"}>
@@ -1304,7 +1305,7 @@ const exportBillingPDF = async () => {
                                     )}
                                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                                       <button 
-                                        onClick={() => openPaymentModal(h, true)}
+                                        onClick={(e) =>{e.stopPropagation(); openPaymentModal(h, true)}}
                                         style={{ flex: "1 1 calc(50% - 3px)", padding: "8px", background: h.paid ? "#f3f4f6" : "#007171", color: h.paid ? "black" : "white", border: "none", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer" }}>
                                         {h.paid ? (t("editPaidAmount") || "Edit Paid Amount") : t("markPaid")}
                                       </button>

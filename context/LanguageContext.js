@@ -1,15 +1,77 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import en from "../locales/en.json";
 import mr from "../locales/mr.json";
+import { mrFallbackByKey, mrFallbackByLiteral } from "../lib/translationFallbacks";
 
 const LanguageContext = createContext();
 
 const dictionaries = { en, mr };
 
+function flattenMessages(source, prefix = "", acc = {}) {
+  Object.entries(source || {}).forEach(([key, value]) => {
+    const nestedKey = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      flattenMessages(value, nestedKey, acc);
+      return;
+    }
+    acc[nestedKey] = value;
+  });
+  return acc;
+}
+
+const flatEn = flattenMessages(en);
+const flatMr = flattenMessages(mr);
+const mrLiteralMap = Object.entries(flatEn).reduce((map, [key, englishValue]) => {
+  const marathiValue = flatMr[key];
+  if (
+    typeof englishValue === "string" &&
+    typeof marathiValue === "string" &&
+    !/\(MR\)/i.test(marathiValue) &&
+    marathiValue.trim() &&
+    marathiValue.trim() !== englishValue.trim()
+  ) {
+    map[normalizeLiteral(englishValue)] = marathiValue;
+  }
+  return map;
+}, {});
+
+Object.entries(mrFallbackByLiteral).forEach(([literal, translated]) => {
+  mrLiteralMap[normalizeLiteral(literal)] = translated;
+});
+
 function getNestedValue(source, key) {
   return String(key || "")
     .split(".")
     .reduce((value, part) => (value && value[part] !== undefined ? value[part] : undefined), source);
+}
+
+function normalizeLiteral(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+export function getLiteralTranslation(text, lang = "en") {
+  if (lang !== "mr") return text;
+
+  const literalKey = normalizeLiteral(text);
+  return mrLiteralMap[literalKey] || mrFallbackByLiteral[text] || null;
+}
+
+function resolveTemplate(key, lang) {
+  const keyString = String(key || "");
+  const languageTemplate = getNestedValue(dictionaries[lang], keyString);
+  const fallbackByKey = lang === "mr" ? mrFallbackByKey[keyString] : undefined;
+
+  if (typeof languageTemplate === "string" && !/\(MR\)/i.test(languageTemplate)) {
+    return languageTemplate;
+  }
+
+  if (fallbackByKey) {
+    return fallbackByKey;
+  }
+
+  const englishTemplate = getNestedValue(dictionaries.en, keyString);
+  const literalFallback = getLiteralTranslation(englishTemplate ?? keyString, lang);
+  return englishTemplate ?? literalFallback ?? keyString;
 }
 
 export function LanguageProvider({ children }) {
@@ -27,10 +89,7 @@ export function LanguageProvider({ children }) {
   };
 
   const t = (key, params = {}) => {
-    const template =
-      getNestedValue(dictionaries[lang], key) ??
-      getNestedValue(dictionaries.en, key) ??
-      key;
+    const template = resolveTemplate(key, lang);
 
     if (typeof template !== "string") {
       return template;

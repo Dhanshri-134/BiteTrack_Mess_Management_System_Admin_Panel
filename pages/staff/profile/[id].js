@@ -23,6 +23,8 @@ import {
   XCircle,
 } from "lucide-react";
 
+import Link from "next/link";
+
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const PAYMENT_TYPES = ["advance", "partial", "final"];
 
@@ -153,10 +155,10 @@ export default function StaffProfile() {
 
   const ATTENDANCE_OPTIONS = [
     { label: "P", value: "P" },
-    { label: t("oT"), value: "OT" },
-    { label: t("hF"), value: "H" },
+    { label: "OT", value: "OT" },
+    { label: "HF", value: "H" },
     { label: "A", value: "A" },
-    { label: t("oFF"), value: "OFF" },
+    { label: "OFF", value: "OFF" },
   ];
 
   const [profile, setProfile] = useState(null);
@@ -552,7 +554,7 @@ export default function StaffProfile() {
                           <span className={styles.calendarMuted}>{t("noData")}</span>
                         )}
                         <span className={paymentAmount > 0 ? styles.calendarAmount : styles.calendarMuted}>
-                          {paymentAmount > 0 ? `${formatMoney(paymentAmount)} paid` : "No payment"}
+                          {paymentAmount > 0 ? t("{{amount}} paid", { amount: formatMoney(paymentAmount) }) : t("No payment")}
                         </span>
                       </div>
                     </button>
@@ -564,18 +566,22 @@ export default function StaffProfile() {
         ) : (
           <section className={styles.sectionBlock}>
             <div className={styles.paymentSummaryGrid}>
-            <div className={styles.summaryBox}><span>Profile Base</span><strong>{formatMoney(paymentSummary.configuredBase)}</strong></div>
-            <div className={styles.summaryBox}><span>Saved Salary</span><strong>{formatMoney(paymentSummary.manualSalary)}</strong></div>
+            <div className={styles.summaryBox}><span>{t("Profile Base")}</span><strong>{formatMoney(paymentSummary.configuredBase)}</strong></div>
+            <div className={styles.summaryBox}><span>{t("Saved Salary")}</span><strong>{formatMoney(paymentSummary.manualSalary)}</strong></div>
             <div className={styles.summaryBox}><span>{t("overtime")}</span><strong>{formatMoney(paymentSummary.overtime)}</strong></div>
             <div className={styles.summaryBox}><span>{t("penalty")}</span><strong>{formatMoney(paymentSummary.penalty)}</strong></div>
             <div className={styles.summaryBox}><span>{t("grossSalary")}</span><strong>{formatMoney(paymentSummary.gross)}</strong></div>
             <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
             <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
+                          <Link href="/staff/salary/history" className={styles.actionLinkCard}>
+                                        <span>{t("salaryManagement")}</span>
+                              
+                            </Link>
           </div>
             <p className={styles.summaryHint}>
               {paymentSummary.salaryAdded
-                ? `This month salary is saved manually for ${monthName}. Attendance does not auto-change salary.`
-                : `Salary is not added yet for ${monthName}. Add it from Salary Management.`}
+                ? t("This month salary is saved manually for {{month}}. Attendance does not auto-change salary.", { month: monthName })
+                : t("Salary is not added yet for {{month}}. Add it from Salary Management.", { month: monthName })}
             </p>
 
             <form className={styles.paymentFormCard} onSubmit={submitPayment}>
@@ -630,7 +636,7 @@ export default function StaffProfile() {
                 <div className={styles.previewAlert}>
                   <Clock size={16} /> {t("latePenaltyPreview", { minutes: modalData.late_minutes, amount: formatMoney(modalData.penalty_amount) })}
                   <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
-                    <label>Penalty Amount</label>
+                    <label>{t("Penalty Amount")}</label>
                     <input
                       className={styles.formInput}
                       type="number"
@@ -646,7 +652,7 @@ export default function StaffProfile() {
                 <div className={styles.previewOT}>
                   <CheckCircle size={16} /> {t("overtimePreview", { hours: Number(modalData.overtime_hours || 0).toFixed(2), amount: formatMoney(modalData.overtime_amount) })}
                   <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
-                    <label>OT Amount</label>
+                    <label>{t("OT Amount")}</label>
                     <input
                       className={styles.formInput}
                       type="number"

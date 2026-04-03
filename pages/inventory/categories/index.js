@@ -161,7 +161,7 @@ export default function CategoriesPage() {
                     className={styles.primaryBtn}
                     onClick={() => setShowModal(true)}
                 >
-                    + Add Category
+                    + {t("Add Category")}
                 </button>
       </section>
       </section>

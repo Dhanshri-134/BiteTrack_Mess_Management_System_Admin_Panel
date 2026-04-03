@@ -139,7 +139,7 @@ export default function StaffList() {
         </div>
 
         {loading ? (
-          <p className={styles.emptyMsg}>{t("loading", "Loading")}...</p>
+          <p className={styles.emptyMsg}>{t("loading", "Loading")}</p>
         ) : (
           <div className={styles.cardList}>
             {filteredStaff.length === 0 ? (

@@ -9,7 +9,7 @@ import { API_BASE } from "../../lib/api";
 import { offlineFetch } from "../../lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
-import { ChevronDown, ChevronUp, CloudAlert, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, FireExtinguisher, LucideCircleStop, MoreVertical, Pen, Search, StopCircle, Trash2Icon, X } from "lucide-react";
+import { ChartNoAxesGanttIcon, ChevronDown, ChevronUp, CloudAlert, DatabaseIcon, DeleteIcon, Edit, Edit2, Edit2Icon, FireExtinguisher, Frame, LucideCircleStop, MoreVertical, Pen, Search, StopCircle, StopCircleIcon, TimerIcon, Trash2Icon, X } from "lucide-react";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -37,8 +37,7 @@ export default function Users() {
   const [freezeModal, setFreezeModal] = useState(null);
   const [freezeTarget, setFreezeTarget] = useState(null);
   const [exporting, setExporting] = useState(false);
-
-const { id } = router.query;
+  const { id } = router.query;
 
 useEffect(() => {
   if (!id || verified.length === 0) return;
@@ -181,6 +180,7 @@ useEffect(() => {
 
   const handleUpdate = async () => {
     try {
+      setLoading(true);
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/update/`,
         {
@@ -215,7 +215,9 @@ useEffect(() => {
     } catch (err) {
       console.error(err);
       toast.error(t("somethingWentWrong"));
-    }
+    } finally {
+    setLoading(false);
+  }
   };
 
 
@@ -256,6 +258,9 @@ useEffect(() => {
         } else if (sortConfig.key === "parents") {
           aVal = a.parents?.[0]?.name || "";
           bVal = b.parents?.[0]?.name || "";
+        } else if (sortConfig.key === "user_id") {
+          aVal = a.mess_user_id || "";
+          bVal = b.mess_user_id || "";
         } else {
           aVal = a[sortConfig.key] || "";
           bVal = b[sortConfig.key] || "";
@@ -287,6 +292,14 @@ useEffect(() => {
 
   const tableColumns = [
     {
+      key: "user_id",
+      label: t("ID"),
+      render: (u) =>
+        u.mess_user_id
+          ? u.mess_user_id
+          : "-",
+    },
+    {
       key: "name_email",
       label: t("name"),
       render: (u) => (
@@ -312,10 +325,10 @@ useEffect(() => {
       key: "hostel_room",
       label: t("hostel"),
       render: (u) => (
-        <div>
+        <div style={{width:"120px",height:"auto",overflow:"visible"}}>
           {u.course}
           <br></br>
-          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+          <div style={{ fontSize: "12px", color: "#6b7280"}}>
             {u.hostel_name || "-"}
             <br></br>
             {u.room_no || "-"}
@@ -326,7 +339,7 @@ useEffect(() => {
 
     {
       key: "date_of_joining",
-      label: t("dateOfJoining"),
+      label: t("joiningDate"),
       render: (u) =>
         u.date_of_joining
           ? new Date(u.date_of_joining).toLocaleDateString("en-IN")
@@ -339,8 +352,8 @@ useEffect(() => {
       render: (u) =>
         u.parents?.length ? (
           u.parents.map((p, i) => (
-            <div key={i}>
-              <strong>{p.name}</strong>
+            <div key={i}  style={{maxWidth:"150px",wordBreak: "break-word"}} >
+              <strong  style={{maxWidth:"120px",wordBreak: "break-word"}}>{p.name}</strong>
               <div style={{ fontSize: "12px", color: "#6b7280" }}>
                 {p.contact}
                 <div
@@ -349,7 +362,7 @@ useEffect(() => {
                     color: "#6b7280",
                     whiteSpace: "normal",
                     wordBreak: "break-word",
-                    maxWidth: "200px"
+                    maxWidth: "120px"
                   }}
                 >
                   {p.address}
@@ -372,9 +385,9 @@ useEffect(() => {
             {/* <span className={styles.actionTrigger}>{t("clickHere")}</span> */}
 
            {/* <div className={styles.actionMenu}> */}
-              <button  className={styles.btn}onClick={() => openModal(u)}>Edit</button>
-              <button  className={styles.btn}onClick={() => requestDeleteUser(u)}>Delete</button>
-              <button  className={styles.btn}onClick={() => requestChangeDOJ(u)}>Change DOJ</button>
+              <button  className={styles.btn}onClick={() => openModal(u)}><Edit2Icon size={12} /></button>
+              <button  className={styles.btn}onClick={() => requestDeleteUser(u)}><Trash2Icon size={12} /></button>
+              <button  className={styles.btn}onClick={() => requestChangeDOJ(u)}><TimerIcon size={12} /></button>
               <button  className={styles.btn}
                 onClick={() => {
                   const action = u.status === "Active" ? "freeze" : "unfreeze";
@@ -385,7 +398,7 @@ useEffect(() => {
                   });
                 }}
               >
-                {u.status === "Active" ? "Freeze" : "Unfreeze"}
+                {u.status === "Active" ? <StopCircleIcon size={12} /> : "Unfreeze"}
               </button>
            {/* </div> */}
           </div>
@@ -459,6 +472,7 @@ useEffect(() => {
     if (!deleteTarget) return;
 
     try {
+      setLoading(true);
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/users/delete/`,
         // `/api/users/delete/`,
@@ -476,6 +490,7 @@ useEffect(() => {
     } catch {
       toast.error(t("somethingWentWrong"));
     } finally {
+      setLoading(false);
       setDeleteTarget(null);
     }
   };
@@ -489,6 +504,7 @@ useEffect(() => {
     if (!dojTarget || !newDOJ) return;
 
     try {
+      setLoading(true);
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/users/changeDOJ/`,
         {
@@ -508,6 +524,7 @@ useEffect(() => {
     } catch {
       toast.error(t("somethingWentWrong"));
     } finally {
+      setLoading(false);
       setDojTarget(null);
       setNewDOJ("");
     }
@@ -672,6 +689,7 @@ useEffect(() => {
 
   const toggleFreeze = async (userId, action) => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
 
       const res = await fetch(
@@ -722,6 +740,9 @@ useEffect(() => {
     } catch (err) {
       console.error(err);
       toast.error(t("somethingWentWrong"));
+    }
+    finally{
+      setLoading(false);
     }
   };
 
@@ -895,26 +916,7 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
     <Layout>
       <div className={styles.container}>
         <main className={styles.main}>
-        
-      {/* <section className={styles.heroSection}>
-        <div>
-          <p className={styles.eyebrow}>{t("users")}</p>
-          <div className={styles.header}>
-
-            <h1 className={styles.heroTitle}>{t("userManagement")}</h1>
-            <button
-              className={styles.backBtn}
-              onClick={() => router.back()}
-            >
-              ← Back
-            </button>
-          </div>
-        </div>
-      
-
-      </section> */}
           <h1>{t("userManagement")}</h1>
-  
           <div className={styles.searchTool}>
             <div className={styles.searchBox}>
               <Search className={styles.searchIcon} size={16} />
@@ -1145,8 +1147,12 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                 </div>
 
                 <div className={styles.modalActions}>
-                  <button onClick={handleUpdate} className={styles.button}>
-                    {t("save")}
+                  <button onClick={handleUpdate} className={styles.button}  disabled={loading}>
+                    {loading ? (
+  <span className={styles.loader}></span>
+) : (
+  t("save")
+)}
                   </button>
 
                   <button onClick={() => setModalUser(null)} className={styles.buttonCancel}>
@@ -1172,8 +1178,13 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                   <button
                     className={`${styles.button} ${styles.btnDel}`}
                     onClick={confirmDeleteUser}
+                    disabled={loading}
                   >
-                    {t("delete")}
+                    {loading ? (
+  <span className={styles.loader}></span>
+) : (
+                    t("delete")
+)}
                   </button>
 
                   <button
@@ -1206,8 +1217,13 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                   <button
                     className={`${styles.button} ${styles.btnDOJ}`}
                     onClick={confirmChangeDOJ}
+                    disabled={loading}
                   >
-                    {t("save")}
+                   {loading ? (
+  <span className={styles.loader}></span>
+) : (
+  t("save")
+)}
                   </button>
 
                   <button
@@ -1305,6 +1321,7 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                         : styles.btnUnfreeze
                       }`}
                     onClick={confirmFreezeUser}
+                    disabled={loading}
                   >
                     {freezeTarget.action === "freeze"
                       ? t("freeze")

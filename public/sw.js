@@ -1,5 +1,5 @@
-const CACHE_NAME = "bite-track-v1";
-const API_CACHE_NAME = "bite-track-api-v1";
+const CACHE_NAME = "bite-track-v2";
+const API_CACHE_NAME = "bite-track-api-v2";
 
 const ASSETS = [
   "/",                         // home
@@ -31,9 +31,10 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key !== CACHE_NAME && key !== API_CACHE_NAME) {
             return caches.delete(key);
           }
+          return Promise.resolve();
         })
       )
     )
@@ -43,9 +44,13 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
+  const isApiRequest =
+    url.pathname.startsWith("/api/") ||
+    url.pathname.includes("/api/") ||
+    url.href.includes("vercel.app/api");
 
   // Intercept API requests (Network First, fallback to Cache)
-  if (url.pathname.startsWith("/api/") || url.href.includes("vercel.app/api")) {
+  if (isApiRequest) {
     if (event.request.method === "GET") {
       event.respondWith(
         fetch(event.request)

@@ -143,8 +143,8 @@ export default function CategoryItems() {
           <h1 className={styles.heroTitle}>{categoryName || t("category")}</h1>
           {/* <p className={styles.heroSubtitle}>{t("categoryItemsSubtitle")}</p> */}
         </div>
-      <section className={styles.catId}>
-        <div >
+      <section className={styles.header}>
+        <div className={styles.catId}>
           <span>{t("itemsLabel")}</span> :
           <strong> {items.length}</strong>
         </div>

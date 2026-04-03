@@ -211,18 +211,18 @@ export default function StaffAttendance() {
                 <div className={styles.staffCardHeader}>
                   <div>
                     <h3 className={styles.staffName}>{row.name}</h3>
-                    <p className={styles.staffPhone}><UserRound size={14} /> {row.phone || "No phone"}</p>
+                    <p className={styles.staffPhone}><UserRound size={14} /> {row.phone || t("No phone")}</p>
                   </div>
-                  <div className={styles.staffRoleBadge}>{row.role || "Staff"}</div>
+                  <div className={styles.staffRoleBadge}>{row.role || t("Staff")}</div>
                 </div>
                 <div className={styles.staffCardStatsRow}>
                   <span className={`${styles.statusPill} ${styles[`status${row.attendance_type === "H" ? "HF" : row.attendance_type}`] || styles.statusOFF}`}>
                     {row.attendance_type === "H" ? "HF" : row.attendance_type}
                   </span>
-                  <span className={styles.statPill}>Shift {String(row.shift_start || "09:00").slice(0, 5)} - {String(row.shift_end || "18:00").slice(0, 5)}</span>
+                  <span className={styles.statPill}>{t("Shift {{start}} - {{end}}", { start: String(row.shift_start || "09:00").slice(0, 5), end: String(row.shift_end || "18:00").slice(0, 5) })}</span>
                 </div>
                 <div className={styles.staffCardBalance}>
-                  <span className={styles.balanceLabel}>Late After {String(row.late_after || "09:30").slice(0, 5)}</span>
+                  <span className={styles.balanceLabel}>{t("Late After {{time}}", { time: String(row.late_after || "09:30").slice(0, 5) })}</span>
                   <span className={styles.balanceAmount}>{formatMoney(row.overtime_rate)}/hr</span>
                 </div>
               </button>
@@ -234,14 +234,14 @@ export default function StaffAttendance() {
               <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
                 <div className={styles.modalHeader}>
                   <h2>{selected.name}</h2>
-                  <button type="button" className={styles.iconAction} onClick={() => setSelectedIndex(null)}>X</button>
+                  <button type="button" className={styles.iconAction} onClick={() => setSelectedIndex(null)}>{t("close")}</button>
                 </div>
 
                 {selected.is_late ? (
                   <div className={styles.previewAlert}>
-                    <Clock3 size={16} /> Late by {selected.late_minutes} mins. Penalty {formatMoney(selected.penalty_amount)}.
+                    <Clock3 size={16} /> {t("Late by {{minutes}} mins. Penalty {{amount}}.", { minutes: selected.late_minutes, amount: formatMoney(selected.penalty_amount) })}
                     <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
-                      <label>Penalty Amount</label>
+                      <label>{t("Penalty Amount")}</label>
                       <input
                         className={styles.formInput}
                         type="number"
@@ -256,9 +256,9 @@ export default function StaffAttendance() {
 
                 {selected.attendance_type === "OT" || Number(selected.overtime_amount || 0) > 0 ? (
                   <div className={styles.previewOT}>
-                    <CheckCircle size={16} /> Overtime {selected.overtime_hours} hrs. OT Pay {formatMoney(selected.overtime_amount)}.
+                    <CheckCircle size={16} /> {t("Overtime {{hours}} hrs. OT Pay {{amount}}.", { hours: selected.overtime_hours, amount: formatMoney(selected.overtime_amount) })}
                     <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
-                      <label>OT Amount</label>
+                      <label>{t("OT Amount")}</label>
                       <input
                         className={styles.formInput}
                         type="number"

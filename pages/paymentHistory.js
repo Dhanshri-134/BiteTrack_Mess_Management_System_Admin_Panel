@@ -298,6 +298,7 @@ export default function PaymentHistory({ token }) {
   <div>{t("txnID")}</div>
   <div>{t("period")}</div>
   <div>{t("leave")}</div>
+  <div>{t("receipt")}</div>
 </div>
                                                     {expandedPayments.map(h => (
                                                         <div key={h.id} className={styles.historyItem}>

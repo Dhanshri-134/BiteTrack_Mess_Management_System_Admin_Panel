@@ -49,8 +49,8 @@ return(
 
 <h2>{t("purchaseDetails")}</h2>
 
-<p>Vendor: {purchase.vendor_name || "-"}</p>
-<p>Date: {new Date(purchase.purchase_date).toLocaleDateString()}</p>
+<p>{t("vendor")}: {purchase.vendor_name || "-"}</p>
+<p>{t("date")}: {new Date(purchase.purchase_date).toLocaleDateString()}</p>
 
 <table className={styles.table}>
 

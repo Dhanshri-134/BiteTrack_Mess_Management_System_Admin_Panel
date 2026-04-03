@@ -138,7 +138,7 @@ export default function StaffList() {
         </div>
 
         {loading ? (
-          <p className={styles.emptyMsg}>{t("loading", "Loading")}...</p>
+          <p className={styles.emptyMsg}>{t("loading", "Loading")}</p>
         ) : (
           <div className={styles.cardList}>
             {filteredStaff.length === 0 ? (
@@ -154,12 +154,12 @@ export default function StaffList() {
                   <div className={styles.staffCardHeader}>
                     <div>
                       <h3 className={styles.staffName}>{member.name}</h3>
-                      <p className={styles.staffPhone}>{member.phone || "No phone provided"}</p>
+                      <p className={styles.staffPhone}>{member.phone || t("No phone provided")}</p>
                     </div>
                     <div className={styles.staffBadgeRow}>
-                      <div className={styles.staffRoleBadge}>{member.role || "Staff"}</div>
+                      <div className={styles.staffRoleBadge}>{member.role || t("Staff")}</div>
                       <div className={`${styles.profileMetaPill} ${member.is_active === false ? styles.profileStatusInactive : styles.profileStatusActive}`}>
-                        {member.is_active === false ? "Inactive" : "Active"}
+                        {member.is_active === false ? t("Inactive") : t("Active")}
                       </div>
                     </div>
                   </div>
@@ -182,7 +182,7 @@ export default function StaffList() {
                       onClick={(event) => toggleStaffStatus(member, event)}
                       disabled={savingId === member.id}
                     >
-                      {savingId === member.id ? "Saving..." : member.is_active === false ? "Activate" : "Deactivate"}
+                      {savingId === member.id ? t("Saving...") : member.is_active === false ? t("Activate") : t("Deactivate")}
                     </button>
                   </div>
                 </div>

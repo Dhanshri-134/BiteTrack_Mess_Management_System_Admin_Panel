@@ -37,6 +37,7 @@ export default function Notifications() {
   // push notifications
   const [pushList, setPushList] = useState([]);
   const [pushGroups, setPushGroups] = useState([]);
+  const [Loading, setLoading] = useState(false);
 
   // superadmin notifications
   const [superList, setSuperList] = useState([]);
@@ -150,6 +151,7 @@ export default function Notifications() {
 
   // ---- Send push ----
   const createPush = async () => {
+    setLoading(true);
     if (!form.title || !form.message)
       return toast(t("titleMessageRequired"));
 
@@ -170,7 +172,9 @@ export default function Notifications() {
       priority: "normal",
     });
     loadPush();
+    setLoading(false);
   };
+
 
   // ---- Delete grouped ----
   const deletePushGroup = async (ids) => {
@@ -302,13 +306,13 @@ export default function Notifications() {
                 <option value="urgent">{t("urgent")}</option>
               </select>
 
-              <button className={styles.button} onClick={createPush}>
+              <button className={styles.button} onClick={createPush} disabled={Loading}>
                 {t("send")}
               </button>
             </div>
 
             <h3 className={styles.header2}>
-              {t("groupedDuplicates")}
+              {/* {t("groupedDuplicates")} */}
             </h3>
 
             <table className={styles.list}>

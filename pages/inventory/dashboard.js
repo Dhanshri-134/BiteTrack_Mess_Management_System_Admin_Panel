@@ -66,7 +66,7 @@ return(
               className={styles.backbtn}
               onClick={() => router.back()}
             >
-              ← Back
+              {`← ${t("Back")}`}
             </button>
           </div>
           {/* <p className={styles.heroSubtitle}>{t("vendorListSubtitle")}</p> */}
@@ -85,7 +85,7 @@ return(
     <Card title={t("lowStock")} value={stats.lowStock} loading={loading}/>
 </Link>
 <Link href="/inventory/usage/">
-    <Card title="Today's Usage" value={stats.todayUsage} loading={loading}/>
+    <Card title={t("Today's Usage")} value={stats.todayUsage} loading={loading}/>
 </Link>
 </div>
 
@@ -96,15 +96,15 @@ return(
 <div className={styles.quickActions}>
 
 <Link href="/inventory/add-purchases" className={styles.actionBtn}>
-Add Purchase
+{t("addPurchase")}
 </Link>
 
 <Link href="/inventory/usage" className={styles.actionBtn}>
-Add Usage
+{t("Add Usage")}
 </Link>
 
 <Link href="/inventory/stock-ledger" className={styles.actionBtn}>
-View Ledger
+{t("View Ledger")}
 </Link>
 
 </div>
@@ -134,7 +134,7 @@ View Ledger
 <div>
 <span>{p.vendor_name}</span>
 <div className={styles.tableSecondaryValue}>
-{Array.isArray(p.item_names) && p.item_names.length > 0 ? p.item_names.slice(0, 2).join(", ") : "No items"}
+{Array.isArray(p.item_names) && p.item_names.length > 0 ? p.item_names.slice(0, 2).join(", ") : t("No items")}
 {Array.isArray(p.item_names) && p.item_names.length > 2 ? ` +${p.item_names.length - 2} more` : ""}
 </div>
 </div>
