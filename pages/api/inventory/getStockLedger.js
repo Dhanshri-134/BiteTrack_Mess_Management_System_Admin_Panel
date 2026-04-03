@@ -24,6 +24,7 @@ const {item_id} = req.body;
 
 const result = await pgPool.query(
 `SELECT
+id,
 transaction_type,
 quantity,
 reference_type,

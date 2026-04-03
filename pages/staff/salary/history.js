@@ -44,8 +44,12 @@ export default function SalaryHistoryPage() {
     return rows.reduce((acc, row) => {
       acc[String(row.staff_id)] = {
         base_salary: String(row.id ? row.base_salary : row.configured_base_salary || 0),
-        overtime_amount: String(row.overtime_amount || 0),
-        penalty_amount: String(row.penalty_amount || 0),
+        overtime_amount: String(
+          row.id ? row.overtime_amount || 0 : row.default_overtime_amount || row.overtime_amount || 0
+        ),
+        penalty_amount: String(
+          row.id ? row.penalty_amount || 0 : row.default_penalty_amount || row.penalty_amount || 0
+        ),
       };
       return acc;
     }, {});
@@ -54,7 +58,7 @@ export default function SalaryHistoryPage() {
   async function fetchSalary(forceRefresh) {
     try {
       setLoading(true);
-      const cacheKey = `staff-salary-history-${month}-${year}-manual-v2`;
+      const cacheKey = `staff-salary-history-${month}-${year}-manual-v3`;
       const response = forceRefresh
         ? await staffRequest("/api/staff/salary/list/", { body: { month, year } })
         : await staffOfflineRequest(cacheKey, "/api/staff/salary/list/", {
@@ -207,6 +211,10 @@ export default function SalaryHistoryPage() {
                     <p className={styles.summaryHint} style={{ marginTop: "0.6rem" }}>
                       Profile base: {formatMoney(row.configured_base_salary)}. Saved monthly salary can be different and is fully owner-controlled.
                     </p>
+                    <div className={styles.statusLegend} style={{ marginTop: "0.65rem" }}>
+                      <span className={styles.statusPill}>Auto OT: {formatMoney(row.default_overtime_amount)}</span>
+                      <span className={styles.statusPill}>Auto Penalty: {formatMoney(row.default_penalty_amount)}</span>
+                    </div>
 
                     <div className={styles.formGridCompact} style={{ marginTop: "0.9rem" }}>
                       <div className={styles.formGroup}>

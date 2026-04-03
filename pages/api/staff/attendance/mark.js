@@ -30,7 +30,9 @@ export default async function handler(req, res) {
       check_in,
       check_out,
       attendance_type,
-      notes
+      notes,
+      overtime_amount,
+      penalty_amount,
     } = req.body;
     
 
@@ -56,6 +58,14 @@ const metrics = calculateAttendanceMetrics({
   latePenalty: staffRow.late_penalty,
   overtimeRate: staffRow.overtime_rate,
 });
+const resolvedOvertimeAmount =
+  overtime_amount !== undefined && overtime_amount !== null
+    ? Number(overtime_amount || 0)
+    : metrics.overtimeAmount;
+const resolvedPenaltyAmount =
+  penalty_amount !== undefined && penalty_amount !== null
+    ? Number(penalty_amount || 0)
+    : metrics.penaltyAmount;
 
     await pgPool.query(
       `INSERT INTO staff_attendance
@@ -98,8 +108,8 @@ const metrics = calculateAttendanceMetrics({
         metrics.isLate,
         metrics.lateMinutes,
         metrics.overtimeHours,
-        metrics.overtimeAmount,
-        metrics.penaltyAmount,
+        resolvedOvertimeAmount,
+        resolvedPenaltyAmount,
         metrics.workMinutes,
         notes || null
       ]

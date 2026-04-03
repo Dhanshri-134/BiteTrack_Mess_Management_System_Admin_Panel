@@ -1,6 +1,5 @@
 .container,
 .profileContainer {
-  /* padding: 1.5rem; */
   max-width: 1200px;
   /* Supporting Desktop View natively */
   margin: 0 auto;
@@ -11,6 +10,7 @@
 .container {
   font-size: 1rem;
 }
+
 
 .pageStack {
   display: flex;
@@ -1218,9 +1218,7 @@ height: auto;
 }
 
 @media (max-width: 600px) {
-  .profileContainer {
-    padding: 1rem;
-  }
+
 
   .profileHeaderMain {
     align-items: center;

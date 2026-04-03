@@ -50,7 +50,7 @@ export default function StaffList() {
             map[staffId] = { ...EMPTY_STATS };
           }
 
-          if (attendanceType === "P") map[staffId].present += 1;
+          if (attendanceType === "P" || attendanceType === "OT") map[staffId].present += 1;
           else if (attendanceType === "A") map[staffId].absent += 1;
           else if (attendanceType === "L") map[staffId].leave += 1;
           else if (attendanceType === "H" || attendanceType === "HF") map[staffId].halfDay += 1;
@@ -173,7 +173,7 @@ export default function StaffList() {
 
                   <div className={styles.staffCardBalance}>
                     <span className={styles.balanceLabel}>{t("balance")}</span>
-                    <span className={styles.balanceAmount}> {Number(member.current_balance || 0).toLocaleString()}</span>
+                    <span className={styles.balanceAmount}>Rs. {Number(member.current_balance || 0).toLocaleString()}</span>
                   </div>
                   <div className={styles.staffCardActions}>
                     <button

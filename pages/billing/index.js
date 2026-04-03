@@ -533,6 +533,215 @@ if (!map[key].parent_mobile && b.parent_mobile) {
   const paidBills = groupedBills.filter(b => !b.has_pending);
   const unpaidBills = groupedBills.filter(b => b.has_pending);
 
+
+
+
+const generateUserPDF = async (user) => {
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // ================= FETCH MESS =================
+    const messRes = await fetch(`${API_BASE}/api/mess/details/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const mess = await messRes.json();
+
+    // ================= LOAD LOGO =================
+    const loadImageAsBase64 = (url) =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = url;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = reject;
+      });
+
+    let logoBase64 = null;
+    try {
+      logoBase64 = await loadImageAsBase64(mess.logo || "/Assets/logo_Bite_Track.png");
+    } catch {
+      logoBase64 = await loadImageAsBase64("/Assets/logo_Bite_Track.png");
+    }
+
+    // ================= HEADER =================
+    doc.setFillColor(0, 113, 112);
+    doc.rect(0, 0, pageWidth, 40, "F");
+
+    if (logoBase64) {
+      doc.addImage(logoBase64, "PNG", 14, 6.5, 30, 30);
+    }
+
+    doc.setTextColor(255, 255, 255);
+
+    // LEFT TITLE
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Billing Statement", 14, 10);
+
+    // RIGHT SIDE (MESS INFO)
+    doc.setFontSize(14);
+    doc.text(mess.name || "Mess Name", pageWidth - 14, 14, { align: "right" });
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(mess.location || "", pageWidth - 14, 20, { align: "right" });
+    doc.text(mess.email || "", pageWidth - 14, 25, { align: "right" });
+    doc.text(String(mess.contact_info || ""), pageWidth - 14, 30, { align: "right" });
+
+    // DATE (separate line)
+    doc.setFontSize(9);
+    doc.text(
+      `Generated: ${new Date().toLocaleDateString()}`,
+      pageWidth - 14,
+      36,
+      { align: "right" }
+    );
+
+    doc.setTextColor(0, 0, 0);
+
+    // ================= USER INFO =================
+    let y = 50;
+
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("User Information", 14, y);
+
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
+    doc.text(`Name: ${user.name}`, 14, y);
+    doc.text(`Mobile: ${user.mobile}`, 100, y);
+
+    y += 6;
+
+    doc.text(`Course: ${user.course || "-"}`, 14, y);
+    doc.text(`Hostel: ${user.hostel_name || "-"}`, 100, y);
+
+    y += 6;
+
+    doc.text(`Parent: ${user.parent_name || "-"}`, 14, y);
+    doc.text(`Parent Mobile: ${user.parent_mobile || "-"}`, 100, y);
+
+    // ================= TABLE =================
+    y += 12;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Monthly Billing Details", 14, y);
+
+    autoTable(doc, {
+      startY: y + 5,
+      head: [["Month", "Duration", "Bill", "Paid", "Status"]],
+      body: user.history.map((h) => [
+        `${h.month}/${h.year}`,
+        `${h.start_date || "-"} to ${h.end_date || "-"}`,
+        `Rs.${getBillAmount(h).toFixed(2)}`,
+        `Rs.${Number(h.paid_amount || 0).toFixed(2)}`,
+        h.paid ? "Paid" : "Unpaid",
+      ]),
+      styles: { fontSize: 9 },
+      headStyles: {
+        fillColor: [0, 113, 112],
+        textColor: [255, 255, 255],
+      },
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 10;
+
+    // ================= SUMMARY =================
+    doc.setCharSpace(0);
+const advance = Number(user.advance_amount || 0);
+const pending = Number(user.pending_amount || 0);
+const total = Number(user.total_payable || 0);
+
+doc.setFont("helvetica", "bold");
+doc.setFontSize(12);
+doc.text("Summary", 14, finalY);
+
+finalY += 8;
+
+doc.setFont("helvetica", "normal");
+doc.setFontSize(11);
+
+// Always show advance & pending
+doc.text(`Advance Paid: Rs.${advance.toFixed(2)}`, 14, finalY);
+finalY += 6;
+
+doc.text(`Pending Amount: Rs.${pending.toFixed(2)}`, 14, finalY);
+finalY += 8;
+
+// ================= HANDLE NEGATIVE =================
+if (total < 0) {
+  const credit = Math.abs(total);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 128, 0); // green
+
+  doc.text(`Advance Balance: Rs.${credit.toFixed(2)}`, 14, finalY);
+  finalY += 6;
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+
+  doc.text(
+    "No dues pending. The advance will be adjusted in upcoming bills.",
+    14,
+    finalY
+  );
+
+} else if (total === 0) {
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 128, 0);
+
+  doc.text("All dues are cleared.", 14, finalY);
+
+  doc.setTextColor(0, 0, 0);
+
+} else {
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(200, 0, 0); // red
+
+  doc.text(`Total Payable: Rs.${total.toFixed(2)}`, 14, finalY);
+  finalY += 6;
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+
+  doc.text(
+    "Kindly clear the pending dues at the earliest.",
+    14,
+    finalY
+  );
+} 
+
+    // ================= FOOTER =================
+    finalY += 15;
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.text("This is a system generated statement.", 14, finalY);
+
+    // ================= SAVE =================
+    const fileName = `Statement_${user.name}_${Date.now()}.pdf`;
+    await saveJsPdfDocument(doc, fileName);
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to generate PDF");
+  }
+};
+
 const exportBillingPDF = async () => {
   try {
     if (!month || !year) return toast.error(t("selectMonthYear"));
@@ -862,6 +1071,21 @@ const exportBillingPDF = async () => {
                                     {b.has_pending ? "Unpaid" : "Paid"}
                                   </span>
                                   <button
+    onClick={(e) => {
+      e.stopPropagation();
+      generateUserPDF(b);
+    }}
+    style={{
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      color: "#0f766e"
+    }}
+    title="Download Statement"
+  >
+    <Download size={16} />
+  </button>
+                                  <button
                                     type="button"
                                     aria-label={expandedCard === b.user_id ? "Collapse payment history" : "Expand payment history"}
                                     onClick={(e) => {
@@ -975,7 +1199,25 @@ const exportBillingPDF = async () => {
     }`}
   >
     {b.has_pending ? "Unpaid" : "Paid"}
+    <button
+    onClick={(e) => {
+      e.stopPropagation();
+      generateUserPDF(b);
+    }}
+    style={{
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      color: "#0f766e",
+      paddingBottom:"0px",
+      marginBottom:"0px"
+    }}
+    title="Download Statement"
+  >
+    <Download size={12} />
+  </button>
   </span>
+  
                                 </strong>
                               <span style={{ fontSize: "13px", color: "#6b7280", display: "inline-block" }}>
                                 <TooltipText value={b.email || "-"} />
@@ -992,6 +1234,7 @@ const exportBillingPDF = async () => {
                               </div>
                               </span>
                             </div>
+                            
                             <button onClick={() => setExpandedCard(expandedCard === b.user_id ? null : b.user_id)}>
                               <ChevronDown size={20} style={{ transform: expandedCard === b.user_id ? "rotate(180deg)" : "rotate(0deg)", transition: "0.2s" }} />
                             </button>

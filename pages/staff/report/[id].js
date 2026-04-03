@@ -73,7 +73,7 @@ export default function StaffReport() {
   const stats = useMemo(() => {
     let present = 0, absent = 0, late = 0, off = 0;
     attendance.forEach(r => {
-      if (r.attendance_type === 'P' || r.attendance_type === 'H') present++;
+      if (r.attendance_type === 'P' || r.attendance_type === 'H' || r.attendance_type === 'OT') present++;
       if (r.attendance_type === 'A') absent++;
       if (r.attendance_type === 'OFF') off++;
       if (r.is_late) late++;

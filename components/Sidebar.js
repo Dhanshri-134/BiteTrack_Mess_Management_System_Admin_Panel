@@ -215,7 +215,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
               title: t("staff"),
               icon: <Users size={22} />,
               items: [
-                // { path: "/staff/dashboard/", label: t("dashboard") },
+                { path: "/staff/dashboard/", label: t("dashboard") },
                 { path: "/staff/list/", label: t("staffDirectory") },
                 { path: "/staff/attendance/", label: t("attendance") },
                 { path: "/staff/attendance-history/", label: t("attendanceHistory") },

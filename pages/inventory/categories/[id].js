@@ -22,6 +22,7 @@ export default function CategoryItems() {
     unit: "",
     description: "",
   });
+  const [duplicateWarning, setDuplicateWarning] = useState("");
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -48,9 +49,20 @@ export default function CategoryItems() {
       return;
     }
 
+    const isDuplicate = items.some(
+      (item) =>
+        String(item.item_name || "").trim().toLowerCase() === itemForm.item_name.trim().toLowerCase()
+    );
+
+    if (isDuplicate) {
+      setDuplicateWarning("Please do not add duplicate material item.");
+      return;
+    }
+
     try {
       setError("");
-      await inventoryRequest("/api/inventory/addItem/", {
+      setDuplicateWarning("");
+      const result = await inventoryRequest("/api/inventory/addItem/", {
         body: {
           item_name: itemForm.item_name,
           unit: itemForm.unit,
@@ -59,13 +71,23 @@ export default function CategoryItems() {
         },
       });
 
+      if (String(result?.message || "").toLowerCase().includes("already exists")) {
+        setDuplicateWarning("Please do not add duplicate material item.");
+        return;
+      }
+
       setShowAddItem(false);
       setItemForm({ item_name: "", unit: "", description: "" });
       setSuggestions([]);
+      setDuplicateWarning("");
       await loadItems();
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      if (String(err.message || "").toLowerCase().includes("already exists")) {
+        setDuplicateWarning("Please do not add duplicate material item.");
+      } else {
+        setError(err.message);
+      }
     }
   }
 
@@ -179,6 +201,7 @@ export default function CategoryItems() {
               onChange={(e) => {
                 const value = e.target.value;
                 setItemForm({ ...itemForm, item_name: value });
+                setDuplicateWarning("");
                 fetchItemSuggestions(value);
               }}
             />
@@ -203,6 +226,10 @@ export default function CategoryItems() {
                   </div>
                 ))}
               </div>
+            ) : null}
+
+            {duplicateWarning ? (
+              <p className={styles.errorText}>{duplicateWarning}</p>
             ) : null}
 
             <input

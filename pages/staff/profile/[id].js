@@ -30,6 +30,65 @@ function formatMoney(value) {
   return `Rs. ${Number(value || 0).toFixed(2)}`;
 }
 
+function addMinutesToTime(timeValue, minutesToAdd) {
+  const [hours, minutes] = String(timeValue || "18:00").split(":").map(Number);
+  const totalMinutes = (hours * 60) + minutes + Number(minutesToAdd || 0);
+  const normalized = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
+  const nextHours = String(Math.floor(normalized / 60)).padStart(2, "0");
+  const nextMinutes = String(normalized % 60).padStart(2, "0");
+  return `${nextHours}:${nextMinutes}`;
+}
+
+function recalculateAttendanceDraft(row, profile) {
+  const current = { ...row };
+  const attendanceType = String(current.attendance_type || "P").toUpperCase();
+  const lateTime = String(profile?.late_after || "09:30").slice(0, 5);
+  const shiftEnd = String(profile?.shift_end || "18:00").slice(0, 5);
+
+  if (attendanceType === "A" || attendanceType === "OFF") {
+    current.is_late = false;
+    current.late_minutes = 0;
+    current.penalty_amount = 0;
+    current.overtime_hours = 0;
+    current.overtime_amount = 0;
+    return current;
+  }
+
+  if (current.check_in && current.check_in > lateTime) {
+    const [h1, m1] = current.check_in.split(":").map(Number);
+    const [h2, m2] = lateTime.split(":").map(Number);
+    current.is_late = true;
+    current.late_minutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
+    current.penalty_amount = Number(
+      (current.late_minutes * Number(profile?.late_penalty || 0)).toFixed(2)
+    );
+    if (current.late_minutes > 120 && attendanceType === "P") current.attendance_type = "H";
+  } else {
+    current.is_late = false;
+    current.late_minutes = 0;
+    current.penalty_amount = 0;
+  }
+
+  if (attendanceType === "OT" && (!current.check_out || current.check_out <= shiftEnd)) {
+    current.check_out = addMinutesToTime(shiftEnd, 60);
+  }
+
+  if (current.check_out && current.check_out > shiftEnd) {
+    const [h1, m1] = current.check_out.split(":").map(Number);
+    const [h2, m2] = shiftEnd.split(":").map(Number);
+    const diffMinutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
+    current.overtime_hours = Number((diffMinutes / 60).toFixed(2));
+    current.overtime_amount = Number(
+      (current.overtime_hours * Number(profile?.overtime_rate || 0)).toFixed(2)
+    );
+  } else {
+    current.overtime_hours = 0;
+    current.overtime_amount = 0;
+  }
+
+  return current;
+}
+
 function normalizePaymentType(value) {
   return String(value || "").toLowerCase();
 }
@@ -94,9 +153,9 @@ export default function StaffProfile() {
 
   const ATTENDANCE_OPTIONS = [
     { label: "P", value: "P" },
+    { label: t("oT"), value: "OT" },
     { label: t("hF"), value: "H" },
     { label: "A", value: "A" },
-    { label: "L", value: "L" },
     { label: t("oFF"), value: "OFF" },
   ];
 
@@ -198,46 +257,11 @@ export default function StaffProfile() {
   function updateModalField(field, value) {
     if (!profile) return;
     const updated = { ...modalData, [field]: value };
-
-    if (field === "check_in") {
-      const lateTime = String(profile.late_after || "09:30").slice(0, 5);
-      if (value && value > lateTime) {
-        const [h1, m1] = value.split(":").map(Number);
-        const [h2, m2] = lateTime.split(":").map(Number);
-        updated.is_late = true;
-        updated.late_minutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
-        updated.penalty_amount = updated.late_minutes * Number(profile.late_penalty || 0);
-        if (updated.late_minutes > 120 && updated.attendance_type === "P") updated.attendance_type = "H";
-      } else {
-        updated.is_late = false;
-        updated.late_minutes = 0;
-        updated.penalty_amount = 0;
-      }
-    }
-
-    if (field === "check_out") {
-      const shiftEnd = String(profile.shift_end || "18:00").slice(0, 5);
-      if (value && value > shiftEnd) {
-        const [h1, m1] = value.split(":").map(Number);
-        const [h2, m2] = shiftEnd.split(":").map(Number);
-        const diffMinutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
-        updated.overtime_hours = Number((diffMinutes / 60).toFixed(2));
-        updated.overtime_amount = updated.overtime_hours * Number(profile.overtime_rate || 0);
-      } else {
-        updated.overtime_hours = 0;
-        updated.overtime_amount = 0;
-      }
-    }
-
-    if (field === "attendance_type" && ["A", "L", "OFF"].includes(value)) {
-      updated.is_late = false;
-      updated.late_minutes = 0;
-      updated.penalty_amount = 0;
-      updated.overtime_hours = 0;
-      updated.overtime_amount = 0;
-    }
-
-    setModalData(updated);
+    setModalData(
+      field === "overtime_amount" || field === "penalty_amount"
+        ? updated
+        : recalculateAttendanceDraft(updated, profile)
+    );
   }
 
   async function submitAttendance() {
@@ -249,6 +273,8 @@ export default function StaffProfile() {
           check_in: modalData.check_in,
           check_out: modalData.check_out,
           attendance_type: modalData.attendance_type,
+          overtime_amount: Number(modalData.overtime_amount || 0),
+          penalty_amount: Number(modalData.penalty_amount || 0),
           notes: modalData.notes,
         },
       });
@@ -316,7 +342,7 @@ export default function StaffProfile() {
     let overtimeAmount = 0;
 
     attendance.forEach((row) => {
-      if (row.attendance_type === "P" || row.attendance_type === "H") present += 1;
+      if (row.attendance_type === "P" || row.attendance_type === "H" || row.attendance_type === "OT") present += 1;
       if (row.attendance_type === "A") absent += 1;
       if (row.is_late) late += 1;
       overtimeHours += Number(row.overtime_hours || 0);
@@ -495,7 +521,7 @@ export default function StaffProfile() {
                           date: iso,
                           check_in: row?.check_in ? String(row.check_in).slice(11, 16) : "09:00",
                           check_out: row?.check_out ? String(row.check_out).slice(11, 16) : String(profile.shift_end || "18:00").slice(0, 5),
-                          attendance_type: attendanceType || "P",
+                          attendance_type: attendanceType === "HF" ? "H" : attendanceType || "P",
                           is_late: Boolean(row?.is_late),
                           late_minutes: Number(row?.late_minutes || 0),
                           penalty_amount: Number(row?.penalty_amount || 0),
@@ -600,8 +626,38 @@ export default function StaffProfile() {
                 <div className={`${styles.formGroup} ${styles.formGroupWide}`}><label htmlFor="attendance-notes">{t("notes")}</label><input id="attendance-notes" type="text" className={styles.formInput} name="notes" value={modalData.notes} onChange={(event) => updateModalField("notes", event.target.value)} placeholder={t("optionalNote")} autoComplete="on" /></div>
               </div>
 
-              {modalData.is_late ? <div className={styles.previewAlert}><Clock size={16} /> {t("latePenaltyPreview", { minutes: modalData.late_minutes, amount: formatMoney(modalData.penalty_amount) })}</div> : null}
-              {Number(modalData.overtime_amount || 0) > 0 ? <div className={styles.previewOT}><CheckCircle size={16} /> {t("overtimePreview", { hours: Number(modalData.overtime_hours || 0).toFixed(2), amount: formatMoney(modalData.overtime_amount) })}</div> : null}
+              {modalData.is_late ? (
+                <div className={styles.previewAlert}>
+                  <Clock size={16} /> {t("latePenaltyPreview", { minutes: modalData.late_minutes, amount: formatMoney(modalData.penalty_amount) })}
+                  <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
+                    <label>Penalty Amount</label>
+                    <input
+                      className={styles.formInput}
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={modalData.penalty_amount}
+                      onChange={(event) => updateModalField("penalty_amount", event.target.value)}
+                    />
+                  </div>
+                </div>
+              ) : null}
+              {modalData.attendance_type === "OT" || Number(modalData.overtime_amount || 0) > 0 ? (
+                <div className={styles.previewOT}>
+                  <CheckCircle size={16} /> {t("overtimePreview", { hours: Number(modalData.overtime_hours || 0).toFixed(2), amount: formatMoney(modalData.overtime_amount) })}
+                  <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
+                    <label>OT Amount</label>
+                    <input
+                      className={styles.formInput}
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={modalData.overtime_amount}
+                      onChange={(event) => updateModalField("overtime_amount", event.target.value)}
+                    />
+                  </div>
+                </div>
+              ) : null}
               <button className={styles.btnPrimary} type="button" onClick={submitAttendance}>{t("saveAttendance")}</button>
             </div>
           </div>

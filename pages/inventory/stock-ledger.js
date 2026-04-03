@@ -62,14 +62,23 @@ export default function StockLedger() {
 
     const itemOptions = [
         { value: "", label: t("selectItem") },
-        ...items.map((item) => ({
-            value: String(item.id),
-            label: item.item_name,
-        })),
+        ...Array.from(
+            new Map(
+                items.map((item) => [
+                    String(item.id),
+                    {
+                        value: String(item.id),
+                        label: item.item_name,
+                    },
+                ])
+            ).values()
+        ),
     ];
 
     return (
         <Layout title={t("stockLedger")}>
+            <div className={styles.stockLedger}> 
+
             <section className={styles.heroSection}>
                 <div>
                     <div className={styles.header}>
@@ -113,8 +122,8 @@ export default function StockLedger() {
 
                 <tbody>
 
-                    {ledger.map(l => (
-                        <tr key={l.id}>
+                    {ledger.map((l, index) => (
+                        <tr key={l.id ?? `${l.created_at}-${l.transaction_type}-${l.quantity}-${index}`}>
                             <td data-label={t("date")}>
                                 {new Date(l.created_at).toLocaleDateString()}
                             </td>
@@ -133,6 +142,7 @@ export default function StockLedger() {
                 </tbody>
 
             </table>
+            </div>
 
         </Layout>
 

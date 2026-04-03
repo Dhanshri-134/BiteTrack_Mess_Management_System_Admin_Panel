@@ -42,13 +42,13 @@ export default function DayDropdown({ options, value, onChange }) {
 
       {open ? (
         <div className={styles.menu}>
-          {options.map((option) => {
+          {options.map((option, index) => {
             const optionValue = typeof option === "object" ? option.value : option;
             const label = typeof option === "object" ? option.label : t(option);
 
             return (
               <div
-                key={optionValue}
+                key={`${optionValue}-${label}-${index}`}
                 className={`${styles.option} ${
                   optionValue === value ? styles.active : ""
                 }`}

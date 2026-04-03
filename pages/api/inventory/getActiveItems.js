@@ -28,7 +28,7 @@ i.id,
 i.item_name,
 i.unit,
 c.category_name,
-COALESCE(s.total_stock, 0) AS current_stock
+MAX(COALESCE(s.total_stock, 0)) AS current_stock
 
 FROM inventory_stock s
 
@@ -41,6 +41,12 @@ ON c.id=i.category_id
 WHERE s.mess_id=$1
 AND COALESCE(s.is_active, TRUE)=TRUE
 AND COALESCE(s.total_stock, 0) > 0
+
+GROUP BY
+i.id,
+i.item_name,
+i.unit,
+c.category_name
 
 ORDER BY i.item_name
 `,

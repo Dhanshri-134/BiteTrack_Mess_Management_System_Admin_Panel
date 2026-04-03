@@ -11,14 +11,75 @@ function formatMoney(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
 }
 
+function addMinutesToTime(timeValue, minutesToAdd) {
+  const [hours, minutes] = String(timeValue || "18:00").split(":").map(Number);
+  const totalMinutes = (hours * 60) + minutes + Number(minutesToAdd || 0);
+  const normalized = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
+  const nextHours = String(Math.floor(normalized / 60)).padStart(2, "0");
+  const nextMinutes = String(normalized % 60).padStart(2, "0");
+  return `${nextHours}:${nextMinutes}`;
+}
+
+function recalculateAttendanceRow(row) {
+  const current = { ...row };
+  const attendanceType = String(current.attendance_type || "P").toUpperCase();
+  const lateTime = String(current.late_after || "09:30").slice(0, 5);
+  const shiftEnd = String(current.shift_end || "18:00").slice(0, 5);
+
+  if (attendanceType === "A" || attendanceType === "OFF") {
+    current.is_late = false;
+    current.late_minutes = 0;
+    current.penalty_amount = 0;
+    current.overtime_hours = 0;
+    current.overtime_amount = 0;
+    return current;
+  }
+
+  if (current.check_in && current.check_in > lateTime) {
+    const [h1, m1] = current.check_in.split(":").map(Number);
+    const [h2, m2] = lateTime.split(":").map(Number);
+    current.is_late = true;
+    current.late_minutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
+    current.penalty_amount = Number(
+      (current.late_minutes * Number(current.late_penalty || 0)).toFixed(2)
+    );
+    if (current.late_minutes > 120 && attendanceType === "P") {
+      current.attendance_type = "H";
+    }
+  } else {
+    current.is_late = false;
+    current.late_minutes = 0;
+    current.penalty_amount = 0;
+  }
+
+  if (attendanceType === "OT" && (!current.check_out || current.check_out <= shiftEnd)) {
+    current.check_out = addMinutesToTime(shiftEnd, 60);
+  }
+
+  if (current.check_out && current.check_out > shiftEnd) {
+    const [h1, m1] = current.check_out.split(":").map(Number);
+    const [h2, m2] = shiftEnd.split(":").map(Number);
+    const diffMinutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
+    current.overtime_hours = Number((diffMinutes / 60).toFixed(2));
+    current.overtime_amount = Number(
+      (current.overtime_hours * Number(current.overtime_rate || 0)).toFixed(2)
+    );
+  } else {
+    current.overtime_hours = 0;
+    current.overtime_amount = 0;
+  }
+
+  return current;
+}
+
 export default function StaffAttendance() {
   const { t } = useLanguage();
 
   const ATTENDANCE_OPTIONS = [
     { label: "P", value: "P", help: "Present" },
+    { label: t("oT"), value: "OT", help: "Overtime" },
     { label: t("hF"), value: "H", help: "Half Day" },
     { label: "A", value: "A", help: "Absent" },
-    { label: "L", value: "L", help: "Leave" },
     { label: t("oFF"), value: "OFF", help: "Off" },
   ];
 
@@ -66,48 +127,10 @@ export default function StaffAttendance() {
     if (selectedIndex === null) return;
     const updated = [...staff];
     const current = { ...updated[selectedIndex], [field]: value };
-
-    if (field === "check_in") {
-      const lateTime = String(current.late_after || "09:30").slice(0, 5);
-      if (value && value > lateTime) {
-        const [h1, m1] = value.split(":").map(Number);
-        const [h2, m2] = lateTime.split(":").map(Number);
-        current.is_late = true;
-        current.late_minutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
-        current.penalty_amount = current.late_minutes * Number(current.late_penalty || 0);
-        if (current.late_minutes > 120 && current.attendance_type === "P") {
-          current.attendance_type = "H";
-        }
-      } else {
-        current.is_late = false;
-        current.late_minutes = 0;
-        current.penalty_amount = 0;
-      }
-    }
-
-    if (field === "check_out") {
-      const shiftEnd = String(current.shift_end || "18:00").slice(0, 5);
-      if (value && value > shiftEnd) {
-        const [h1, m1] = value.split(":").map(Number);
-        const [h2, m2] = shiftEnd.split(":").map(Number);
-        const diffMinutes = Math.max(0, h1 * 60 + m1 - (h2 * 60 + m2));
-        current.overtime_hours = Number((diffMinutes / 60).toFixed(2));
-        current.overtime_amount = current.overtime_hours * Number(current.overtime_rate || 0);
-      } else {
-        current.overtime_hours = 0;
-        current.overtime_amount = 0;
-      }
-    }
-
-    if (field === "attendance_type" && (value === "A" || value === "L" || value === "OFF")) {
-      current.is_late = false;
-      current.late_minutes = 0;
-      current.penalty_amount = 0;
-      current.overtime_hours = 0;
-      current.overtime_amount = 0;
-    }
-
-    updated[selectedIndex] = current;
+    updated[selectedIndex] =
+      field === "overtime_amount" || field === "penalty_amount"
+        ? current
+        : recalculateAttendanceRow(current);
     setStaff(updated);
   }
 
@@ -123,6 +146,8 @@ export default function StaffAttendance() {
           check_in: row.check_in,
           check_out: row.check_out,
           attendance_type: row.attendance_type,
+          overtime_amount: Number(row.overtime_amount || 0),
+          penalty_amount: Number(row.penalty_amount || 0),
           notes: row.notes,
         },
       });
@@ -215,12 +240,34 @@ export default function StaffAttendance() {
                 {selected.is_late ? (
                   <div className={styles.previewAlert}>
                     <Clock3 size={16} /> Late by {selected.late_minutes} mins. Penalty {formatMoney(selected.penalty_amount)}.
+                    <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
+                      <label>Penalty Amount</label>
+                      <input
+                        className={styles.formInput}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={selected.penalty_amount}
+                        onChange={(event) => updateField("penalty_amount", event.target.value)}
+                      />
+                    </div>
                   </div>
                 ) : null}
 
-                {Number(selected.overtime_amount || 0) > 0 ? (
+                {selected.attendance_type === "OT" || Number(selected.overtime_amount || 0) > 0 ? (
                   <div className={styles.previewOT}>
                     <CheckCircle size={16} /> Overtime {selected.overtime_hours} hrs. OT Pay {formatMoney(selected.overtime_amount)}.
+                    <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
+                      <label>OT Amount</label>
+                      <input
+                        className={styles.formInput}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={selected.overtime_amount}
+                        onChange={(event) => updateField("overtime_amount", event.target.value)}
+                      />
+                    </div>
                   </div>
                 ) : null}
 

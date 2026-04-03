@@ -36,9 +36,13 @@ export default async function handler(req, res) {
         s.base_salary AS configured_base_salary,
         COALESCE(ss.base_salary, 0) AS base_salary,
         COALESCE(ss.base_salary, 0) AS manual_salary,
-        COALESCE(ss.overtime_amount, 0) AS overtime_amount,
-        COALESCE(ss.penalty_amount, 0) AS penalty_amount,
-        COALESCE(ss.base_salary, 0) + COALESCE(ss.overtime_amount, 0) - COALESCE(ss.penalty_amount, 0) AS gross_salary,
+        COALESCE(ss.overtime_amount, COALESCE(a.default_overtime_amount, 0), 0) AS overtime_amount,
+        COALESCE(ss.penalty_amount, COALESCE(a.default_penalty_amount, 0), 0) AS penalty_amount,
+        COALESCE(a.default_overtime_amount, 0) AS default_overtime_amount,
+        COALESCE(a.default_penalty_amount, 0) AS default_penalty_amount,
+        COALESCE(ss.base_salary, 0)
+          + COALESCE(ss.overtime_amount, COALESCE(a.default_overtime_amount, 0), 0)
+          - COALESCE(ss.penalty_amount, COALESCE(a.default_penalty_amount, 0), 0) AS gross_salary,
         CASE
           WHEN ss.id IS NULL THEN 0
           ELSE COALESCE(ss.final_salary, 0)
@@ -56,6 +60,25 @@ export default async function handler(req, res) {
        AND ss.mess_id=s.mess_id
        AND ss.month=$2
        AND ss.year=$3
+      LEFT JOIN (
+        SELECT
+          staff_id,
+          mess_id,
+          EXTRACT(MONTH FROM attendance_date) AS attendance_month,
+          EXTRACT(YEAR FROM attendance_date) AS attendance_year,
+          COALESCE(SUM(overtime_amount), 0) AS default_overtime_amount,
+          COALESCE(SUM(penalty_amount), 0) AS default_penalty_amount
+        FROM staff_attendance
+        GROUP BY
+          staff_id,
+          mess_id,
+          EXTRACT(MONTH FROM attendance_date),
+          EXTRACT(YEAR FROM attendance_date)
+      ) a
+        ON a.staff_id=s.id
+       AND a.mess_id=s.mess_id
+       AND a.attendance_month=$2
+       AND a.attendance_year=$3
       LEFT JOIN (
         SELECT
           staff_id,

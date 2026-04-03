@@ -18,6 +18,7 @@ export default function CategoriesPage() {
     const [showModal, setShowModal] = useState(false);
     const [categoryName, setCategoryName] = useState("");
     const [categoryDescription, setCategoryDescription] = useState("");
+    const [duplicateWarning, setDuplicateWarning] = useState("");
 
     useEffect(() => {
         loadCategories();
@@ -92,6 +93,17 @@ export default function CategoriesPage() {
             return;
         }
 
+        const isDuplicate = categories.some(
+            (category) =>
+                String(category.category_name || "").trim().toLowerCase() ===
+                categoryName.trim().toLowerCase()
+        );
+
+        if (isDuplicate) {
+            setDuplicateWarning("Please do not add duplicate material category.");
+            return;
+        }
+
         try {
 
             const result = await inventoryRequest("/api/inventory/addCategory/", {
@@ -102,10 +114,15 @@ export default function CategoriesPage() {
             });
 
             if (result.success) {
+                if (String(result.message || "").toLowerCase().includes("already exists")) {
+                    setDuplicateWarning("Please do not add duplicate material category.");
+                    return;
+                }
 
                 setCategoryName("");
                 setCategoryDescription("");
                 setShowModal(false);
+                setDuplicateWarning("");
                 loadCategories();
 
             } else {
@@ -198,6 +215,7 @@ export default function CategoriesPage() {
                             value={categoryName}
                             onChange={(e) => {
                                 setCategoryName(e.target.value);
+                                setDuplicateWarning("");
                                 fetchSuggestions(e.target.value);
                             }}
 
@@ -231,6 +249,10 @@ export default function CategoriesPage() {
                             </div>
 
                         )}
+
+                        {duplicateWarning ? (
+                            <p className={styles.errorText}>{duplicateWarning}</p>
+                        ) : null}
 
                         <div className={styles.modalActions}>
 

@@ -36,7 +36,7 @@ export default async function handler(req, res) {
       `SELECT COUNT(*) 
        FROM staff_attendance
        WHERE mess_id=$1 AND attendance_date=$2
-       AND attendance_type IN ('P','H')`,
+        AND attendance_type IN ('P','H','OT')`,
       [messId, today]
     );
 
