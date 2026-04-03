@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     const { rows: bills } = await pgPool.query(
       `SELECT *
        FROM billing_view
-       WHERE mess_id=$1
+       WHERE mess_id=$1 AND status='Active'
        ORDER BY year DESC NULLS LAST, month DESC NULLS LAST`,
       [messId]
     );
