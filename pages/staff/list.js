@@ -169,22 +169,23 @@ export default function StaffList() {
                     <div className={styles.statPill} style={{ background: "#fee2e2", color: "#991b1b" }}>A {stats.absent}</div>
                     <div className={styles.statPill} style={{ background: "#ffedd5", color: "#c2410c" }}>L {stats.leave}</div>
                     <div className={styles.statPill} style={{ background: "#fef3c7", color: "#b45309" }}>HF {stats.halfDay}</div>
+                    <div ><button
+                      type="button"
+                      className={styles.statusToggleBtn}
+                      onClick={(event) => toggleStaffStatus(member, event)}
+                      disabled={savingId === member.id}
+                      
+                    >
+                      {savingId === member.id ? t("Saving...") : member.is_active === false ? t("Activate") : t("Deactivate")}
+                    </button></div>
+
                   </div>
 
                   <div className={styles.staffCardBalance}>
                     <span className={styles.balanceLabel}>{t("balance")}</span>
                     <span className={styles.balanceAmount}>Rs. {Number(member.current_balance || 0).toLocaleString()}</span>
                   </div>
-                  <div className={styles.staffCardActions}>
-                    <button
-                      type="button"
-                      className={styles.statusToggleBtn}
-                      onClick={(event) => toggleStaffStatus(member, event)}
-                      disabled={savingId === member.id}
-                    >
-                      {savingId === member.id ? t("Saving...") : member.is_active === false ? t("Activate") : t("Deactivate")}
-                    </button>
-                  </div>
+                  
                 </div>
               );
             })}

@@ -64,7 +64,7 @@ const fetchData = async () => {
   );
 
   const handleUpdateEmail = async () => {
-    if (!selectedUser || !newEmail.trim()) return alert(t("selectUserAndEnterEmail"));
+    if (!selectedUser || !newEmail.trim()) return toast.error(t("selectUserAndEnterEmail"));
 
     try {
       setLoading(true);
@@ -79,7 +79,7 @@ const fetchData = async () => {
         }),
       });
       const data = await res.json();
-      if (!res.ok) return alert(data.error || t("updateFailed"));
+      if (!res.ok) return toast.error(data.error || t("updateFailed"));
 
       toast.success(t("emailUpdatedSuccessfully"));
       setSelectedUser(null);

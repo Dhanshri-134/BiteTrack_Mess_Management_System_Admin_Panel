@@ -227,6 +227,7 @@ useEffect(() => {
 
     const { user, action } = freezeTarget;
 
+    console.log("FREEZE ACTION:", action, "STATUS:", user.status);
     await toggleFreeze(user.id, action);
 
     setFreezeTarget(null);
@@ -325,7 +326,11 @@ useEffect(() => {
       key: "hostel_room",
       label: t("hostel"),
       render: (u) => (
-        <div style={{width:"120px",height:"auto",overflow:"visible"}}>
+        <div style={{ minWidth: "104px",
+    maxWidth: "118px",
+    wordBreak: "break-word",
+    whiteSpace: "normal",
+    overflowWrap: "break-word"}}>
           {u.course}
           <br></br>
           <div style={{ fontSize: "12px", color: "#6b7280"}}>
@@ -378,8 +383,26 @@ useEffect(() => {
       key: "actions",
       label: t("actions"),
       render: (u) => {
-        if (activeTab !== "verified") return null;
+        if (activeTab === "unverified") return null;
 
+        // ✅ FROZEN TAB → ONLY UNFREEZE
+  if (activeTab === "frozen") {
+    return (
+      <div className={styles.buttonwrapper}>
+        <button
+          className={styles.btn}
+          onClick={() => {
+            setFreezeTarget({
+              user: u,
+              action: "unfreeze"
+            });
+          }}
+        >
+          <span style={{ color: "#fff" }}>Unfreeze</span>
+        </button>
+      </div>
+    );
+  }
         return (
           <div className={styles.buttonwrapper}>
             {/* <span className={styles.actionTrigger}>{t("clickHere")}</span> */}
@@ -398,7 +421,7 @@ useEffect(() => {
                   });
                 }}
               >
-                {u.status === "Active" ? <StopCircleIcon size={12} /> : "Unfreeze"}
+                {u.status === "Active" ? <StopCircleIcon size={12} /> :  <span style={{color:"#16a34a"}}>{t("Unfreeze")}</span>}
               </button>
            {/* </div> */}
           </div>
@@ -470,21 +493,19 @@ useEffect(() => {
 
   const confirmDeleteUser = async () => {
     if (!deleteTarget) return;
-
     try {
       setLoading(true);
       const res = await fetch(
         `https://bite-track-mess-management-system-a.vercel.app/api/users/delete/`,
-        // `/api/users/delete/`,
         {
           method: "DELETE",
           headers: authHeaders(),
           body: JSON.stringify({ id: deleteTarget.id }),
         }
       );
-
-      if (!res.ok) throw new Error();
-
+      if (!res.ok){
+      toast.error(data?.error);
+      };
       toast.success(t("userDeletedSuccess"));
       fetchData();
     } catch {
@@ -502,7 +523,6 @@ useEffect(() => {
 
   const confirmChangeDOJ = async () => {
     if (!dojTarget || !newDOJ) return;
-
     try {
       setLoading(true);
       const res = await fetch(
@@ -516,9 +536,7 @@ useEffect(() => {
           }),
         }
       );
-
       if (!res.ok) throw new Error();
-
       toast.success(t("userUpdatedSuccess"));
       fetchData();
     } catch {
@@ -707,7 +725,8 @@ useEffect(() => {
       const data = await res.json();
 
       if (!res.ok) {
-        return toast.error(t("somethingWentWrong"));
+        const errorMsg = data?.error || "Action failed";
+        return toast.error(errorMsg);
       }
 
       // ✅ Update UI status
@@ -907,8 +926,13 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const filteredVerified = filterAndSort(verified);
+  const filteredVerified = filterAndSort(
+  verified.filter(u => u.status !== "Inactive")
+);;
   const filteredUnverified = filterAndSort(unverified);
+  const frozenUsers = filterAndSort(
+  verified.filter(u => u.status !== "Active")
+);
 
   if (exporting) return <GlobalLoader />;
   return (
@@ -942,7 +966,7 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
               className={`${styles.tabBtn} ${activeTab === "verified" ? styles.activeTab : ""}`}
               onClick={() => setActiveTab("verified")}
             >
-              {t("verifiedUsers")} ({verified.length})
+              {t("verifiedUsers")} ({filteredVerified.length})
             </button>
 
             <button
@@ -950,6 +974,12 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
               onClick={() => setActiveTab("unverified")}
             >
               {t("pendingVerification")} ({unverified.length})
+            </button>
+            <button
+              className={`${styles.tabBtn} ${activeTab === "frozen" ? styles.activeTab : ""}`}
+              onClick={() => setActiveTab("frozen")}
+            >
+              {(t("Unfreeze") || "Unfreeze")} ({frozenUsers.length})
             </button>
 
 
@@ -1017,7 +1047,7 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                       />
                     ))
                   ) : (
-                    renderTable(verified, tableColumns)
+                    renderTable(filteredVerified, tableColumns)
                   )}
                 </div>
               )}
@@ -1079,6 +1109,41 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                       ),
                     }))
                 ))}
+
+                {activeTab === "frozen" && (
+  <div className="frozenSection">
+    {frozenUsers.length === 0 ? (
+      <div className={styles.empty}>{t("noFrozenUsers")}</div>
+    ) : isMobile ? (
+      frozenUsers.map((u) => (
+        <MobileUserCard
+          key={u.id}
+          user={u}
+          t={t}
+          openAccordionId={openAccordionId}
+          setOpenAccordionId={setOpenAccordionId}
+          actions={[
+            {
+              label: (
+                <span className={styles.menuItem}>
+                  🔓 {t("unfreeze")}
+                </span>
+              ),
+              onClick: () => {
+                setFreezeTarget({
+                  user: u,
+                  action: "unfreeze"
+                });
+              }
+            }
+          ]}
+        />
+      ))
+    ) : (
+      renderTable(frozenUsers, tableColumns)
+    )}
+  </div>
+)}
 
             </>
           )}

@@ -14,6 +14,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { saveJsPdfDocument } from "@/lib/fileDownload";
 import { API_BASE } from "../../lib/api";
+import { confirmToast } from "../../lib/confirmToast";
 
 export default function AttendancePage() {
   const [records, setRecords] = useState([]);
@@ -189,10 +190,10 @@ const filteredAbsentUsers = absentUsers.filter(
   const chunks = splitRecords(currentRecords, 3);
 
 
-  const filteredUsers = allUsers.filter((u) =>
-    u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
-    u.phone?.toLowerCase().includes(userSearch.toLowerCase())
-  );
+  const filteredUsers = absentUsers.filter((u) =>
+  u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+  u.phone?.toLowerCase().includes(userSearch.toLowerCase())
+);
 
   const router = useRouter();
 
@@ -358,7 +359,8 @@ const filteredAbsentUsers = absentUsers.filter(
   };
 
   const handleDelete = async (attendance) => {
-    if (!confirm("Are you sure you want to delete this attendance?")) return;
+    const confirmed = await confirmToast("Are you sure you want to delete this attendance?");
+    if (!confirmed) return;
 
     const payload = {
       user_id: attendance.user_id,
@@ -794,8 +796,8 @@ const filteredAbsentUsers = absentUsers.filter(
       </div>
 
       {markModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.attendanceModal}>
+        <div className={styles.modalOverlay} onClick={() => setMarkModalOpen(false)}>
+          <div className={styles.attendanceModal} onClick={(event) => event.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3>{t("markAttendance")}
 

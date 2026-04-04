@@ -5,6 +5,9 @@ import { inventoryOfflineRequest, inventoryRequest } from "@/lib/inventoryClient
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "@/context/LanguageContext";
 import router from "next/router";
+import toast from "react-hot-toast";
+import DateField from "@/components/DateField";
+import { formatDisplayDate } from "@/lib/dateFormat";
 
 export default function Usage() {
 
@@ -15,6 +18,7 @@ export default function Usage() {
     ]);
     const [usageList, setUsageList] = useState([]);
     const [date, setDate] = useState("");
+    const [notes, setNotes] = useState("");
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
@@ -95,16 +99,18 @@ export default function Usage() {
             const result = await inventoryRequest("/api/inventory/addUsage/", {
                 body: {
                     usage_date: date,
+                    notes,
                     items: validItems
                 }
             });
 
             if (result.success) {
 
-                alert(t("usageRecorded"));
+                toast.success(t("usageRecorded"));
                 loadUsage();
                 setRows([{ item_id: "", quantity: "" }]);
                 setDate("");
+                setNotes("");
 
             } else {
                 setError(result.error);
@@ -163,11 +169,16 @@ export default function Usage() {
                 <div className={styles.formGrid}>
                     <div className={styles.fieldGroup}>
                         <label className={styles.fieldLabel}>{t("date")}</label>
-                        <input
+                        <DateField value={date} onChange={(e) => setDate(e.target.value)} />
+                    </div>
+                    <div className={styles.fieldGroup}>
+                        <label className={styles.fieldLabel}>{t("notes")}</label>
+                        <textarea
                             className={styles.formControl}
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
+                            value={notes}
+                            rows={3}
+                            placeholder={t("optionalNote")}
+                            onChange={(e) => setNotes(e.target.value)}
                         />
                     </div>
                 </div>
@@ -256,7 +267,7 @@ export default function Usage() {
 
                     {usageList.map(u => (
                         <tr key={u.id}>
-                            <td data-label={t("date")}>{new Date(u.usage_date).toLocaleDateString()}</td>
+                            <td data-label={t("date")}>{formatDisplayDate(u.usage_date)}</td>
                             <td data-label={t("itemsUsed")}>
                                 {u.items.map((it, i) => (
                                     <div key={i}>

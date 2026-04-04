@@ -55,22 +55,17 @@ export default function AttendanceCalendar({ attendanceMap,  ownerMarkedDates = 
         status = "noData";
       } else {
         const rawVal = safeAttendanceMap[dateStr];
+        const isOwnerMarked = ownerMarkedDates.includes(dateStr);
 
-if (rawVal === true) {
-  status = "present";
-} 
-else if (
-  rawVal === false &&
-  ownerMarkedDates.includes(dateStr)
-) {
-  status = "ownerPresent"; // yellow
-} 
-else if (rawVal === false) {
-  status = "absent";
-} 
-else {
-  status = "noData";
-}
+        if (rawVal === true) {
+          status = "present";
+        } else if (isOwnerMarked) {
+          status = "ownerPresent";
+        } else if (rawVal === false) {
+          status = "absent";
+        } else {
+          status = "noData";
+        }
       }
 
       let className = `${styles.day} ${styles[status]}`;
@@ -95,9 +90,6 @@ else {
     t("jan"), t("feb"), t("mar"), t("apr"), t("may"), t("jun"),
     t("jul"), t("aug"), t("sep"), t("oct"), t("nov"), t("dec")
   ];
-  console.log("attendanceMap:", attendanceMap);
-  console.log("ownerMarkedDates:", ownerMarkedDates);
-
   return (
     <div className={styles.calendar}>
       <div className={styles.header}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/analytics.module.css";
+import { offlineFetch } from "../../lib/offlineFetch";
 import {
   BarChart,
   Bar,
@@ -13,6 +14,7 @@ import {
 } from "recharts";
 import { useLanguage } from "../../context/LanguageContext";
 import { API_BASE } from "../../lib/api";
+import { formatDayOfMonth, formatDisplayDate } from "../../lib/dateFormat";
 
 export default function AnalyticsPage() {
 
@@ -35,25 +37,20 @@ export default function AnalyticsPage() {
 
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API_BASE}/api/analytics/collection/?type=${type}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const d = await offlineFetch(`billing-analytics-${type}`, async () => {
+        const res = await fetch(`${API_BASE}/api/analytics/collection/?type=${type}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch analytics");
+        return res.json();
       });
-
-      const d = await res.json();
-
-      console.log("FULL API:", d);
-console.log("CHART:", d.chart);
       const formattedChart = (d.chart || []).map(item => {
-
-        console.log("ITEM:", item); 
         if (type === "daily") {
           return {
-            label: new Date(item.label).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "short"
-            }),
+            label: formatDayOfMonth(item.label),
             rawDate: item.label,
             total: Number(item.total)
           };
@@ -66,10 +63,6 @@ console.log("CHART:", d.chart);
             total: Number(item.total)
           };
         }
-        console.log("API RESPONSE:", "label:", item.label,
-          "rawDate: ",item.label,
-        "  total:", Number(item.total));
-        
         return {
           label: item.label,
           rawDate: item.label,
@@ -99,16 +92,19 @@ console.log("CHART:", d.chart);
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(
-        `/api/analytics/day-details/?date=${date}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
+      const d = await offlineFetch(`analytics-day-details-${date}`, async () => {
+        const res = await fetch(
+          `/api/analytics/day-details/?date=${date}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
+        );
 
-      const d = await res.json();
+        if (!res.ok) throw new Error("Failed to fetch day details");
+        return res.json();
+      });
 
       setModalData(d.users || []);
       setSelectedDate(date);
@@ -124,16 +120,19 @@ console.log("CHART:", d.chart);
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(
-        `/api/analytics/week-details/?start=${startDate}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
+      const d = await offlineFetch(`analytics-week-details-${startDate}`, async () => {
+        const res = await fetch(
+          `/api/analytics/week-details/?start=${startDate}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
+        );
 
-      const d = await res.json();
+        if (!res.ok) throw new Error("Failed to fetch week details");
+        return res.json();
+      });
 
       setModalData(d.users || []);
       setSelectedDate(startDate);
@@ -163,13 +162,13 @@ console.log("CHART:", d.chart);
         </div>
 
         {/* LOADING */}
-        {loading && <p>{t("loading")}</p>}
 
             <div className={styles.controls}>
-              <button onClick={() => setType("daily")}>{t("daily")}</button>
-              <button onClick={() => setType("weekly")}>{t("weekly")}</button>
-              <button onClick={() => setType("monthly")}>{t("monthly")}</button>
+              <button className={type === "daily" ? styles.activeTab : ""} onClick={() => setType("daily")}>{t("daily")}</button>
+              <button className={type === "weekly" ? styles.activeTab : ""} onClick={() => setType("weekly")}>{t("weekly")}</button>
+              <button className={type === "monthly" ? styles.activeTab : ""} onClick={() => setType("monthly")}>{t("monthly")}</button>
             </div>
+        {loading && <p>{t("loading")}</p>}
         {/* NO DATA */}
         {!loading && data.length === 0 && (
           <div className={styles.empty}>{t("noDataAvailable")}</div>
@@ -189,6 +188,9 @@ console.log("CHART:", d.chart);
                     dataKey="total"
                     fill="#0f766e"
                     radius={[10, 10, 0, 0]}
+                    stroke="none"
+                    activeBar={{ stroke: "none" }}
+                    cursor={type === "monthly" ? "default" : "pointer"}
                     onClick={(data) => {
                       if (!data) return;
 
@@ -237,14 +239,12 @@ console.log("CHART:", d.chart);
 
         {/* MODAL */}
         {showModal && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
+          <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+            <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
 
               <h3>
                 {t("collectionDetails")} —{" "}
-                {type === "daily"
-                  ? new Date(selectedDate).toLocaleDateString()
-                  : selectedDate}
+                {formatDisplayDate(selectedDate)}
               </h3>
 
               <input

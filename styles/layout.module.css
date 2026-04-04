@@ -14,7 +14,7 @@
 }
 .main {
   flex: 1;
-  padding: 1.5rem;
+  padding: 0.8rem;
   padding-top: 2rem;
   padding-bottom: calc(1.5rem + 80px); /* footer */
   margin-top: 68px;

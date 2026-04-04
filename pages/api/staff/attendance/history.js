@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     const messId = decoded.messId;
 
-    const { staff_id, month, year } = req.body;
+    const { staff_id, month, year, date } = req.body;
 
     let query = `
       SELECT 
@@ -56,9 +56,16 @@ export default async function handler(req, res) {
     `;
 
     const values = [messId, month, year];
+    let nextParam = values.length + 1;
+
+    if (date) {
+      query += ` AND attendance_date::date=$${nextParam}`;
+      values.push(date);
+      nextParam += 1;
+    }
 
     if (staff_id) {
-      query += " AND a.staff_id=$4";
+      query += ` AND a.staff_id=$${nextParam}`;
       values.push(staff_id);
     }
 

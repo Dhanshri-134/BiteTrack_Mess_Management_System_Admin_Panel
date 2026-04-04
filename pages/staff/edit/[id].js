@@ -2,10 +2,14 @@ import { useLanguage } from "../../../context/LanguageContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Layout from "../../../components/Layout";
+import DayDropdown from "../../../components/DayDropdown";
+import DateField from "../../../components/DateField";
+import TimeField from "../../../components/TimeField";
 import styles from "../../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffRequest } from "@/lib/staffClient";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { confirmToast } from "../../../lib/confirmToast";
 
 export default function EditStaff() {
   const { t } = useLanguage();
@@ -29,6 +33,11 @@ export default function EditStaff() {
     late_after: "09:30",
     shift_end: "18:00",
   });
+  const salaryTypeOptions = [
+    { value: "monthly", label: t("monthly") },
+    { value: "daily", label: t("daily") },
+    { value: "hourly", label: t("hourly") },
+  ];
 
   useEffect(() => {
     if (id) fetchStaff();
@@ -84,7 +93,7 @@ export default function EditStaff() {
   }
 
   async function handleDeactivate() {
-    const confirmed = window.confirm("Deactivate this staff member?");
+    const confirmed = await confirmToast("Deactivate this staff member?");
     if (!confirmed) return;
 
     try {
@@ -118,15 +127,15 @@ export default function EditStaff() {
                 <div className={styles.formGroup}><label>{t("name")}</label><input className={styles.formInput} name="name" value={form.name} onChange={handleChange} required /></div>
                 <div className={styles.formGroup}><label>{t("phone")}</label><input className={styles.formInput} name="phone" value={form.phone} onChange={handleChange} /></div>
                 <div className={styles.formGroup}><label>{t("role")}</label><input className={styles.formInput} name="role" value={form.role} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>{t("joiningDate")}</label><input className={styles.formInput} type="date" name="joining_date" value={form.joining_date} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>{t("salaryType")}</label><select className={styles.formInput} name="salary_type" value={form.salary_type} onChange={handleChange}><option value="monthly">{t("monthly")}</option><option value="daily">{t("daily")}</option><option value="hourly">{t("hourly")}</option></select></div>
+                <div className={styles.formGroup}><label>{t("joiningDate")}</label><DateField name="joining_date" value={form.joining_date} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("salaryType")}</label><DayDropdown options={salaryTypeOptions} value={form.salary_type} onChange={(value) => setForm((prev) => ({ ...prev, salary_type: value }))} /></div>
                 <div className={styles.formGroup}><label>{t("baseSalary")}</label><input className={styles.formInput} type="number" name="base_salary" value={form.base_salary} onChange={handleChange} /></div>
                 <div className={styles.formGroup}><label>{t("overtimeRateHour")}</label><input className={styles.formInput} type="number" name="overtime_rate" value={form.overtime_rate} onChange={handleChange} /></div>
                 <div className={styles.formGroup}><label>{t("latePenaltyMinute")}</label><input className={styles.formInput} type="number" name="late_penalty" value={form.late_penalty} onChange={handleChange} /></div>
                 <div className={styles.formGroup}><label>{t("currentBalance")}</label><input className={styles.formInput} type="number" name="current_balance" value={form.current_balance} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>{t("shiftStart")}</label><input className={styles.formInput} type="time" name="shift_start" value={form.shift_start} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>{t("lateAfter")}</label><input className={styles.formInput} type="time" name="late_after" value={form.late_after} onChange={handleChange} /></div>
-                <div className={styles.formGroup}><label>{t("shiftEnd")}</label><input className={styles.formInput} type="time" name="shift_end" value={form.shift_end} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("shiftStart")}</label><TimeField name="shift_start" value={form.shift_start} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("lateAfter")}</label><TimeField name="late_after" value={form.late_after} onChange={handleChange} /></div>
+                <div className={styles.formGroup}><label>{t("shiftEnd")}</label><TimeField name="shift_end" value={form.shift_end} onChange={handleChange} /></div>
               </div>
 
               <div className={styles.heroActions}>

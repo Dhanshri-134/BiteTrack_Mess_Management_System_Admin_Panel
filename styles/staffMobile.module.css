@@ -36,7 +36,7 @@
   background: linear-gradient(180deg, #effaf7 0%, #ffffff 100%);
   border: 1px solid #d8efe9;
   border-radius: 1.25rem;
-  padding: 1rem;
+  padding: 0.8rem;
   box-shadow: 0 14px 32px rgba(0, 113, 112, 0.08);
   
 }
@@ -106,7 +106,7 @@ height: auto;
 
 .insightCard strong {
   color: #007171;
-  font-size: 1.4rem;
+  font-size: 1rem;
   line-height: 1.1;
 }
 
@@ -321,11 +321,11 @@ height: auto;
 .statusToggleBtn {
   width: 100%;
   border: 1px solid #d6ece8;
-  background: #ffffff;
-  color: #0f766e;
+  background: rgb(247, 255, 158);
+  color: rgb(192, 163, 0);
   border-radius: 0.75rem;
-  padding: 0.7rem 0.9rem;
-  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -663,11 +663,36 @@ height: auto;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 0.95rem;
+  background: #fff;
+  color: #0f172a;
 }
 
 .formInput:focus {
   border-color: #007170;
   outline: none;
+}
+
+.formInput[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  min-height: 46px;
+  line-height: 1.2;
+  color-scheme: light;
+}
+
+.formInput[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 46px;
+  line-height: 1.2;
+  color-scheme: light;
+}
+
+.formInput[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0.8;
+  cursor: pointer;
 }
 
 .btnPrimary {
@@ -689,7 +714,7 @@ height: auto;
 
 .btnTypes {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
   gap: 0.5rem;
 }
 
@@ -773,7 +798,8 @@ height: auto;
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.5);
+
 }
 
 .tlIcon {
@@ -795,6 +821,7 @@ height: auto;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  /* background-color: #004d4d; */
 }
 
 .tlRow2 {

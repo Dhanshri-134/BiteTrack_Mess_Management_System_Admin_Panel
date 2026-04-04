@@ -250,11 +250,11 @@ penalty_amount: String(row.default_penalty_amount || 0),
                       </div>
                     </div>
 
-                    <div className={styles.statusLegend} style={{ marginTop: "0.85rem" }}>
-                      <span className={styles.statusPill}>{t("base")} {formatMoney(row.configured_base_salary)}</span>
-                      <span className={styles.statusPill}>{t("Gross")}: {formatMoney(row.gross_salary)}</span>
-                      <span className={styles.statusPill}>{t("Paid")}: {formatMoney(row.total_paid)}</span>
-                      <span className={styles.statusPill}>{t("Net")}: {formatMoney(row.final_salary)}</span>
+                    <div className={styles.statusLegend}>
+                      <span className={styles.statusPill} style={{ background: "#fef3c7", color: "#b45309" }}>{t("base")} {formatMoney(row.configured_base_salary)}</span>
+                      <span className={styles.statusPill} style={{ background: "#fef3c7", color: "#b45309" }}>{t("Gross")}: {formatMoney(row.gross_salary)}</span>
+                      <span className={styles.statusPill} style={{ background: "#ffedd5", color: "#c2410c" }}>{t("Paid")}: {formatMoney(row.total_paid)}</span>
+                      <span className={styles.statusPill} style={{ background: "#dcfce7", color: "#166534" }}>{t("Net")}: {formatMoney(row.final_salary)}</span>
                     </div>
 
                     <div className={styles.header}>

@@ -93,7 +93,7 @@ return(
               className={styles.backbtn}
               onClick={() => router.back()}
             >
-              ← Back
+              ← {t("Back")}
             </button>
           </div>
             <h1 className={styles.heroTitle}>{t("purchaseHistory")}</h1>
@@ -103,7 +103,7 @@ return(
 
 <div className={styles.inlineActions}>
 <Link href="/inventory/add-purchases" className={styles.primaryBtn}>
-Add Purchase
+{t("addPurchase")}
 </Link>
 <div className={styles.totalBox}>
 {filtered.length} purchase{filtered.length === 1 ? "" : "s"} found

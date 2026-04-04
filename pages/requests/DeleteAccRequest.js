@@ -5,6 +5,7 @@ import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { confirmToast } from "../../lib/confirmToast";
 
 
 export default function DeleteRequests() {
@@ -83,7 +84,7 @@ export default function DeleteRequests() {
   useAppRefresh(fetchAll);
 
   const deleteUser = async (user) => {
-    const confirmDelete = confirm(`${t("confirmDeleteUser")} ${user.name}?`);
+    const confirmDelete = await confirmToast(`${t("confirmDeleteUser")} ${user.name}?`);
     if (!confirmDelete) return;
 
   const res = await fetch("https://bite-track-mess-management-system-a.vercel.app/api/users/delete/", {
@@ -104,7 +105,8 @@ export default function DeleteRequests() {
 
   // Update request status (Approve / Reject)
   const updateStatus = async (id, status) => {
-    if (!confirm(t("confirmMarkRequest", { status }))) return;
+    const confirmed = await confirmToast(t("confirmMarkRequest", { status }));
+    if (!confirmed) return;
 
     try {
       const res = await fetch(

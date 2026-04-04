@@ -5,6 +5,7 @@ import styles from "../../styles/notification.module.css";
 import { offlineFetch } from "@/lib/offlineFetch";
 import toast from "react-hot-toast";
 import { useLanguage } from "../../context/LanguageContext";
+import { confirmToast } from "../../lib/confirmToast";
 
 function decodeToken(token) {
   if (!token || typeof token !== "string") return null;
@@ -178,7 +179,8 @@ export default function Notifications() {
 
   // ---- Delete grouped ----
   const deletePushGroup = async (ids) => {
-    if (!confirm(t("deleteGroupConfirm", { count: ids.length }))) return;
+    const confirmed = await confirmToast(t("deleteGroupConfirm", { count: ids.length }));
+    if (!confirmed) return;
 
     try {
       const res = await fetch(
@@ -211,7 +213,8 @@ export default function Notifications() {
 
   // ---- Seen superadmin ----
   const seenSuper = async (id) => {
-    if (!confirm(t("markSeenConfirm"))) return;
+    const confirmed = await confirmToast(t("markSeenConfirm"));
+    if (!confirmed) return;
 
     const res = await fetch(
       `https://bite-track-mess-management-system-a.vercel.app/api/superadmin-notifications?id=${id}/`,

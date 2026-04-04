@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import {Edit, Delete, Trash, PencilIcon } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { offlineFetch } from "../../lib/offlineFetch";
+import { confirmToast } from "../../lib/confirmToast";
 
 export default function StaffHandling() {
   if (typeof window !== "undefined") {
@@ -141,7 +142,8 @@ export default function StaffHandling() {
   Delete Staff
   ---------------------------------- */
   const handleDeleteStaff = async (staffId) => {
-    if (!confirm(t("confirm_delete_staff"))) return;
+    const confirmed = await confirmToast(t("confirm_delete_staff"));
+    if (!confirmed) return;
     
     try {
       const token = localStorage.getItem("token");

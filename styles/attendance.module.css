@@ -346,6 +346,17 @@
   border: 1px solid #ddd;
 }
 
+.searchInput[type="date"],
+.searchInput[type="time"],
+.attendanceModal input[type="date"],
+.attendanceModal input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 44px;
+  line-height: 1.2;
+  color-scheme: light;
+}
+
 .userList {
   display: flex;
   flex-direction: column;

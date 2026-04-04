@@ -13,6 +13,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import Link from "next/link";
 import { API_BASE } from "../lib/api";
+import { formatDisplayDate } from "../lib/dateFormat";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -21,6 +22,8 @@ export default function Dashboard() {
     todayAbsent: 0,
     monthlyExpected: 0,
     monthlyCollected: 0,
+    todayCollected: 0,
+    collectionRatio: 0,
   });
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
@@ -255,6 +258,10 @@ const fetchStats = async () => {
 const revenue = await revenueRes.json();
 
 const monthlyCollected = Number(revenue?.monthly_collected || 0);
+const todayCollected = Number(revenue?.today_collected || 0);
+const collectionRatio = monthlyExpected > 0
+  ? Number(((monthlyCollected / monthlyExpected) * 100).toFixed(1))
+  : 0;
     // ---------------- DATE HELPER ----------------
     const getDateFromObj = (obj) => {
       if (!obj) return null;
@@ -357,6 +364,8 @@ const revenueTrend = [...Array(6)].map((_, i) => {
       todayAbsent,
       monthlyExpected: parseFloat(monthlyExpected.toFixed(2)),
       monthlyCollected: parseFloat(monthlyCollected.toFixed(2)),
+      todayCollected: parseFloat(todayCollected.toFixed(2)),
+      collectionRatio,
     });
 
     setRawAttendance(attendanceData);
@@ -378,6 +387,8 @@ const revenueTrend = [...Array(6)].map((_, i) => {
       todayPresent: 0,
       monthlyExpected:0,
       monthlyCollected: 0,
+      todayCollected: 0,
+      collectionRatio: 0,
     });
   } finally {
     setLoading(false);
@@ -644,6 +655,7 @@ const absentUsers = foodUsers.filter(
             {loading ? (
   <div className={styles.skeletonChart}></div>
 ) : attendanceData?.length > 0 ? (
+              <div className={styles.chartSurface}>
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart
                   data={
@@ -663,6 +675,7 @@ const absentUsers = foodUsers.filter(
                     dataKey="attendance"
                     fill="#0f766e"
                     radius={[10, 10, 0, 0]}
+                    activeBar={{ fill: "#0f766e", stroke: "none", strokeWidth: 0 }}
                   onClick={(barData) => {
                     if (trendType !== "daily") return;
 
@@ -675,7 +688,7 @@ const absentUsers = foodUsers.filter(
 
                     setAttendanceModal({
                       open: true,
-                      date: new Date(dateStr).toLocaleDateString("en-IN"),
+                      date: formatDisplayDate(dateStr),
                       users,
                     });
                     setAttendanceTab("present");
@@ -683,6 +696,7 @@ const absentUsers = foodUsers.filter(
                   />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             ) : (
               <p>{t("noAttendanceData")}</p>
             )}
@@ -696,6 +710,7 @@ const absentUsers = foodUsers.filter(
             {loading ? (
   <div className={styles.skeletonChart}></div>
 ) : revenueTrend?.length > 0 ? (
+              <div className={styles.chartSurface}>
               <ResponsiveContainer
                 width="100%"
                 height={300}
@@ -714,10 +729,12 @@ const absentUsers = foodUsers.filter(
                     dataKey="revenue"
                     stroke="#16a34a"
                     strokeWidth={2}
-                    dot={{ r: 3 }}
+                    dot={{ r: 3, stroke: "none", strokeWidth: 0 }}
+                    activeDot={{ r: 5, stroke: "none", strokeWidth: 0 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
+              </div>
             ) : (
               <p>{t("noRevenueData")}</p>
             )}

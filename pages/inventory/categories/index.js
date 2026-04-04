@@ -6,6 +6,7 @@ import { inventoryOfflineRequest, inventoryRequest } from "@/lib/inventoryClient
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "../../../context/LanguageContext";
 import { useRouter } from "next/router";
+import toast from "react-hot-toast";
 
 export default function CategoriesPage() {
       const router = useRouter();
@@ -89,7 +90,7 @@ export default function CategoriesPage() {
     async function addCategory() {
 
         if (!categoryName) {
-            alert("Category name required");
+            toast.error("Category name required");
             return;
         }
 
@@ -126,7 +127,7 @@ export default function CategoriesPage() {
                 loadCategories();
 
             } else {
-                alert(result.error || "Failed");
+                toast.error(result.error || "Failed");
             }
 
         } catch (err) {

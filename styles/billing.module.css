@@ -63,6 +63,17 @@
   font-size: 0.9rem;
 }
 
+.controlItem input[type="date"],
+.controlItem input[type="time"],
+.formGroup input[type="date"],
+.formGroup input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 44px;
+  line-height: 1.2;
+  color-scheme: light;
+}
+
 .controlItem input:focus,
 .controlItem select:focus {
   outline: none;

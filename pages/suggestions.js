@@ -1,6 +1,7 @@
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
+import DayDropdown from "../components/DayDropdown";
 import styles from "../styles/suggestions.module.css";
 import { offlineFetch } from "../lib/offlineFetch";
 import { useLanguage } from "../context/LanguageContext";
@@ -44,6 +45,23 @@ export default function Suggestions() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [sortType, setSortType] = useState("newest");
+  const monthOptions = [
+    { value: "", label: t("allMonths") },
+    ...[...Array(12)].map((_, i) => ({
+      value: String(i + 1),
+      label: new Date(0, i).toLocaleString("en-IN", { month: "long" }),
+    })),
+  ];
+  const yearOptions = [
+    { value: "", label: t("allYears") },
+    ...[...new Set(feedbacks.map((feedback) => new Date(feedback.created_at).getFullYear()))]
+      .sort((a, b) => b - a)
+      .map((value) => ({ value: String(value), label: String(value) })),
+  ];
+  const sortOptions = [
+    { value: "newest", label: t("LatestFirst") },
+    { value: "oldest", label: t("OldestFirst") },
+  ];
 
   const filteredFeedbacks = feedbacks
   .filter((fb) => {
@@ -310,39 +328,9 @@ if (exporting) return <GlobalLoader/>;
           </div>
         </div>
         <div className={styles.filterRow}>
-  <select
-    value={selectedMonth}
-    onChange={(e) => setSelectedMonth(e.target.value)}
-  >
-    <option value="">{t("allMonths")}</option>
-    {[...Array(12)].map((_, i) => (
-      <option key={i} value={i + 1}>
-        {new Date(0, i).toLocaleString("en-IN", { month: "long" })}
-      </option>
-    ))}
-  </select>
-
-  <select
-    value={selectedYear}
-    onChange={(e) => setSelectedYear(e.target.value)}
-  >
-    <option value="">{t("allYears")}</option>
-    {[...new Set(feedbacks.map(f => new Date(f.created_at).getFullYear()))]
-      .sort((a, b) => b - a)
-      .map((y) => (
-        <option key={y} value={y}>
-          {y}
-        </option>
-      ))}
-  </select>
-
-  <select
-    value={sortType}
-    onChange={(e) => setSortType(e.target.value)}
-  >
-    <option value="newest">{t("LatestFirst")}</option>
-    <option value="oldest">{t("OldestFirst")}</option>
-  </select>
+  <DayDropdown options={monthOptions} value={selectedMonth} onChange={setSelectedMonth} />
+  <DayDropdown options={yearOptions} value={selectedYear} onChange={setSelectedYear} />
+  <DayDropdown options={sortOptions} value={sortType} onChange={setSortType} />
 
   <button
     className={styles.exportBtn}

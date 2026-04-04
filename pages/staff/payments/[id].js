@@ -2,10 +2,12 @@ import { useLanguage } from "../../../context/LanguageContext";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../../../components/Layout";
+import DayDropdown from "../../../components/DayDropdown";
 import styles from "../../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffRequest } from "@/lib/staffClient";
 import { Banknote } from "lucide-react";
+import { formatDisplayDate } from "../../../lib/dateFormat";
 
 export default function StaffPayments() {
   const { t } = useLanguage();
@@ -24,6 +26,16 @@ export default function StaffPayments() {
     notes: ""
   });
   const [saving, setSaving] = useState(false);
+  const paymentTypeOptions = [
+    { value: "Advance", label: t("advance") },
+    { value: "Partial", label: t("partial") },
+    { value: "Final", label: t("final") },
+  ];
+  const paymentModeOptions = [
+    { value: "Cash", label: t("cash") },
+    { value: "UPI", label: t("uPI") },
+    { value: "Bank Transfer", label: t("bankTransfer") },
+  ];
 
   useEffect(() => {
     if (id) {
@@ -170,19 +182,11 @@ export default function StaffPayments() {
           <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 500, marginBottom: "0.5rem", color: "#374151" }}>{t("type")}</label>
-              <select className={styles.formInput} value={form.payment_type} onChange={e => setForm({...form, payment_type: e.target.value})}>
-                <option>{t("advance")}</option>
-                <option>{t("partial")}</option>
-                <option>{t("final")}</option>
-              </select>
+              <DayDropdown options={paymentTypeOptions} value={form.payment_type} onChange={(value) => setForm((prev) => ({ ...prev, payment_type: value }))} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 500, marginBottom: "0.5rem", color: "#374151" }}>{t("mode")}</label>
-              <select className={styles.formInput} value={form.payment_mode} onChange={e => setForm({...form, payment_mode: e.target.value})}>
-                <option>{t("cash")}</option>
-                <option>{t("uPI")}</option>
-                <option>{t("bankTransfer")}</option>
-              </select>
+              <DayDropdown options={paymentModeOptions} value={form.payment_mode} onChange={(value) => setForm((prev) => ({ ...prev, payment_mode: value }))} />
             </div>
           </div>
 
@@ -217,7 +221,7 @@ export default function StaffPayments() {
                       <span className={styles.tlAmount} style={{ color: "#dc2626" }}>- ₹{p.amount}</span>
                     </div>
                     <div className={styles.tlRow2}>
-                      <span className={styles.tlDate}>{new Date(p.payment_date).toLocaleDateString()}</span>
+                      <span className={styles.tlDate}>{formatDisplayDate(p.payment_date)}</span>
                       {p.notes && <span className={styles.tlNotes} style={{ color: "#4b5563" }}>{p.notes}</span>}
                     </div>
                   </div>

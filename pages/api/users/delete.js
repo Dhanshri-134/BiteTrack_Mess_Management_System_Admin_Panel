@@ -46,7 +46,6 @@ export default async function handler(req, res) {
     try {
       await client.query("BEGIN");
 
-      // ✅ Verify user belongs to mess
       const userCheck = await client.query(
         `SELECT id, is_active FROM users WHERE id = $1 AND mess_id = $2`,
         [id, messId]
@@ -57,7 +56,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "User not found in your mess" });
       }
 
-      // ✅ Already inactive check (optional)
       if (userCheck.rows[0].is_active === false) {
         await client.query("ROLLBACK");
         return res.status(400).json({ error: "User already inactive" });

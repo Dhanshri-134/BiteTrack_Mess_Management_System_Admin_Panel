@@ -103,7 +103,7 @@ export default async function handler(req, res) {
     if (action === "freeze") {
       query = `
         UPDATE users
-        SET status = 'Frozen',
+        SET status = 'Inactive',
             freeze_date = CURRENT_DATE,
             unfreeze_date = NULL
         WHERE id = $1

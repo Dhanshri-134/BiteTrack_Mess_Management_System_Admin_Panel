@@ -24,6 +24,11 @@
   border-color: #14b8a6;
 }
 
+.trigger:focus-visible,
+.inputField:focus-visible {
+  outline: none;
+}
+
 .arrow {
   font-size: 0.7rem;
   opacity: 0.6;
@@ -39,6 +44,8 @@
   border-radius: 14px;
   box-shadow: 0 12px 28px rgba(0,0,0,0.12);
   overflow: hidden;
+  max-height: 280px;
+  overflow-y: auto;
   z-index: 100;
 }
 
@@ -58,4 +65,194 @@
 .active {
   background-color: #14b8a6;
   color: #ffffff;
+}
+
+.inputFieldShell {
+  position: relative;
+  width: 100%;
+}
+
+.fieldTrigger {
+  padding: 12px 14px;
+}
+
+.fieldTriggerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.fieldPreviewText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fieldPreviewLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.timeValueGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeValueBox {
+  min-width: 34px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: #e6f7f6;
+  color: #0f766e;
+  text-align: center;
+  font-weight: 700;
+}
+
+.timeSeparator {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.fieldBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.32);
+  z-index: 110;
+}
+
+.fieldPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 120;
+}
+
+.fieldPanelHeader {
+  margin-bottom: 12px;
+}
+
+.fieldPanelHeader strong {
+  display: block;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.fieldPanelSubtext {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.fieldSelectorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 10px;
+}
+
+.fieldColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldColumnTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.fieldOptionList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.fieldOptionButton {
+  border: 1px solid #d8e4ea;
+  background: #f8fafc;
+  color: #0f172a;
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fieldOptionButton:hover {
+  border-color: #14b8a6;
+  background: #eefcfb;
+}
+
+.fieldOptionActive {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.fieldActionRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.actionTextBtn {
+  border: none;
+  background: #e6f7f6;
+  color: #0f766e;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actionTextBtn:hover {
+  background: #d2f0ee;
+}
+
+.arrowOpenIcon {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+@media (max-width: 640px) {
+  .fieldPanel {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    top: auto;
+    max-height: min(72vh, 560px);
+    overflow-y: auto;
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .fieldSelectorGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fieldOptionList {
+    max-height: 240px;
+  }
 }

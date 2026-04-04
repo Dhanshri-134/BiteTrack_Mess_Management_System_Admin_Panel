@@ -623,6 +623,14 @@ font-size:14px;
 color:#0f172a;
 }
 
+.formControl[type="date"],
+.formControl[type="time"]{
+appearance:none;
+-webkit-appearance:none;
+line-height:1.2;
+color-scheme:light;
+}
+
 .formControl:focus{
 outline:none;
 border-color:#0f766e;

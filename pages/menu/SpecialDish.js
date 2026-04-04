@@ -6,6 +6,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { supabase } from "../../lib/supabase";
 
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { confirmToast } from "../../lib/confirmToast";
 
 export default function SpecialDish({ messAccess }) {
   const [specials, setSpecials] = useState([]);
@@ -189,7 +190,8 @@ export default function SpecialDish({ messAccess }) {
 
 
 const deleteDish = async (id) => {
-  if (!confirm(t("confirmDeleteDish"))) return;
+  const confirmed = await confirmToast(t("confirmDeleteDish"));
+  if (!confirmed) return;
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error(t("sessionExpired"));

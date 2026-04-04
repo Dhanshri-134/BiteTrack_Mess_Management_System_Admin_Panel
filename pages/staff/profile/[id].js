@@ -2,12 +2,15 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import Layout from "../../../components/Layout";
 import DayDropdown from "../../../components/DayDropdown";
+import DateField from "../../../components/DateField";
+import TimeField from "../../../components/TimeField";
 import styles from "../../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
 import { useLanguage } from "../../../context/LanguageContext";
 import {
   ArrowLeft,
+  ArrowRight,
   Banknote,
   CalendarDays,
   CheckCircle,
@@ -24,6 +27,7 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
+import { formatDisplayDate } from "../../../lib/dateFormat";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const PAYMENT_TYPES = ["advance", "partial", "final"];
@@ -400,9 +404,9 @@ export default function StaffProfile() {
   return (
     <Layout title={`${t("profile")}: ${profile.name}`}>
       <div className={styles.profileContainer}>
-        <button type="button" className={styles.backBtn} onClick={() => router.back()}>
+        {/* <button type="button" className={styles.backBtn} onClick={() => router.back()}>
           <ArrowLeft size={16} /> {t("back")}
-        </button>
+        </button> */}
 
         <div className={styles.profileHero}>
           <div className={styles.profileHeaderMain}>
@@ -574,7 +578,7 @@ export default function StaffProfile() {
             <div className={styles.summaryBox}><span>{t("advances")}</span><strong>{formatMoney(paymentSummary.totalPaid)}</strong></div>
             <div className={`${styles.summaryBox} ${styles.summaryBoxWide}`}><span>{t("netPayable")}</span><strong>{formatMoney(paymentSummary.finalSalary)}</strong></div>
                           <Link href="/staff/salary/history" className={styles.actionLinkCard}>
-                                        <span>{t("salaryManagement")}</span>
+                                        <span>{t("salaryManagement")} <ArrowRight size={15}/> </span>
                               
                             </Link>
           </div>
@@ -589,7 +593,7 @@ export default function StaffProfile() {
               <div className={styles.formGridCompact}>
                 <div className={styles.formGroup}><label htmlFor="staff-payment-amount">{t("amount")}</label><input id="staff-payment-amount" className={styles.formInput} type="number" min="0" step="0.01" name="amount" value={paymentForm.amount} onChange={handlePaymentInputChange} placeholder="0.00" autoComplete="off" /></div>
                 <div className={styles.formGroup}><label htmlFor="staff-payment-type">{t("type")}</label><div id="staff-payment-type"><DayDropdown options={PAYMENT_TYPES.map((type) => ({ value: type, label: t(type) }))} value={paymentForm.payment_type} onChange={(value) => setPaymentForm((prev) => ({ ...prev, payment_type: value }))} /></div></div>
-                <div className={styles.formGroup}><label htmlFor="staff-payment-date">{t("date")}</label><input id="staff-payment-date" className={styles.formInput} type="date" name="payment_date" value={paymentForm.payment_date} onChange={handlePaymentInputChange} autoComplete="on" /></div>
+                <div className={styles.formGroup}><label htmlFor="staff-payment-date">{t("date")}</label><DateField id="staff-payment-date" name="payment_date" value={paymentForm.payment_date} onChange={handlePaymentInputChange} autoComplete="on" /></div>
                 <div className={`${styles.formGroup} ${styles.formGroupWide}`}><label htmlFor="staff-payment-notes">{t("notes")}</label><input id="staff-payment-notes" className={styles.formInput} type="text" name="notes" value={paymentForm.notes} onChange={handlePaymentInputChange} placeholder={t("optionalNote")} autoComplete="on" /></div>
               </div>
               <button className={styles.btnPrimary} type="submit" disabled={savingPayment}>{savingPayment ? t("saving") : t("recordPayment")}</button>
@@ -601,7 +605,7 @@ export default function StaffProfile() {
                   <div className={styles.tlIcon}><Banknote size={18} /></div>
                   <div className={styles.tlDetails}>
                     <div className={styles.tlRow}><strong>{String(payment.payment_type || "").toUpperCase()}</strong><span className={styles.tlAmount}>{formatMoney(payment.amount)}</span></div>
-                    <div className={styles.tlRow2}><span>{new Date(payment.payment_date).toLocaleDateString()}</span><span>{payment.notes || t("noNote")}</span></div>
+                    <div className={styles.tlRow2}><span>{formatDisplayDate(payment.payment_date)}</span><span>{payment.notes || t("noNote")}</span></div>
                   </div>
                 </div>
               ))}
@@ -618,9 +622,9 @@ export default function StaffProfile() {
               </div>
 
               <div className={styles.formGridCompact}>
-                <div className={styles.formGroup}><label htmlFor="attendance-date">{t("date")}</label><input id="attendance-date" type="date" className={styles.formInput} name="date" value={modalData.date} onChange={(event) => updateModalField("date", event.target.value)} autoComplete="on" /></div>
-                <div className={styles.formGroup}><label htmlFor="attendance-checkin">{t("checkIn")}</label><input id="attendance-checkin" type="time" className={styles.formInput} name="check_in" value={modalData.check_in} onChange={(event) => updateModalField("check_in", event.target.value)} autoComplete="on" /></div>
-                <div className={styles.formGroup}><label htmlFor="attendance-checkout">{t("checkOut")}</label><input id="attendance-checkout" type="time" className={styles.formInput} name="check_out" value={modalData.check_out} onChange={(event) => updateModalField("check_out", event.target.value)} autoComplete="on" /></div>
+                <div className={styles.formGroup}><label htmlFor="attendance-date">{t("date")}</label><DateField id="attendance-date" name="date" value={modalData.date} onChange={(event) => updateModalField("date", event.target.value)} autoComplete="on" /></div>
+                <div className={styles.formGroup}><label htmlFor="attendance-checkin">{t("checkIn")}</label><TimeField id="attendance-checkin" name="check_in" value={modalData.check_in} onChange={(event) => updateModalField("check_in", event.target.value)} autoComplete="on" /></div>
+                <div className={styles.formGroup}><label htmlFor="attendance-checkout">{t("checkOut")}</label><TimeField id="attendance-checkout" name="check_out" value={modalData.check_out} onChange={(event) => updateModalField("check_out", event.target.value)} autoComplete="on" /></div>
                 <div className={`${styles.formGroup} ${styles.formGroupWide}`}>
                   <label>{t("status")}</label>
                   <div className={styles.btnTypes}>

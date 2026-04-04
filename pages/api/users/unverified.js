@@ -107,6 +107,7 @@ export default async function handler(req, res) {
           u.date_of_joining,
           u.verified,
           u.created_at,
+          u.mess_user_id,
           COALESCE(
             json_agg(
               json_build_object(

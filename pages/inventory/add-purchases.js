@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
+import DayDropdown from "../../components/DayDropdown";
 import styles from "../../styles/inventory.module.css";
 import { inventoryOfflineRequest, inventoryRequest } from "@/lib/inventoryClient";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { useLanguage } from "../../context/LanguageContext";
 import { useRouter } from "next/router";
+import toast from "react-hot-toast";
+import DateField from "@/components/DateField";
 
 export default function AddPurchase() {
   const router = useRouter();
@@ -106,7 +109,7 @@ export default function AddPurchase() {
       });
 
       if (result.success) {
-        alert("Purchase saved");
+        toast.success(t("purchaseSaved") || "Purchase saved");
         setRows([{ item_id: "", quantity: "", price: "" }]);
         setVendor("");
         setInvoice("");
@@ -120,6 +123,22 @@ export default function AddPurchase() {
     }
   }
 
+  const vendorOptions = [
+    { value: "", label: t("selectVendor") },
+    ...vendors.map((vendorItem) => ({
+      value: String(vendorItem.id),
+      label: vendorItem.vendor_name,
+    })),
+  ];
+
+  const itemOptions = [
+    { value: "", label: t("selectItem") },
+    ...items.map((item) => ({
+      value: String(item.id),
+      label: item.item_name,
+    })),
+  ];
+
   return (
     <Layout title={t("addPurchase")}>
       <section className={styles.heroSection}>
@@ -127,7 +146,7 @@ export default function AddPurchase() {
           <div className={styles.header}>
             <p className={styles.eyebrow}>{t("inventory")}</p>
             <button className={styles.backbtn} onClick={() => router.back()}>
-              Back
+              ← {t("Back")}
             </button>
           </div>
           <h1 className={styles.heroTitle}>{t("addPurchases")}</h1>
@@ -138,28 +157,21 @@ export default function AddPurchase() {
         <div className={styles.formCardHeader}>
           <div>
             <h3 className={styles.formCardTitle}>{t("addPurchases")}</h3>
-            <p className={styles.formCardText}>
+            {/* <p className={styles.formCardText}>
               Fill vendor details, add purchase rows, and save everything from
               one clean form.
-            </p>
+            </p> */}
           </div>
         </div>
 
         <div className={styles.formGrid}>
           <div className={styles.fieldGroup}>
             <label className={styles.fieldLabel}>{t("vendor")}</label>
-            <select
-              className={styles.formControl}
+            <DayDropdown
+              options={vendorOptions}
               value={vendor}
-              onChange={(e) => setVendor(e.target.value)}
-            >
-              <option value="">{t("selectVendor")}</option>
-              {vendors.map((vendorItem) => (
-                <option key={vendorItem.id} value={vendorItem.id}>
-                  {vendorItem.vendor_name}
-                </option>
-              ))}
-            </select>
+              onChange={setVendor}
+            />
           </div>
 
           <div className={styles.fieldGroup}>
@@ -174,12 +186,7 @@ export default function AddPurchase() {
 
           <div className={styles.fieldGroup}>
             <label className={styles.fieldLabel}>{t("date")}</label>
-            <input
-              className={styles.formControl}
-              type="date"
-              value={purchaseDate}
-              onChange={(e) => setPurchaseDate(e.target.value)}
-            />
+            <DateField value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} />
           </div>
 
           <div className={styles.fieldGroup}>
@@ -188,6 +195,7 @@ export default function AddPurchase() {
               className={styles.formControl}
               placeholder={t("notes")}
               value={notes}
+              rows={0}
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
@@ -209,37 +217,32 @@ export default function AddPurchase() {
         <tbody>
           {rows.map((row, index) => (
             <tr key={index}>
-              <td data-label={t("item")}>
-                <select
-                  className={styles.formControl}
-                  value={row.item_id}
-                  onChange={(e) => updateRow(index, "item_id", e.target.value)}
-                >
-                  <option value="">{t("selectItem")}</option>
-                  {items.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.item_name}
-                    </option>
-                  ))}
-                </select>
+              <td >
+                <DayDropdown
+                  options={itemOptions}
+                  value={String(row.item_id || "")}
+                  onChange={(value) => updateRow(index, "item_id", value)}
+                />
               </td>
 
-              <td data-label={t("quantity")}>
+              <td>
                 <input
                   className={styles.formControl}
                   type="number"
                   min="0"
                   value={row.quantity}
+                  placeholder={t("quantity")}
                   onChange={(e) => updateRow(index, "quantity", e.target.value)}
                 />
               </td>
 
-              <td data-label={t("price")}>
+              <td>
                 <input
                   className={styles.formControl}
                   type="number"
                   min="0"
                   value={row.price}
+                  placeholder={t("price")}
                   onChange={(e) => updateRow(index, "price", e.target.value)}
                 />
               </td>

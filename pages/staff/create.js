@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Layout from "../../components/Layout";
 import DayDropdown from "../../components/DayDropdown";
+import DateField from "../../components/DateField";
+import TimeField from "../../components/TimeField";
 import styles from "../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffRequest } from "@/lib/staffClient";
@@ -66,16 +68,19 @@ export default function CreateStaff() {
     <Layout title={t("createStaff")}>
       <div className={styles.container}>
         <div className={styles.pageStack}>
+
+          <section className={styles.heroPanel}>
+            <div className={styles.header}>
+
+            <p className={styles.heroKicker}>{t("staff")}</p>
           <button type="button" className={styles.backBtn} onClick={() => router.back()}>
             <ArrowLeft size={16} /> {t("back")}
           </button>
-
-          <section className={styles.heroPanel}>
-            <p className={styles.heroKicker}>{t("staff")}</p>
+            </div>
             <h1 className={styles.heroHeading}>{t("addStaffMember")}</h1>
-            <p className={styles.heroText}>
+            {/* <p className={styles.heroText}>
               {t("addStaffMemberDescription")}
-            </p>
+            </p> */}
           </section>
 
           <form onSubmit={handleSubmit} className={styles.paymentFormCard}>
@@ -94,7 +99,7 @@ export default function CreateStaff() {
               </div>
               <div className={styles.formGroup}>
                 <label>{t("joiningDate")}</label>
-                <input className={styles.formInput} type="date" name="joining_date" autoComplete="on" value={form.joining_date} onChange={handleChange} />
+                <DateField name="joining_date" autoComplete="on" value={form.joining_date} onChange={handleChange} />
               </div>
               <div className={styles.formGroup}>
                 <label>{t("salaryType")}</label>
@@ -122,15 +127,15 @@ export default function CreateStaff() {
               </div>
               <div className={styles.formGroup}>
                 <label>{t("shiftStart")}</label>
-                <input className={styles.formInput} type="time" name="shift_start" autoComplete="on" value={form.shift_start} onChange={handleChange} />
+                <TimeField name="shift_start" autoComplete="on" value={form.shift_start} onChange={handleChange} />
               </div>
               <div className={styles.formGroup}>
                 <label>{t("lateAfter")}</label>
-                <input className={styles.formInput} type="time" name="late_after" autoComplete="on" value={form.late_after} onChange={handleChange} />
+                <TimeField name="late_after" autoComplete="on" value={form.late_after} onChange={handleChange} />
               </div>
               <div className={styles.formGroup}>
                 <label>{t("shiftEnd")}</label>
-                <input className={styles.formInput} type="time" name="shift_end" autoComplete="on" value={form.shift_end} onChange={handleChange} />
+                <TimeField name="shift_end" autoComplete="on" value={form.shift_end} onChange={handleChange} />
               </div>
             </div>
 

@@ -14,6 +14,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ChartBarIcon, ChevronDown, ChevronUp, Download, Filter, FilterIcon, FilterX, FilterXIcon, Presentation, MoreVertical, DownloadIcon, RefreshCcw } from "lucide-react";
 import DayDropdown from "../../components/DayDropdown";
+import DateField from "../../components/DateField";
 import { downloadFileFromUrl, saveJsPdfDocument } from "../../lib/fileDownload";
 
 const TooltipText = ({ value }) => {
@@ -127,6 +128,7 @@ export default function BillsPage() {
   });
 
   const [existingAdvance, setExistingAdvance] = useState(null);
+  const [currentAdvanceBalance, setCurrentAdvanceBalance] = useState(0);
 
   const ReceiptModal = () => {
     if (!receiptModal) return null;
@@ -191,13 +193,20 @@ export default function BillsPage() {
 
   const openAdvanceModal = async (bill) => {
     try {
-      const res = await fetch(
-        `${API_BASE}/api/advance/fetch/?user_id=${bill.user_id}&month=${bill.month}&year=${bill.year}/`,
-        { headers: authHeaders() }
-      );
+      const data = await offlineFetch(
+        `advance-balance-${bill.user_id}-${bill.month}-${bill.year}`,
+        async () => {
+          const res = await fetch(
+            `${API_BASE}/api/advance/fetch/?user_id=${bill.user_id}&month=${bill.month}&year=${bill.year}`,
+            { headers: authHeaders() }
+          );
 
-      const data = await res.json();
-      setExistingAdvance(data || null);
+          if (!res.ok) throw new Error("Failed to fetch advance balance");
+          return res.json();
+        }
+      );
+      setExistingAdvance(null);
+      setCurrentAdvanceBalance(Number(data?.advance_amount ?? bill.advance_amount ?? 0));
       setAdvanceData({
         amount: "",
         payment_method: "",
@@ -206,6 +215,14 @@ export default function BillsPage() {
       setAdvanceModal(bill);
     } catch (err) {
       console.error(err);
+      setExistingAdvance(null);
+      setCurrentAdvanceBalance(Number(bill.advance_amount || 0));
+      setAdvanceData({
+        amount: "",
+        payment_method: "",
+        notes: ""
+      });
+      setAdvanceModal(bill);
     }
   };
 
@@ -471,10 +488,43 @@ Thank you.`;
   };
 
   const userIdFromQuery = router.isReady ? router.query.userId : null;
+  const scopedBills = month && year
+    ? bills.filter((bill) => Number(bill.month) === Number(month) && Number(bill.year) === Number(year))
+    : bills;
+  const historyByUser = bills.reduce((acc, bill) => {
+    const key = String(bill.user_id);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(bill);
+    return acc;
+  }, {});
+
+  const openAttendanceCalendar = (bill) => {
+    const userHistory = historyByUser[String(bill.user_id)] || [];
+    const attendanceMap = {};
+    const ownerMarkedDateSet = new Set();
+
+    userHistory.forEach((entry) => {
+      Object.entries(entry.attendance_map || {}).forEach(([dateKey, present]) => {
+        attendanceMap[dateKey] = present;
+      });
+
+      (entry.owner_marked_dates || []).forEach((dateKey) => {
+        ownerMarkedDateSet.add(dateKey);
+      });
+    });
+
+    setSelectedAttendance({
+      year: bill.year,
+      month: bill.month,
+      attendanceMap,
+      name: bill.name,
+      ownerMarkedDates: Array.from(ownerMarkedDateSet),
+    });
+  };
   
   const groupedBills = (() => {
     const map = {};
-    bills.forEach((b) => {
+    scopedBills.forEach((b) => {
       const key = b.user_id;
       if (!map[key]) {
         map[key] = {
@@ -494,7 +544,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
   map[key].parent_name = b.parent_name;
 }
 
-      map[key].history.push(b);
+      map[key].history = historyByUser[String(key)] || [];
 
       if (b.advance_amount !== null && b.advance_amount !== undefined) {
         map[key].advance_amount = Number(b.advance_amount);
@@ -502,18 +552,9 @@ if (!map[key].parent_mobile && b.parent_mobile) {
 
       const amount = getBillAmount(b);
       const paidAmt = Number(b.paid_amount || 0);
-      const currentMonth = new Date().getMonth() + 1;
-      const currentYear = new Date().getFullYear();
-      const targetMonth = month ? Number(month) : currentMonth;
-      const targetYear = year ? Number(year) : currentYear;
-
-      const isCurrent = Number(b.month) === targetMonth && Number(b.year) === targetYear;
-
-      // if (isCurrent) {
-      //   map[key].payable = amount;
-      //   map[key].start_date = b.start_date;
-      //   map[key].end_date = b.end_date;
-      // }
+      map[key].payable += amount;
+      map[key].start_date = b.start_date;
+      map[key].end_date = b.end_date;
 
       if (!b.paid) {
         const diff = amount - paidAmt;
@@ -944,6 +985,11 @@ if (!map[key].parent_mobile && b.parent_mobile) {
     { value: "", label: t("selectMonth") },
     ...Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString().padStart(2, "0"), label: new Date(0, i).toLocaleString("default", { month: "long" }) }))
   ];
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, index) => {
+    const value = String(currentYear - 2 + index);
+    return { value, label: value };
+  });
 
   return (
     <Layout>
@@ -978,7 +1024,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                   </div>
                   <div className={styles.controlItem}>
                     <label>{t("year")}</label>
-                    <input type="number" placeholder={t("yearPlaceholder")} value={year} onChange={(e) => setYear(e.target.value)} />
+                    <DayDropdown options={yearOptions} value={year} onChange={setYear} />
                   </div>
                   <div className={styles.controlItem}>
                     <label>{t("payment")}</label>
@@ -1111,7 +1157,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                                       <button className={`${!b.has_pending ? styles.btnPaidDisabled : styles.btnPaid}`} disabled={!b.has_pending} onClick={() => { if(b.has_pending) openPaymentModal(b); }}>
                                         {!b.has_pending ? t("paid") : t("markPaid")}
                                       </button>
-                                      <button onClick={() => { setSelectedAttendance({ year: b.year, month: b.month, attendanceMap: b.attendance_map, name: b.name }); setOpenActions(null); }}>{t("viewCalendar")}</button>
+                                      <button onClick={() => { openAttendanceCalendar(b); setOpenActions(null); }}>{t("viewCalendar")}</button>
                                       <button onClick={() => { setExpandedCard(expandedCard === b.user_id ? null : b.user_id); setOpenActions(null); }}>
                                         {expandedCard === b.user_id ? t("closeHistory") : t("paymentHistory")}
                                       </button>
@@ -1164,7 +1210,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                                               <button onClick={(e) => {e.stopPropagation();openPaymentModal(h, true)}} style={{ padding: "6px 14px", background: h.paid ? "#f3f4f6" : "#007171", color: h.paid ? "black" : "white", border: "1px solid", borderColor: h.paid ? "#d1d5db" : "transparent", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "0.2s" }} onMouseOver={(e) => {if(!h.paid) e.currentTarget.style.background = "#007170"}} onMouseOut={(e) => {if(!h.paid) e.currentTarget.style.background = "#007171"}}>
                                                 {h.paid ? (t("editPaidAmount") || "Edit Paid Amount") : t("markPaid")}
                                               </button>
-                                              <button onClick={() => setSelectedAttendance({ year: h.year, month: h.month, attendanceMap: h.attendance_map || {}, name: h.name, ownerMarkedDates: h.owner_marked_dates || [] })} style={{ padding: "6px 14px", background: "white", color: "#374151", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "#f3f4f6"} onMouseOut={(e) => e.currentTarget.style.background = "white"}>
+                                              <button onClick={() => openAttendanceCalendar(h)} style={{ padding: "6px 14px", background: "white", color: "#374151", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "#f3f4f6"} onMouseOut={(e) => e.currentTarget.style.background = "white"}>
                                                 {t("viewCalendar")}
                                               </button>
                                               <button onClick={() => openAdvanceModal(b)} style={{ padding: "6px 14px", background: "white", color: "#374151", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "#f3f4f6"} onMouseOut={(e) => e.currentTarget.style.background = "white"}>
@@ -1310,7 +1356,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                                         {h.paid ? (t("editPaidAmount") || "Edit Paid Amount") : t("markPaid")}
                                       </button>
                                       <button 
-                                        onClick={() => setSelectedAttendance({ year: h.year, month: h.month, attendanceMap: h.attendance_map || {}, name: h.name, ownerMarkedDates: h.owner_marked_dates || [] })}
+                                        onClick={() => openAttendanceCalendar(h)}
                                         style={{ flex: "1 1 calc(50% - 3px)", padding: "8px", background: "white", color: "#374151", border: "1px solid #d1d5db", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer" }}>
                                         {t("viewCalendar")}
                                       </button>
@@ -1340,8 +1386,8 @@ if (!map[key].parent_mobile && b.parent_mobile) {
               </section>
 
               {paymentModal && (
-                <div className={styles.modalOverlay}>
-                  <div className={styles.modalContent}>
+                <div className={styles.modalOverlay} onClick={() => setPaymentModal(null)}>
+                  <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
                     <h3>{paymentModal.paid ? (t("editPayment") || "Edit Payment") : t("markPayment")} — {paymentModal.name || paymentModal.user_name} ({paymentModal.month}/{paymentModal.year})</h3>
                     <div className={styles.formGroup}>
                       <label>{t("amount")}</label>
@@ -1374,7 +1420,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                     </div>
                     <div className={styles.formGroup}>
                       <label>{t("paymentDate")}</label>
-                      <input type="date" value={paymentData.payment_date} onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })} />
+                      <DateField value={paymentData.payment_date} onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })} />
                     </div>
                     <div className={styles.formGroup}>
                       <label>{t("note")}</label>
@@ -1389,8 +1435,8 @@ if (!map[key].parent_mobile && b.parent_mobile) {
               )}
 
               {selectedAttendance && (
-                <div className={styles.modalOverlay}>
-                  <div className={styles.modalContent}>
+                <div className={styles.modalOverlay} onClick={() => setSelectedAttendance(null)}>
+                  <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
                     <div className={styles.modalHeader}>
                       <h3>{selectedAttendance.name}{t("attendanceSuffix")} ({selectedAttendance.month}/{selectedAttendance.year})</h3>
                     </div>
@@ -1433,10 +1479,13 @@ if (!map[key].parent_mobile && b.parent_mobile) {
           )}
 
           {advanceModal && (
-            <div className={styles.modalOverlay}>
-              <div className={styles.modalContent}>
+            <div className={styles.modalOverlay} onClick={() => setAdvanceModal(null)}>
+              <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
                 <h3>{t("advancePayment")} — {advanceModal.name}</h3>
                 {existingAdvance && <div className={styles.advanceBalance}>{t("currentBalance")}: ₹{existingAdvance.advance_amount}</div>}
+                <div className={styles.advanceBalance}>
+                  {t("currentBalance")}: ₹{Number(currentAdvanceBalance || 0).toFixed(2)}
+                </div>
                 <div className={styles.formGroup}>
                   <label>{t("amount")}</label>
                   <input type="number" value={advanceData.amount} onChange={(e) => setAdvanceData({ ...advanceData, amount: e.target.value })} />

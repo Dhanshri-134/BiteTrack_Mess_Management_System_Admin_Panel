@@ -100,6 +100,7 @@
   "endDate": "End Date",
   "days": "Days",
   "totalAmount": "Total (₹)",
+  "totalamount": "Total Amount",
   "actions": "Actions",
   "active": "Active",
   "markPaid": "Mark Paid",
@@ -758,6 +759,7 @@
   "viewYourPostgreSQLDatabaseTablesAndData": "View your PostgreSQL database tables and data",
   "invoiceNumber": "Invoice Number",
   "selectVendor": "Select Vendor",
+  "addPurchases": "Add Purchase",
   "addPurchase": "Add Purchase",
   "categoryName": "Category Name",
   "addCategory": "Add Category",
@@ -862,5 +864,7 @@
   "editPayment":"Edit Payment",
   "material":"Material",
   "SaveMinStock":"Save Min Stock",
-  "attendanceHistory":"Attendance History"
+  "attendanceHistory":"Attendance History",
+  "frozenUsers": "Frozen Users",
+  "noFrozenUsers": "No frozen users found"
 }

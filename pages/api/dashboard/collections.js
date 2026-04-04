@@ -21,11 +21,15 @@ const messId=decoded.messId;
 const {rows}=await pgPool.query(
 `
 SELECT 
-COALESCE(SUM(amount),0) AS monthly_collected
+COALESCE(SUM(amount) FILTER (
+  WHERE DATE_TRUNC('month',payment_date)=DATE_TRUNC('month',CURRENT_DATE)
+),0) AS monthly_collected,
+COALESCE(SUM(amount) FILTER (
+  WHERE payment_date::date=CURRENT_DATE
+),0) AS today_collected
 FROM payment_history
 WHERE mess_id=$1
 AND status='paid'
-AND DATE_TRUNC('month',payment_date)=DATE_TRUNC('month',CURRENT_DATE)
 `,
 [messId]
 );

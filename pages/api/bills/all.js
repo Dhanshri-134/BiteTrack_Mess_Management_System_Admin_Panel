@@ -43,6 +43,21 @@ export default async function handler(req, res) {
       [messId]
     );
 
+    const { rows: ownerRows } = await pgPool.query(
+      `SELECT user_id, att_date
+       FROM "Owner_Marked_attendance"
+       WHERE mess_id=$1`,
+      [messId]
+    );
+
+    const ownerMarkedByBill = ownerRows.reduce((acc, row) => {
+      const attDate = new Date(row.att_date);
+      const key = `${row.user_id}-${attDate.getFullYear()}-${attDate.getMonth() + 1}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(attDate.toISOString().slice(0, 10));
+      return acc;
+    }, {});
+
     const { rows: allVerified } = await pgPool.query(
       `SELECT u.id as user_id, u.mess_id, u.name, u.email, COALESCE(u.status, 'Active') as status, u.phone as mobile, p.name as parent_name, p.contact as parent_mobile, u.course, u.hostel_name, u.room_no
        FROM users u
@@ -74,7 +89,15 @@ export default async function handler(req, res) {
       }
     });
 
-    return res.status(200).json(bills);
+    const enrichedBills = bills.map((bill) => ({
+      ...bill,
+      owner_marked_dates:
+        ownerMarkedByBill[`${bill.user_id}-${Number(bill.year)}-${Number(bill.month)}`] ||
+        bill.owner_marked_dates ||
+        [],
+    }));
+
+    return res.status(200).json(enrichedBills);
 
   } catch (error) {
     console.error("Error fetching bills:", error);

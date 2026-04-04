@@ -63,9 +63,9 @@
 }
 
 .navLinkActive {
-  background: rgba(255, 255, 255, 0.16);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.12));
   color: white !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 8px 20px rgba(3, 30, 29, 0.22);
 }
 
 /* Scanner Section (bottom) */

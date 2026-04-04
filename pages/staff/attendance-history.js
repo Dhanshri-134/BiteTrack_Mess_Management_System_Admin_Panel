@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
 import { ArrowLeft, RefreshCw, User, UserCircle, UserCircle2, UserIcon } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatDisplayDate } from "../../lib/dateFormat";
 
 function formatMoney(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
@@ -20,6 +21,7 @@ export default function AttendanceHistory() {
     staff_id: "",
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
+    day: "",
   });
 
   useEffect(() => {
@@ -28,7 +30,9 @@ export default function AttendanceHistory() {
 
   useEffect(() => {
     fetchAttendance(false);
-  }, [filters.staff_id, filters.month, filters.year]);
+  }, [filters.staff_id, filters.month, filters.year, filters.day]);
+
+  const daysInMonth = new Date(filters.year, filters.month, 0).getDate();
 
   const currentYear = new Date().getFullYear();
   const monthOptions = Array.from({ length: 12 }, (_, index) => ({
@@ -39,10 +43,26 @@ export default function AttendanceHistory() {
     value,
     label: String(value),
   }));
+  const dayOptions = [
+    { value: "", label: t("allDates") },
+    ...Array.from({ length: daysInMonth }, (_, index) => ({
+      value: index + 1,
+      label: String(index + 1),
+    })),
+  ];
   const staffOptions = [
     { value: "", label: t("allStaff") },
     ...staffList.map((row) => ({ value: row.id, label: row.name })),
   ];
+  const selectedDate = filters.day
+    ? `${filters.year}-${String(filters.month).padStart(2, "0")}-${String(filters.day).padStart(2, "0")}`
+    : "";
+
+  useEffect(() => {
+    if (filters.day && Number(filters.day) > daysInMonth) {
+      setFilters((prev) => ({ ...prev, day: "" }));
+    }
+  }, [daysInMonth, filters.day]);
 
   async function fetchStaff() {
     try {
@@ -58,12 +78,18 @@ export default function AttendanceHistory() {
   async function fetchAttendance(forceRefresh) {
     try {
       setLoading(true);
-      const cacheKey = `staff-attendance-history-${filters.staff_id || "all"}-${filters.month}-${filters.year}-v2`;
+      const payload = {
+        staff_id: filters.staff_id,
+        month: filters.month,
+        year: filters.year,
+        date: selectedDate,
+      };
+      const cacheKey = `staff-attendance-history-${filters.staff_id || "all"}-${filters.month}-${filters.year}-${selectedDate || "all"}-v4`;
       const response = forceRefresh
-        ? await staffRequest("/api/staff/attendance/history/", { body: filters })
+        ? await staffRequest("/api/staff/attendance/history/", { body: payload })
         : await staffOfflineRequest(cacheKey, "/api/staff/attendance/history/", {
             method: "POST",
-            body: filters,
+            body: payload,
           });
       setAttendance(response?.data || []);
     } catch (error) {
@@ -87,7 +113,7 @@ export default function AttendanceHistory() {
             <ArrowLeft size={16} /> {t("back")}
           </button>
             </div>
-            <p className={styles.heroText}>{t("attendanceHistoryDescription")}</p>
+            {/* <p className={styles.heroText}>{t("attendanceHistoryDescription")}</p> */}
           </section>
 
           <section className={styles.paymentFormCard}>
@@ -117,6 +143,14 @@ export default function AttendanceHistory() {
                 />
               </div>
               <div className={styles.formGroup}>
+                <label>{t("date")}</label>
+                <DayDropdown
+                  options={dayOptions}
+                  value={filters.day}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, day: value ? Number(value) : "" }))}
+                />
+              </div>
+              <div className={styles.formGroup}>
                 <label>{t("refresh")}</label>
                 <button type="button" className={styles.refreshBtn} onClick={() => fetchAttendance(true)}>
                   <RefreshCw size={16} /> {t("refreshData")}
@@ -132,13 +166,13 @@ export default function AttendanceHistory() {
               <div key={row.id} className={styles.timelineItem}>
                 <div className={styles.tlDetails}>
                   <div className={styles.tlRow}>
-                    <strong> <User size={16} /> {row.name}</strong>
+                    <strong>{row.name}</strong>
                     <span className={`${styles.statusPill} ${styles[`status${row.attendance_type === "H" ? "HF" : row.attendance_type}`] || styles.statusOFF}`}>
                       {row.attendance_type === "H" ? "HF" : row.attendance_type}
                     </span>
                   </div>
                   <div className={styles.tlRow2}>
-                    <span>{new Date(row.attendance_date).toLocaleDateString()}</span>
+                    <span>{formatDisplayDate(row.attendance_date)}</span>
                     <span>{t("inOutTime", { inTime: row.check_in ? String(row.check_in).slice(11, 16) : "--:--", outTime: row.check_out ? String(row.check_out).slice(11, 16) : "--:--" })}</span>
                   </div>
                   <div className={styles.statusLegend} style={{ marginTop: "0.5rem" }}>

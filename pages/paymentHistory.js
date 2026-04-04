@@ -14,6 +14,7 @@ export default function PaymentHistory({ token }) {
     const { t } = useLanguage();
 
     const [users, setUsers] = useState([]);
+    const [collectionStats, setCollectionStats] = useState({ today_collected: 0, monthly_collected: 0 });
     const [expandedUser, setExpandedUser] = useState(null);
     const [historyMap, setHistoryMap] = useState({});
     const [search, setSearch] = useState("");
@@ -59,6 +60,30 @@ export default function PaymentHistory({ token }) {
         };
 
         fetchUsers();
+    }, []);
+
+    useEffect(() => {
+        const fetchCollectionStats = async () => {
+            try {
+                const data =
+                    (await offlineFetch("payment-history-summary", async () => {
+                        const res = await fetch(`${API_BASE}/api/dashboard/collections/`, {
+                            headers: authHeaders,
+                        });
+                        if (!res.ok) throw new Error("collections fetch failed");
+                        return res.json();
+                    })) ?? { today_collected: 0, monthly_collected: 0 };
+
+                setCollectionStats({
+                    today_collected: Number(data.today_collected || 0),
+                    monthly_collected: Number(data.monthly_collected || 0),
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchCollectionStats();
     }, []);
 
 
@@ -197,6 +222,16 @@ export default function PaymentHistory({ token }) {
 
     return (
         <>
+            <div className={styles.statsStrip}>
+                <div className={styles.statChip}>
+                    <span>Today's Payment Collection</span>
+                    <strong>₹{collectionStats.today_collected.toFixed(2)}</strong>
+                </div>
+                <div className={styles.statChip}>
+                    <span>Monthly Collection</span>
+                    <strong>₹{collectionStats.monthly_collected.toFixed(2)}</strong>
+                </div>
+            </div>
             {/* ================= SEARCH ================= */}
             <div className={styles.controls}>
                 <div className={styles.controlItem}>

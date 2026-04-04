@@ -41,7 +41,8 @@ function decodeToken(token) {
 
 function normalizePath(path) {
   if (!path) return "/";
-  const normalized = path.replace(/\/+$/, "");
+  const cleanPath = String(path).split("?")[0].split("#")[0];
+  const normalized = cleanPath.replace(/\/+$/, "");
   return normalized || "/";
 }
 
@@ -92,7 +93,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [openSection, setOpenSection] = useState(null);
 
-  const currentPath = normalizePath(router.pathname);
+  const currentPath = normalizePath(router.asPath || router.pathname);
   const handleClose = () => {
     if (typeof closeSidebar === "function") {
       closeSidebar();
@@ -162,6 +163,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
         key: "management",
         title: t("management"),
         icon: <LayoutDashboard size={22} />,
+        routePrefixes: ["/attendance", "/users", "/menu", "/requests/leave"],
         items: [
           { path: "/attendance/", label: t("attendance") },
           { path: "/users/", label: t("users") },
@@ -175,6 +177,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
         key: "billing",
         title: t("billing"),
         icon: <Receipt size={22} />,
+        routePrefixes: ["/billing", "/BillingMess"],
         items: [
           { path: "/billing/", label: t("userBilling") },
           { path: "/BillingMess/", label: t("billingMess") },
@@ -184,6 +187,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
         key: "requests",
         title: t("requests"),
         icon: <ClipboardList size={22} />,
+        routePrefixes: ["/requests/cash-payments", "/requests/bookingRequests", "/requests/DeleteAccRequest", "/suggestions"],
         items: [
           { path: "/requests/cash-payments/", label: t("payments") },
           { path: "/requests/bookingRequests/", label: t("bookingRequests") },
@@ -198,6 +202,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
         key: "inventory",
         title: t("inventory"),
         icon: <Boxes size={22} />,
+        routePrefixes: ["/inventory"],
         items: [
           { path: "/inventory/dashboard/", label: t("dashboard") },
           { path: "/inventory/categories/", label: t("material") },
@@ -214,6 +219,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
               key: "staff",
               title: t("staff"),
               icon: <Users size={22} />,
+              routePrefixes: ["/staff"],
               items: [
                 { path: "/staff/dashboard/", label: t("dashboard") },
                 { path: "/staff/list/", label: t("staffDirectory") },
@@ -227,6 +233,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
         key: "settings",
         title: t("settings"),
         icon: <Settings size={22} />,
+        routePrefixes: ["/settings"],
         items: [
           { path: "/settings/", label: t("messSetting") },
           { path: "/settings/app_settings/", label: t("appSetting") },
@@ -244,7 +251,8 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
     }
 
     const matchingSection = ownerSections.find((section) =>
-      section.items.some((item) => normalizePath(item.path) === currentPath)
+      (section.routePrefixes || []).some((prefix) => currentPath === normalizePath(prefix) || currentPath.startsWith(`${normalizePath(prefix)}/`)) ||
+      section.items.some((item) => isActivePath(item.path))
     );
 
     setOpenSection(matchingSection?.key || null);
@@ -259,6 +267,7 @@ export default function Sidebar({ closeSidebar, isDesktop }) {
     );
   };
   const sectionHasCurrentRoute = (section) =>
+    (section.routePrefixes || []).some((prefix) => currentPath === normalizePath(prefix) || currentPath.startsWith(`${normalizePath(prefix)}/`)) ||
     section.items.some((item) => isActivePath(item.path));
 
   const handleLogout = async () => {

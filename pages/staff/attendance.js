@@ -4,7 +4,9 @@ import Layout from "../../components/Layout";
 import styles from "../../styles/staffMobile.module.css";
 import toast from "react-hot-toast";
 import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
-import { ArrowLeft, CalendarDays, CheckCircle, Clock3, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle, Clock3, ClosedCaption, UserRound, X } from "lucide-react";
+import DateField from "@/components/DateField";
+import TimeField from "@/components/TimeField";
 
 
 function formatMoney(value) {
@@ -77,10 +79,10 @@ export default function StaffAttendance() {
 
   const ATTENDANCE_OPTIONS = [
     { label: "P", value: "P", help: "Present" },
-    { label: t("oT"), value: "OT", help: "Overtime" },
-    { label: t("hF"), value: "H", help: "Half Day" },
+    { label: "OT", value: "OT", help: "Overtime" },
+    { label: "HF", value: "H", help: "Half Day" },
     { label: "A", value: "A", help: "Absent" },
-    { label: t("oFF"), value: "OFF", help: "Off" },
+    { label: "OFF", value: "OFF", help: "Off" },
   ];
 
   const [staff, setStaff] = useState([]);
@@ -189,8 +191,8 @@ export default function StaffAttendance() {
                   {option.label} : {option.help}
                 </span>
               ))}
-              <span className={`${styles.statusPill} ${styles.statusL}`}>{t("late")}</span>
-              <span className={`${styles.statusPill} ${styles.statusOT}`}>{t("oTOvertime")}</span>
+              <span className={`${styles.statusPill} ${styles.statusL}`}>L : {t("late")}</span>
+              <span className={`${styles.statusPill} ${styles.statusOT}`}>OT : {t("overtime")}</span>
             </div>
           </section>
 
@@ -200,7 +202,7 @@ export default function StaffAttendance() {
             <div className={styles.insightCard}><span>{t("oTRules")}</span><strong>{summary.overtimeRules}</strong></div> */}
             <div className={styles.surfaceCard}>
               <label style={{ display: "flex", fontWeight: 700, marginBottom: "0.5rem", color: "#334155" }}>{t("attendanceDate")}</label>
-              <input className={styles.formInput} type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+              <DateField value={date} onChange={(event) => setDate(event.target.value)} />
             </div>
           </section>
 
@@ -219,6 +221,8 @@ export default function StaffAttendance() {
                   <span className={`${styles.statusPill} ${styles[`status${row.attendance_type === "H" ? "HF" : row.attendance_type}`] || styles.statusOFF}`}>
                     {row.attendance_type === "H" ? "HF" : row.attendance_type}
                   </span>
+                  {row.is_late ? <span className={`${styles.statusPill} ${styles.statusL}`}>L</span> : null}
+                  {Number(row.overtime_amount || 0) > 0 ? <span className={`${styles.statusPill} ${styles.statusOT}`}>OT</span> : null}
                   <span className={styles.statPill}>{t("Shift {{start}} - {{end}}", { start: String(row.shift_start || "09:00").slice(0, 5), end: String(row.shift_end || "18:00").slice(0, 5) })}</span>
                 </div>
                 <div className={styles.staffCardBalance}>
@@ -234,7 +238,7 @@ export default function StaffAttendance() {
               <div className={styles.modalContent} onClick={(event) => event.stopPropagation()}>
                 <div className={styles.modalHeader}>
                   <h2>{selected.name}</h2>
-                  <button type="button" className={styles.iconAction} onClick={() => setSelectedIndex(null)}>{t("close")}</button>
+                  <button type="button" className={styles.iconAction} onClick={() => setSelectedIndex(null)}><X size={18}/></button>
                 </div>
 
                 {selected.is_late ? (
@@ -290,11 +294,11 @@ export default function StaffAttendance() {
                 <div className={styles.formGridCompact}>
                   <div className={styles.formGroup}>
                     <label>{t("checkIn")}</label>
-                    <input className={styles.formInput} type="time" value={selected.check_in} onChange={(event) => updateField("check_in", event.target.value)} />
+                    <TimeField value={selected.check_in} onChange={(event) => updateField("check_in", event.target.value)} />
                   </div>
                   <div className={styles.formGroup}>
                     <label>{t("checkOut")}</label>
-                    <input className={styles.formInput} type="time" value={selected.check_out || ""} onChange={(event) => updateField("check_out", event.target.value)} />
+                    <TimeField value={selected.check_out || ""} onChange={(event) => updateField("check_out", event.target.value)} />
                   </div>
                   <div className={`${styles.formGroup} ${styles.formGroupWide}`}>
                     <label>{t("notes")}</label>

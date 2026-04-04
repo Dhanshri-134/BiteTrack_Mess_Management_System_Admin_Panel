@@ -3,6 +3,9 @@ import Layout from "../components/Layout";
 import styles from "../styles/billingMess.module.css";
 import { useRouter } from "next/router";
 import { useLanguage } from "../context/LanguageContext";
+import toast from "react-hot-toast";
+import { formatDisplayDate } from "../lib/dateFormat";
+import { offlineFetch } from "../lib/offlineFetch";
 
 export default function Billing() {
   const router = useRouter();
@@ -19,17 +22,21 @@ export default function Billing() {
       return;
     }
 
-    fetch(
-      "https://bite-track-mess-management-system-a.vercel.app/api/billing/status/",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-      .then(async (res) => {
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error);
+    offlineFetch("billing-status", async () => {
+      const res = await fetch(
+        "https://bite-track-mess-management-system-a.vercel.app/api/billing/status/",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+      return json;
+    })
+      .then((json) => {
         setData(json);
         setLoading(false);
       })
@@ -54,7 +61,7 @@ export default function Billing() {
 
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error);
+      toast.error(data.error || t("somethingWentWrong"));
       return;
     }
 
@@ -88,7 +95,7 @@ export default function Billing() {
               {data.trial_end_date && (
                 <p>
                   <strong>{t("trial_ends_on")}:</strong>{" "}
-                  {new Date(data.trial_end_date).toDateString()}
+                  {formatDisplayDate(data.trial_end_date)}
                 </p>
               )}
 
