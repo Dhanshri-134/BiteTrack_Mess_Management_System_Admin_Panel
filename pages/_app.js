@@ -23,9 +23,16 @@ export default function App({ Component, pageProps }) {
   const lastBack = useRef(0);
    const [loading, setLoading] = useState(false);
 
-   useEffect(() => {
+  useEffect(() => {
     const start = () => setLoading(false);
-    const end = () => setLoading(false);
+    const end = () => {
+      setLoading(false);
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
+    };
 
     router.events.on("routeChangeStart", start);
     router.events.on("routeChangeComplete", end);
@@ -37,6 +44,13 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeError", end);
     };
   }, [router]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [router.asPath]);
 
 // useEffect(() => {
 //     // 🔥 ANDROID FIX: prevent system UI overlap
