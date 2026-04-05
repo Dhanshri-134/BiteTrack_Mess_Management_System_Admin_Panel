@@ -1,5 +1,6 @@
 import { pgPool } from "../../../lib/db";
 import jwt from "jsonwebtoken";
+import { syncMonthlyAttendanceForDate } from "../../../lib/monthlyAttendanceSync";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -45,43 +46,64 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🔎 Ensure user belongs to this mess
-    const userCheck = await pgPool.query(
-      "SELECT id FROM users WHERE id=$1 AND mess_id=$2",
-      [userId, messId]
-    );
+    const client = await pgPool.connect();
 
-    if (userCheck.rows.length === 0) {
-      return res
-        .status(403)
-        .json({ error: "User does not belong to this mess" });
+    try {
+      const userCheck = await client.query(
+        "SELECT id FROM users WHERE id=$1 AND mess_id=$2",
+        [userId, messId]
+      );
+
+      if (userCheck.rows.length === 0) {
+        return res
+          .status(403)
+          .json({ error: "User does not belong to this mess" });
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      await client.query("BEGIN");
+
+      const already = await client.query(
+        "SELECT id FROM attendance WHERE user_id=$1 AND att_date=$2 AND mess_id=$3",
+        [userId, today, messId]
+      );
+
+      if (already.rows.length > 0) {
+        await syncMonthlyAttendanceForDate(client, {
+          userId,
+          messId,
+          attDate: today,
+        });
+        await client.query("COMMIT");
+        return res.status(200).json({ message: "Attendance already marked" });
+      }
+
+      await client.query(
+        `
+        INSERT INTO attendance (user_id, att_date, mess_id)
+        VALUES ($1, $2, $3)
+        `,
+        [userId, today, messId]
+      );
+
+      await syncMonthlyAttendanceForDate(client, {
+        userId,
+        messId,
+        attDate: today,
+      });
+
+      await client.query("COMMIT");
+
+      return res.status(200).json({
+        message: "Attendance marked successfully",
+      });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
     }
-
-    const today = new Date().toISOString().slice(0, 10);
-
-    const already = await pgPool.query(
-      "SELECT id FROM attendance WHERE user_id=$1 AND att_date=$2 AND mess_id=$3",
-      [userId, today, messId]
-    );
-
-    if (already.rows.length > 0) {
-      return res.status(200).json({ message: "Attendance already marked" });
-    }
-
-    // ------------------------------------------------
-    // ✅ INSERT mess_id ALSO
-    // ------------------------------------------------
-    await pgPool.query(
-      `
-      INSERT INTO attendance (user_id, att_date, mess_id)
-      VALUES ($1, $2, $3)
-      `,
-      [userId, today, messId]
-    );
-
-    return res.status(200).json({
-      message: "Attendance marked successfully",
-    });
   } catch (err) {
     console.error("Attendance error:", err);
     return res.status(500).json({ error: "Internal server error" });

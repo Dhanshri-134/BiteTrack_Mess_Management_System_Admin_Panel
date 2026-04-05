@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { pgPool } from "@/lib/db";
+import { syncMonthlyAttendanceForDate } from "@/lib/monthlyAttendanceSync";
 
 export default async function handler(req, res) {
      res.setHeader('Access-Control-Allow-Origin', '*');
@@ -36,6 +37,8 @@ export default async function handler(req, res) {
       });
     }
 
+    await client.query("BEGIN");
+
     const deleteResult = await client.query(
       `
       DELETE FROM public."Owner_Marked_attendance"
@@ -48,16 +51,26 @@ export default async function handler(req, res) {
     );
 
     if (deleteResult.rowCount === 0) {
+      await client.query("ROLLBACK");
       return res.status(403).json({
         message: "No owner attendance found to delete",
       });
     }
+
+    await syncMonthlyAttendanceForDate(client, {
+      userId: user_id,
+      messId,
+      attDate: att_date,
+    });
+
+    await client.query("COMMIT");
 
     return res.status(200).json({
       message: "Owner attendance deleted successfully",
     });
 
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("OWNER DELETE ERROR:", error);
     return res.status(500).json({
       message: "Internal server error",

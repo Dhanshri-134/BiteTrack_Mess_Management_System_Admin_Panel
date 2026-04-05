@@ -1,5 +1,10 @@
 import jwt from "jsonwebtoken";
 import { pgPool } from "../../../lib/db";
+import {
+  getLiveMonthlyBillingRows,
+  getUserMonthSourceKeys,
+  normalizeMonthNumber,
+} from "../../../lib/billingLiveData";
 
 export default async function handler(req, res) {
    res.setHeader('Access-Control-Allow-Origin', '*');
@@ -34,14 +39,17 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid token" });
     }
 
-    // 🔥 ORIGINAL LOGIC (UNCHANGED)
-    const { rows: bills } = await pgPool.query(
+    const { month, year } = req.query;
+
+    const { rows } = await pgPool.query(
       `SELECT *
        FROM billing_view
        WHERE mess_id=$1 AND status='Active'
        ORDER BY year DESC NULLS LAST, month DESC NULLS LAST`,
       [messId]
     );
+
+    let bills = [...rows];
 
     const { rows: ownerRows } = await pgPool.query(
       `SELECT user_id, att_date
@@ -62,12 +70,53 @@ export default async function handler(req, res) {
       `SELECT u.id as user_id, u.mess_id, u.name, u.email, COALESCE(u.status, 'Active') as status, u.phone as mobile, p.name as parent_name, p.contact as parent_mobile, u.course, u.hostel_name, u.room_no
        FROM users u
        LEFT JOIN parents p on p.user_id = u.id and p.mess_id = u.mess_id
-       WHERE u.mess_id=$1 AND u.verified = true`,
+       WHERE u.mess_id=$1 AND u.verified = true AND COALESCE(u.status, 'Active') = 'Active'`,
       [messId]
     );
 
     const userIdsInBills = new Set(bills.map(b => b.user_id));
-    
+    const existingKeys = new Set(
+      bills.map(
+        (bill) =>
+          `${bill.user_id}-${Number(bill.year)}-${normalizeMonthNumber(bill.month)}`
+      )
+    );
+
+    const sourceKeys = await getUserMonthSourceKeys(pgPool, messId);
+    const monthBuckets = sourceKeys.reduce((acc, row) => {
+      const rowKey = `${row.user_id}-${row.year}-${row.month}`;
+      if (existingKeys.has(rowKey)) return acc;
+
+      const monthKey = `${row.year}-${row.month}`;
+      if (!acc[monthKey]) {
+        acc[monthKey] = {
+          year: row.year,
+          month: row.month,
+          rowKeys: new Set(),
+        };
+      }
+
+      acc[monthKey].rowKeys.add(rowKey);
+      return acc;
+    }, {});
+
+    for (const bucket of Object.values(monthBuckets)) {
+      const liveRows = await getLiveMonthlyBillingRows(pgPool, {
+        messId,
+        month: bucket.month,
+        year: bucket.year,
+      });
+
+      liveRows.forEach((row) => {
+        const rowKey = `${row.user_id}-${row.year}-${row.month}`;
+        if (!bucket.rowKeys.has(rowKey)) return;
+
+        bills.push(row);
+        existingKeys.add(rowKey);
+        userIdsInBills.add(row.user_id);
+      });
+    }
+
     const now = new Date();
 
     allVerified.forEach(u => {
@@ -91,11 +140,27 @@ export default async function handler(req, res) {
 
     const enrichedBills = bills.map((bill) => ({
       ...bill,
+      year: Number(bill.year),
+      month: normalizeMonthNumber(bill.month),
       owner_marked_dates:
-        ownerMarkedByBill[`${bill.user_id}-${Number(bill.year)}-${Number(bill.month)}`] ||
+        ownerMarkedByBill[
+          `${bill.user_id}-${Number(bill.year)}-${normalizeMonthNumber(bill.month)}`
+        ] ||
         bill.owner_marked_dates ||
-        [],
+      [],
     }));
+
+    enrichedBills.sort((left, right) => {
+      const leftYear = Number(left.year) || 0;
+      const rightYear = Number(right.year) || 0;
+      if (leftYear !== rightYear) return rightYear - leftYear;
+
+      const leftMonth = normalizeMonthNumber(left.month) || 0;
+      const rightMonth = normalizeMonthNumber(right.month) || 0;
+      if (leftMonth !== rightMonth) return rightMonth - leftMonth;
+
+      return String(left.name || "").localeCompare(String(right.name || ""));
+    });
 
     return res.status(200).json(enrichedBills);
 

@@ -174,18 +174,111 @@
 import { pgPool } from "../../../lib/db";
 import jwt from "jsonwebtoken";
 import ExcelJS from "exceljs";
+import { getLiveMonthlyBillingRows } from "../../../lib/billingLiveData";
+
+function buildGroupedBills(rows) {
+  const map = {};
+
+  rows.forEach((row) => {
+    const key = String(row.user_id);
+    if (!map[key]) {
+      map[key] = {
+        ...row,
+        pending_amount: 0,
+        advance_amount: Number(row.advance_amount || 0),
+        payable: 0,
+        total_payable: 0,
+        has_pending: false,
+      };
+    }
+
+    const amount = Number(row.total_amount || 0);
+    const paidAmount = Number(row.paid_amount || 0);
+
+    map[key].payable += amount;
+    map[key].start_date = row.start_date;
+    map[key].end_date = row.end_date;
+
+    if (!row.paid) {
+      const diff = amount - paidAmount;
+      map[key].pending_amount += diff > 0 ? diff : 0;
+      map[key].has_pending = true;
+    }
+  });
+
+  return Object.values(map).map((row) => ({
+    ...row,
+    total_payable:
+      Number(row.payable || 0) +
+      Number(row.pending_amount || 0) -
+      Number(row.advance_amount || 0),
+  }));
+}
+
+function parsePayloadRows(req) {
+  if (!req.body || typeof req.body !== "object") return null;
+
+  const paidBills = Array.isArray(req.body.paidBills) ? req.body.paidBills : null;
+  const unpaidBills = Array.isArray(req.body.unpaidBills) ? req.body.unpaidBills : null;
+
+  if (!paidBills || !unpaidBills) return null;
+
+  return { paidBills, unpaidBills };
+}
+
+function applySectionHeader(sheet, title, rowNumber) {
+  sheet.mergeCells(`A${rowNumber}:E${rowNumber}`);
+  const cell = sheet.getCell(`A${rowNumber}`);
+  cell.value = title;
+  cell.font = { bold: true, size: 13 };
+  cell.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFE6FFFB" },
+  };
+}
+
+function addTable(sheet, startRow, title, rows, valueKey) {
+  applySectionHeader(sheet, title, startRow);
+  const headerRow = sheet.addRow([
+    "User",
+    "Course / Hostel",
+    "Parent",
+    "Advance",
+    valueKey === "paid_amount" ? "Paid Amount" : "Total Payable",
+  ]);
+
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF007170" },
+  };
+
+  rows.forEach((bill) => {
+    sheet.addRow([
+      `${bill.name || "-"}\n${bill.email || ""}\n${bill.mobile || ""}`,
+      `${bill.course || "-"}\n${bill.hostel_name || "-"}\nRoom: ${bill.room_no || "-"}`,
+      `${bill.parent_name || "-"}\n${bill.parent_mobile || "-"}`,
+      Number(bill.advance_amount || 0).toFixed(2),
+      Number(bill[valueKey] || 0).toFixed(2),
+    ]);
+  });
+
+  return sheet.rowCount + 2;
+}
 
 export default async function handler(req, res) {
 
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
   
-  if (req.method !== "GET") {
+  if (!["GET", "POST"].includes(req.method)) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
@@ -218,119 +311,52 @@ export default async function handler(req, res) {
   }
 
   try {
-    // --------------------------------------------------
-    // 2. FETCH USERS
-    // --------------------------------------------------
-    const usersQuery = `
-      SELECT 
-        u.id,
-        u.name,
-        u.email,
-        m.per_day_rate
-      FROM users u
-      JOIN messes m ON u.mess_id = m.id
-      WHERE u.mess_id = $1
-      ORDER BY u.name
-    `;
-    const { rows: users } = await pgPool.query(usersQuery, [messId]);
+    const payloadRows = parsePayloadRows(req);
+    const liveRows =
+      payloadRows
+        ? null
+        : await getLiveMonthlyBillingRows(pgPool, {
+            messId,
+            month,
+            year,
+          });
 
-    // --------------------------------------------------
-    // 3. FETCH MONTHLY ATTENDANCE
-    // --------------------------------------------------
-    const attendanceQuery = `
-      SELECT user_id, days_present, attendance_map, first_attendance_date
-      FROM monthly_attendance
-      WHERE mess_id = $1 AND month = $2 AND year = $3
-    `;
+    const groupedRows = payloadRows
+      ? [...payloadRows.paidBills, ...payloadRows.unpaidBills]
+      : buildGroupedBills(liveRows || []);
 
-    const { rows: attendanceRows } = await pgPool.query(attendanceQuery, [
-      messId,
-      Number(month),
-      Number(year),
-    ]);
+    const paidBills = payloadRows
+      ? payloadRows.paidBills
+      : groupedRows.filter((bill) => !bill.has_pending);
+    const unpaidBills = payloadRows
+      ? payloadRows.unpaidBills
+      : groupedRows.filter((bill) => bill.has_pending);
 
-    const attendanceMap = {};
-    attendanceRows.forEach(a => {
-      attendanceMap[a.user_id] = a;
-    });
-
-    // --------------------------------------------------
-    // 4. FETCH PAYMENT HISTORY
-    // --------------------------------------------------
-    const paymentsQuery = `
-      SELECT user_id, payment_date, amount, status
-      FROM payment_history
-      WHERE mess_id = $1
-        AND (
-          CASE
-            WHEN month ~ '^[0-9]+$' THEN CAST(month AS INTEGER)
-            ELSE EXTRACT(MONTH FROM TO_DATE(month, 'Month'))
-          END
-        ) = $2
-        AND year = $3
-    `;
-
-    const { rows: paymentRows } = await pgPool.query(paymentsQuery, [
-      messId,
-      month,
-      Number(year),
-    ]);
-
-    const paymentMap = {};
-    paymentRows.forEach(p => {
-      paymentMap[p.user_id] = p;
-    });
-
-    // --------------------------------------------------
-    // 5. Prepare Excel sheet
-    // --------------------------------------------------
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Monthly Billing");
+    const sheet = workbook.addWorksheet("Billing Report");
 
-    sheet.addRow([
-      "Sr No",
-      "Name",
-      "Email",
-      "Days Present",
-      "Rate",
-      "Total Amount",
-      "Payment Status",
-      "Start Date",
-    ]);
+    sheet.columns = [
+      { width: 32 },
+      { width: 30 },
+      { width: 26 },
+      { width: 14 },
+      { width: 16 },
+    ];
 
-    // --------------------------------------------------
-    // 6. Generate each row from combined data
-    // --------------------------------------------------
-    users.forEach((u, index) => {
-      const att = attendanceMap[u.id];
-      const pay = paymentMap[u.id];
+    sheet.addRow([`Billing Month: ${month}/${year}`]);
+    sheet.getCell("A1").font = { bold: true, size: 14 };
+    sheet.mergeCells("A1:E1");
+    sheet.addRow([]);
 
-      const days = att?.days_present ?? 0;
-      const rate = Number(u.per_day_rate ?? 0);
-      const total = (days * rate).toFixed(2);
+    let nextRow = 3;
+    nextRow = addTable(sheet, nextRow, "Paid Users", paidBills, "paid_amount");
+    nextRow = addTable(sheet, nextRow, "Unpaid Users", unpaidBills, "total_payable");
 
-      const startDate = att?.first_attendance_date
-        ? new Date(att.first_attendance_date).toISOString().slice(0, 10)
-        : "-";
-
-
-      sheet.addRow([
-        index + 1,
-        u.name,
-        u.email,
-        days,
-        rate.toFixed(2),
-        total,
-        pay?.status === "paid" ? "Paid" : "Unpaid",
-        
-        startDate,
-        
-      ]);
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      row.alignment = { vertical: "top", wrapText: true };
     });
 
-    // --------------------------------------------------
-    // 7. Send Excel File
-    // --------------------------------------------------
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

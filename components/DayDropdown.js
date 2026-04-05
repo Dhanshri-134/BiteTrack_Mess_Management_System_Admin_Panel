@@ -35,7 +35,7 @@ export default function DayDropdown({ options, value, onChange }) {
           ? typeof selected === "object"
             ? selected.label
             : t(selected)
-          : t("selectDay")}
+          : t("select")}
 
         <span className={styles.arrow}>{open ? <ChevronUp size={18}/> : <ChevronDown size={18}/> }</span>
       </button>
