@@ -192,7 +192,6 @@ export default function StaffAttendance() {
                 </span>
               ))}
               <span className={`${styles.statusPill} ${styles.statusL}`}>L : {t("late")}</span>
-              <span className={`${styles.statusPill} ${styles.statusOT}`}>OT : {t("overtime")}</span>
             </div>
           </section>
 

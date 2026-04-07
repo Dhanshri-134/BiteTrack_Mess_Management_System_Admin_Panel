@@ -4,6 +4,7 @@ import styles from "../../styles/menuCalendar.module.css";
 import { useLanguage } from "../../context/LanguageContext";
 import { offlineFetch } from "../../lib/offlineFetch";
 import { useAppRefresh } from "@/lib/useAppRefresh";
+import { API_BASE } from "../../lib/api";
 
 export default function MenuCalendar() {
 
@@ -19,7 +20,7 @@ export default function MenuCalendar() {
 
     const data = await offlineFetch(`menu-history-${year}-${month}`, async () => {
       const res = await fetch(
-        `/api/menu/monthly-history/?month=${month}&year=${year}`,
+        `${API_BASE}/api/menu/monthly-history/?month=${month}&year=${year}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

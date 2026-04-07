@@ -94,7 +94,7 @@ export default function AnalyticsPage() {
 
       const d = await offlineFetch(`analytics-day-details-${date}`, async () => {
         const res = await fetch(
-          `/api/analytics/day-details/?date=${date}`,
+          `${API_BASE}/api/analytics/day-details/?date=${date}`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -122,7 +122,7 @@ export default function AnalyticsPage() {
 
       const d = await offlineFetch(`analytics-week-details-${startDate}`, async () => {
         const res = await fetch(
-          `/api/analytics/week-details/?start=${startDate}`,
+          `${API_BASE}/api/analytics/week-details/?start=${startDate}`,
           {
             headers: {
               Authorization: `Bearer ${token}`

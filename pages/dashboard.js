@@ -203,8 +203,8 @@ const fetchStats = async () => {
     // ---------------- USERS ----------------
     const usersData =
       await offlineFetch(`users-count-${messId}`, async () => {
-        const res = await fetch(`/api/users/count/`, {
-        // const res = await fetch(`${API_BASE}/api/users/count/`, {
+        // const res = await fetch(`/api/users/count/`, {
+        const res = await fetch(`${API_BASE}/api/users/count/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("users/count failed");
