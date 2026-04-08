@@ -69,6 +69,31 @@ export default async function handler(req, res) {
 // 3️⃣ Fetch monthly attendance (LIVE from both tables)
 // ---------------------------------------------------
 try {
+  const storedRes = await pgPool.query(
+    `
+    SELECT days_present, attendance_map, first_attendance_date
+    FROM monthly_attendance
+    WHERE user_id = $1
+      AND mess_id = $2
+      AND year = $3
+      AND month = $4
+    LIMIT 1
+    `,
+    [userId, messId, Number(year), Number(month)]
+  );
+
+  if (storedRes.rows.length > 0) {
+    const row = storedRes.rows[0];
+    return res.json({
+      userId: Number(userId),
+      year: Number(year),
+      month: Number(month),
+      days_present: Number(row.days_present || 0),
+      attendance_map: row.attendance_map || {},
+      first_attendance_date: row.first_attendance_date || null,
+      source: "monthly_attendance",
+    });
+  }
 
   const attRes = await pgPool.query(
     `
@@ -99,14 +124,13 @@ try {
   }
 
   return res.json({
-    userId,
+    userId: Number(userId),
     year: Number(year),
     month: Number(month),
     days_present: attRes.rows.length,
     attendance_map,
     source: "live_combined",
   });
-
 } catch (err) {
   console.error("Monthly attendance error:", err);
   return res.status(500).json({ error: "Internal server error" });

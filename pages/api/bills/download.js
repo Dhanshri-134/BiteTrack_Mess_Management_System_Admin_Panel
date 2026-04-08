@@ -208,10 +208,10 @@ function buildGroupedBills(rows) {
 
   return Object.values(map).map((row) => ({
     ...row,
-    total_payable:
-      Number(row.payable || 0) +
-      Number(row.pending_amount || 0) -
-      Number(row.advance_amount || 0),
+    total_payable: Math.max(
+      0,
+      Number(row.pending_amount || 0) - Number(row.advance_amount || 0)
+    ),
   }));
 }
 

@@ -83,15 +83,21 @@ export default async function handler(req, res) {
     );
 
     const sourceKeys = await getUserMonthSourceKeys(pgPool, messId);
-    const monthBuckets = sourceKeys.reduce((acc, row) => {
-      const rowKey = `${row.user_id}-${row.year}-${row.month}`;
-      if (existingKeys.has(rowKey)) return acc;
+    const allRowKeys = new Set([
+      ...Array.from(existingKeys),
+      ...sourceKeys.map((row) => `${row.user_id}-${row.year}-${row.month}`),
+    ]);
 
-      const monthKey = `${row.year}-${row.month}`;
+    const monthBuckets = Array.from(allRowKeys).reduce((acc, rowKey) => {
+      const [, yearText, monthText] = rowKey.split("-");
+      const yearNumber = Number(yearText);
+      const monthNumber = Number(monthText);
+      const monthKey = `${yearNumber}-${monthNumber}`;
+
       if (!acc[monthKey]) {
         acc[monthKey] = {
-          year: row.year,
-          month: row.month,
+          year: yearNumber,
+          month: monthNumber,
           rowKeys: new Set(),
         };
       }
@@ -99,6 +105,8 @@ export default async function handler(req, res) {
       acc[monthKey].rowKeys.add(rowKey);
       return acc;
     }, {});
+
+    const liveRowsByKey = new Map();
 
     for (const bucket of Object.values(monthBuckets)) {
       const liveRows = await getLiveMonthlyBillingRows(pgPool, {
@@ -110,10 +118,13 @@ export default async function handler(req, res) {
       liveRows.forEach((row) => {
         const rowKey = `${row.user_id}-${row.year}-${row.month}`;
         if (!bucket.rowKeys.has(rowKey)) return;
+        liveRowsByKey.set(rowKey, row);
 
-        bills.push(row);
-        existingKeys.add(rowKey);
-        userIdsInBills.add(row.user_id);
+        if (!existingKeys.has(rowKey)) {
+          bills.push(row);
+          existingKeys.add(rowKey);
+          userIdsInBills.add(row.user_id);
+        }
       });
     }
 
@@ -138,17 +149,25 @@ export default async function handler(req, res) {
       }
     });
 
-    const enrichedBills = bills.map((bill) => ({
-      ...bill,
-      year: Number(bill.year),
-      month: normalizeMonthNumber(bill.month),
-      owner_marked_dates:
-        ownerMarkedByBill[
-          `${bill.user_id}-${Number(bill.year)}-${normalizeMonthNumber(bill.month)}`
-        ] ||
-        bill.owner_marked_dates ||
-      [],
-    }));
+    const enrichedBills = bills.map((bill) => {
+      const normalizedYear = Number(bill.year);
+      const normalizedMonth = normalizeMonthNumber(bill.month);
+      const rowKey = `${bill.user_id}-${normalizedYear}-${normalizedMonth}`;
+      const liveRow = liveRowsByKey.get(rowKey);
+
+      return {
+        ...bill,
+        ...(liveRow || {}),
+        year: normalizedYear,
+        month: normalizedMonth,
+        attendance_map: liveRow?.attendance_map ?? bill.attendance_map ?? {},
+        owner_marked_dates:
+          ownerMarkedByBill[rowKey] ||
+          liveRow?.owner_marked_dates ||
+          bill.owner_marked_dates ||
+          [],
+      };
+    });
 
     enrichedBills.sort((left, right) => {
       const leftYear = Number(left.year) || 0;

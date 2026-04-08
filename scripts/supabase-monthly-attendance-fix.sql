@@ -64,12 +64,6 @@ BEGIN
   FROM present_dates;
 
   IF COALESCE(v_days_present, 0) = 0 THEN
-    DELETE FROM public.monthly_attendance
-    WHERE user_id = p_user_id
-      AND mess_id = p_mess_id
-      AND year = p_year
-      AND month = p_month;
-
     RETURN;
   END IF;
 
@@ -174,6 +168,19 @@ RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 BEGIN
+  IF TG_TABLE_NAME = 'attendance' THEN
+    IF TG_OP IN ('INSERT', 'UPDATE') THEN
+      PERFORM public.rebuild_monthly_attendance_row(
+        NEW.user_id,
+        NEW.mess_id,
+        EXTRACT(YEAR FROM NEW.att_date)::integer,
+        EXTRACT(MONTH FROM NEW.att_date)::integer
+      );
+    END IF;
+
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
   IF TG_OP IN ('DELETE', 'UPDATE') THEN
     PERFORM public.rebuild_monthly_attendance_row(
       OLD.user_id,
@@ -198,7 +205,7 @@ $$;
 
 DROP TRIGGER IF EXISTS trg_sync_monthly_attendance_attendance ON public.attendance;
 CREATE TRIGGER trg_sync_monthly_attendance_attendance
-AFTER INSERT OR UPDATE OR DELETE ON public.attendance
+AFTER INSERT OR UPDATE ON public.attendance
 FOR EACH ROW
 EXECUTE FUNCTION public.sync_monthly_attendance_from_source();
 
