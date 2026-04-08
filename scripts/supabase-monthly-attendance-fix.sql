@@ -108,6 +108,7 @@ BEGIN
     SELECT
       ed.att_date,
       CASE
+        WHEN ed.att_date > CURRENT_DATE THEN NULL
         WHEN ed.att_date < v_first_attendance_date THEN NULL
         WHEN ed.att_date < v_active_start OR ed.att_date > v_active_end THEN NULL
         WHEN EXISTS (

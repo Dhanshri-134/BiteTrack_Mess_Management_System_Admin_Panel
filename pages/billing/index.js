@@ -565,7 +565,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
 
     Object.values(map).forEach((u) => {
       const advance = Number(u.advance_amount || 0);
-      u.total_payable = Number(u.payable || 0) + Number(u.pending_amount || 0) - advance;
+      u.total_payable = Math.max(0, Number(u.pending_amount || 0) - advance);
     });
 
     return Object.values(map);
