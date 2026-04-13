@@ -1,6 +1,7 @@
 
 import { pgPool } from "../../../lib/db";
 import jwt from "jsonwebtoken";
+import { normalizeAttendanceMap } from "../../../lib/attendanceMap";
 
 export default async function handler(req, res) {
 
@@ -89,7 +90,7 @@ try {
       year: Number(year),
       month: Number(month),
       days_present: Number(row.days_present || 0),
-      attendance_map: row.attendance_map || {},
+      attendance_map: normalizeAttendanceMap(row.attendance_map),
       first_attendance_date: row.first_attendance_date || null,
       source: "monthly_attendance",
     });

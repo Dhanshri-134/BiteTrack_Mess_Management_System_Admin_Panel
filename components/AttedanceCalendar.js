@@ -57,10 +57,11 @@ export default function AttendanceCalendar({ attendanceMap,  ownerMarkedDates = 
         const rawVal = safeAttendanceMap[dateStr];
         const isOwnerMarked = ownerMarkedDates.includes(dateStr);
 
-        if (rawVal === true) {
-          status = "present";
-        } else if (isOwnerMarked) {
+        // Owner-marked attendance should use the dedicated highlight even when present is true.
+        if (isOwnerMarked) {
           status = "ownerPresent";
+        } else if (rawVal === true) {
+          status = "present";
         } else if (rawVal === false) {
           status = "absent";
         } else {

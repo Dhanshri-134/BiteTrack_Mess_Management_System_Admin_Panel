@@ -64,6 +64,11 @@ BEGIN
   FROM present_dates;
 
   IF COALESCE(v_days_present, 0) = 0 THEN
+    DELETE FROM public.monthly_attendance
+    WHERE user_id = p_user_id
+      AND mess_id = p_mess_id
+      AND year = p_year
+      AND month = p_month;
     RETURN;
   END IF;
 
@@ -109,7 +114,6 @@ BEGIN
       ed.att_date,
       CASE
         WHEN ed.att_date > CURRENT_DATE THEN NULL
-        WHEN ed.att_date < v_first_attendance_date THEN NULL
         WHEN ed.att_date < v_active_start OR ed.att_date > v_active_end THEN NULL
         WHEN EXISTS (
           SELECT 1
@@ -170,6 +174,15 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   IF TG_TABLE_NAME = 'attendance' THEN
+    IF TG_OP IN ('DELETE', 'UPDATE') THEN
+      PERFORM public.rebuild_monthly_attendance_row(
+        OLD.user_id,
+        OLD.mess_id,
+        EXTRACT(YEAR FROM OLD.att_date)::integer,
+        EXTRACT(MONTH FROM OLD.att_date)::integer
+      );
+    END IF;
+
     IF TG_OP IN ('INSERT', 'UPDATE') THEN
       PERFORM public.rebuild_monthly_attendance_row(
         NEW.user_id,
@@ -206,7 +219,7 @@ $$;
 
 DROP TRIGGER IF EXISTS trg_sync_monthly_attendance_attendance ON public.attendance;
 CREATE TRIGGER trg_sync_monthly_attendance_attendance
-AFTER INSERT OR UPDATE ON public.attendance
+AFTER INSERT OR UPDATE OR DELETE ON public.attendance
 FOR EACH ROW
 EXECUTE FUNCTION public.sync_monthly_attendance_from_source();
 
@@ -257,8 +270,14 @@ classified AS (
     CASE
       WHEN expanded.att_date < expanded.first_attendance_date THEN NULL::boolean
       WHEN expanded.raw_status = 'null'::jsonb THEN NULL::boolean
+      WHEN expanded.raw_status = '"null"'::jsonb THEN NULL::boolean
       WHEN expanded.raw_status = 'true'::jsonb THEN TRUE
-      ELSE FALSE
+      WHEN expanded.raw_status = '"true"'::jsonb THEN TRUE
+      WHEN expanded.raw_status = '"present"'::jsonb THEN TRUE
+      WHEN expanded.raw_status = 'false'::jsonb THEN FALSE
+      WHEN expanded.raw_status = '"false"'::jsonb THEN FALSE
+      WHEN expanded.raw_status = '"absent"'::jsonb THEN FALSE
+      ELSE NULL::boolean
     END AS status
   FROM expanded
 ),
@@ -342,6 +361,62 @@ JOIN total_window_days t
 LEFT JOIN leave_days l
   ON l.id = m.id
 GROUP BY m.id, m.user_id, m.mess_id, m.year, m.month, t.total_days, l.leave_days, m.attendance_map;
+
+CREATE TABLE IF NOT EXISTS public.attendance_source_backup (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  source_table text NOT NULL,
+  source_operation text NOT NULL,
+  source_pk text,
+  user_id integer,
+  mess_id integer,
+  att_date date,
+  snapshot jsonb NOT NULL,
+  captured_at timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE OR REPLACE FUNCTION public.backup_attendance_source_row()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_row jsonb;
+BEGIN
+  v_row := CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
+
+  INSERT INTO public.attendance_source_backup (
+    source_table,
+    source_operation,
+    source_pk,
+    user_id,
+    mess_id,
+    att_date,
+    snapshot
+  )
+  VALUES (
+    TG_TABLE_NAME,
+    TG_OP,
+    v_row ->> 'id',
+    NULLIF(v_row ->> 'user_id', '')::integer,
+    NULLIF(v_row ->> 'mess_id', '')::integer,
+    NULLIF(v_row ->> 'att_date', '')::date,
+    v_row
+  );
+
+  RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_backup_attendance_rows ON public.attendance;
+CREATE TRIGGER trg_backup_attendance_rows
+AFTER INSERT OR UPDATE OR DELETE ON public.attendance
+FOR EACH ROW
+EXECUTE FUNCTION public.backup_attendance_source_row();
+
+DROP TRIGGER IF EXISTS trg_backup_owner_marked_attendance_rows ON public."Owner_Marked_attendance";
+CREATE TRIGGER trg_backup_owner_marked_attendance_rows
+AFTER INSERT OR UPDATE OR DELETE ON public."Owner_Marked_attendance"
+FOR EACH ROW
+EXECUTE FUNCTION public.backup_attendance_source_row();
 
 DO $$
 DECLARE

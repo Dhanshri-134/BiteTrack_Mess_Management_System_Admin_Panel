@@ -6,6 +6,25 @@ import {
   normalizeMonthNumber,
 } from "../../../lib/billingLiveData";
 
+function toMonthStartDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+}
+
+function isOnOrAfterJoinMonth({ year, month, joinDate }) {
+  const joinMonthStart = toMonthStartDate(joinDate);
+  if (!joinMonthStart) return true;
+
+  const rowYear = Number(year);
+  const rowMonth = Number(month);
+  if (!rowYear || !rowMonth) return false;
+
+  const rowMonthStart = new Date(Date.UTC(rowYear, rowMonth - 1, 1));
+  return rowMonthStart >= joinMonthStart;
+}
+
 export default async function handler(req, res) {
    res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -67,11 +86,14 @@ export default async function handler(req, res) {
     }, {});
 
     const { rows: allVerified } = await pgPool.query(
-      `SELECT u.id as user_id, u.mess_id, u.name, u.email, COALESCE(u.status, 'Active') as status, u.phone as mobile, p.name as parent_name, p.contact as parent_mobile, u.course, u.hostel_name, u.room_no
+      `SELECT u.id as user_id, u.mess_id, u.name, u.email, COALESCE(u.status, 'Active') as status, u.phone as mobile, p.name as parent_name, p.contact as parent_mobile, u.course, u.hostel_name, u.room_no, u.date_of_joining
        FROM users u
        LEFT JOIN parents p on p.user_id = u.id and p.mess_id = u.mess_id
        WHERE u.mess_id=$1 AND u.verified = true AND COALESCE(u.status, 'Active') = 'Active'`,
       [messId]
+    );
+    const joinDateByUserId = new Map(
+      allVerified.map((user) => [String(user.user_id), user.date_of_joining || null])
     );
 
     const userIdsInBills = new Set(bills.map(b => b.user_id));
@@ -167,7 +189,13 @@ export default async function handler(req, res) {
           bill.owner_marked_dates ||
           [],
       };
-    });
+    }).filter((bill) =>
+      isOnOrAfterJoinMonth({
+        year: bill.year,
+        month: bill.month,
+        joinDate: joinDateByUserId.get(String(bill.user_id)),
+      })
+    );
 
     enrichedBills.sort((left, right) => {
       const leftYear = Number(left.year) || 0;
