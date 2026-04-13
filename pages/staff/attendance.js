@@ -7,6 +7,7 @@ import { staffOfflineRequest, staffRequest } from "@/lib/staffClient";
 import { ArrowLeft, CalendarDays, CheckCircle, Clock3, ClosedCaption, UserRound, X } from "lucide-react";
 import DateField from "@/components/DateField";
 import TimeField from "@/components/TimeField";
+import { formatDisplayDate } from "../../lib/dateFormat";
 
 
 function formatMoney(value) {
@@ -20,6 +21,12 @@ function addMinutesToTime(timeValue, minutesToAdd) {
   const nextHours = String(Math.floor(normalized / 60)).padStart(2, "0");
   const nextMinutes = String(normalized % 60).padStart(2, "0");
   return `${nextHours}:${nextMinutes}`;
+}
+
+function shiftDateValue(dateValue, offsetDays) {
+  const baseDate = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
+  baseDate.setDate(baseDate.getDate() + offsetDays);
+  return baseDate.toISOString().slice(0, 10);
 }
 
 function recalculateAttendanceRow(row) {
@@ -199,9 +206,44 @@ export default function StaffAttendance() {
             {/* <div className={styles.insightCard}><span>{t("staffCards")}</span><strong>{summary.total}</strong></div>
             <div className={styles.insightCard}><span>{t("lateRules")}</span><strong>{summary.lateRules}</strong></div>
             <div className={styles.insightCard}><span>{t("oTRules")}</span><strong>{summary.overtimeRules}</strong></div> */}
-            <div className={styles.surfaceCard}>
-              <label style={{ display: "flex", fontWeight: 700, marginBottom: "0.5rem", color: "#334155" }}>{t("attendanceDate")}</label>
-              <DateField value={date} onChange={(event) => setDate(event.target.value)} />
+            <div className={styles.dateControlCard}>
+              <div className={styles.dateControlHeader}>
+                <div>
+                  <span className={styles.dateLabel}>{t("attendanceDate")}</span>
+                  <strong className={styles.datePreview}>{formatDisplayDate(date)}</strong>
+                </div>
+                <span className={styles.dateMeta}>{summary.total} {t("staff")}</span>
+              </div>
+
+              <DateField
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+                wrapperClassName={styles.dateFieldWrap}
+              />
+
+              <div className={styles.dateQuickActions}>
+                <button
+                  type="button"
+                  className={styles.dateQuickButton}
+                  onClick={() => setDate(shiftDateValue(date, -1))}
+                >
+                  <ArrowLeft size={14} /> 1 Day
+                </button>
+                <button
+                  type="button"
+                  className={styles.dateQuickButtonActive}
+                  onClick={() => setDate(new Date().toISOString().split("T")[0])}
+                >
+                  <CalendarDays size={14} /> {t("today")}
+                </button>
+                <button
+                  type="button"
+                  className={styles.dateQuickButton}
+                  onClick={() => setDate(shiftDateValue(date, 1))}
+                >
+                  1 Day <ArrowLeft size={14} style={{ transform: "rotate(180deg)" }} />
+                </button>
+              </div>
             </div>
           </section>
 

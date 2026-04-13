@@ -12,6 +12,29 @@ function formatMoney(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
 }
 
+function getAttendanceSortValue(row) {
+  const attendanceDate = row?.attendance_date ? new Date(row.attendance_date) : null;
+  const baseDate =
+    attendanceDate && !Number.isNaN(attendanceDate.getTime())
+      ? attendanceDate
+      : new Date(0);
+
+  const sortableDate = new Date(
+    baseDate.getFullYear(),
+    baseDate.getMonth(),
+    baseDate.getDate()
+  );
+  const timeValue = String(row?.check_in || row?.check_out || "00:00")
+    .slice(-8)
+    .slice(0, 5);
+  const [hours, minutes] = timeValue
+    .split(":")
+    .map((value) => Number(value || 0));
+
+  sortableDate.setHours(hours || 0, minutes || 0, 0, 0);
+  return sortableDate.getTime();
+}
+
 export default function AttendanceHistory() {
   const { t } = useLanguage();
   const [staffList, setStaffList] = useState([]);
@@ -91,7 +114,18 @@ export default function AttendanceHistory() {
             method: "POST",
             body: payload,
           });
-      setAttendance(response?.data || []);
+      const sortedAttendance = [...(response?.data || [])].sort((left, right) => {
+        const rightValue = getAttendanceSortValue(right);
+        const leftValue = getAttendanceSortValue(left);
+
+        if (rightValue !== leftValue) {
+          return rightValue - leftValue;
+        }
+
+        return Number(right?.id || 0) - Number(left?.id || 0);
+      });
+
+      setAttendance(sortedAttendance);
     } catch (error) {
       toast.error(t("failedToLoadAttendance"));
     } finally {

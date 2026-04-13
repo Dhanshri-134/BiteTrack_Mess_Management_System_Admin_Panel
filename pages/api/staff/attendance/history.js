@@ -69,7 +69,12 @@ export default async function handler(req, res) {
       values.push(staff_id);
     }
 
-    query += " ORDER BY attendance_date DESC";
+    query += `
+      ORDER BY
+        attendance_date DESC,
+        COALESCE(a.check_in::time, a.check_out::time, TIME '00:00') DESC,
+        a.id DESC
+    `;
 
     const result = await pgPool.query(query, values);
 

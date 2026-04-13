@@ -199,6 +199,7 @@ const fetchStats = async () => {
 
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
+    const currentMonthCacheKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
     // ---------------- USERS ----------------
     const usersData =
@@ -232,7 +233,7 @@ const fetchStats = async () => {
       })) || [];
 
     const expectedPayment =
-      (await offlineFetch(`expected-payment-${messId}`, async () => {
+      (await offlineFetch(`expected-payment-${messId}-${currentMonthCacheKey}`, async () => {
         const res = await fetch(`${API_BASE}/api/dashboard/expected-payment/`, {
           headers: { Authorization: `Bearer ${token}` },
         });

@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Layout";
 import styles from "../../styles/menuCalendar.module.css";
 import { useLanguage } from "../../context/LanguageContext";
 import { offlineFetch } from "../../lib/offlineFetch";
 import { useAppRefresh } from "@/lib/useAppRefresh";
 import { API_BASE } from "../../lib/api";
+import { X } from "lucide-react";
 
 export default function MenuCalendar() {
 
@@ -13,7 +14,6 @@ export default function MenuCalendar() {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(null);
-  const [showModal, setShowModal] = useState(false);
 
   const fetchMenu = async () => {
     const token = localStorage.getItem("token");
@@ -69,39 +69,69 @@ export default function MenuCalendar() {
     const found = menu.find(m => m.date === formatted);
 
     return found?.meals || {
-      breakfast: [],
-      lunch: [],
-      dinner: []
+      Breakfast: [],
+      Lunch: [],
+      Dinner: []
     };
   };
+
+  const monthLabel = useMemo(
+    () =>
+      new Date(year, month - 1, 1).toLocaleString("en-IN", {
+        month: "long",
+        year: "numeric"
+      }),
+    [month, year]
+  );
+
+  const changeMonth = (offset) => {
+    const nextDate = new Date(year, month - 1 + offset, 1);
+    setMonth(nextDate.getMonth() + 1);
+    setYear(nextDate.getFullYear());
+  };
+
+  const getMealCount = (meals) =>
+    ["Breakfast", "Lunch", "Dinner"].reduce(
+      (count, key) => count + ((meals?.[key] || []).length > 0 ? 1 : 0),
+      0
+    );
 
   const days = getCalendarDays();
 
   return (
-    <div>
+  
       <div className={styles.container}>
 
         <h1 className={styles.title}>🍽️{t("menuCalendar")}</h1>
 
+        <div className={styles.titleClone}>{t("menuCalendar")}</div>
+
         {/* HEADER */}
         <div className={styles.header}>
-          <button onClick={() => setMonth(prev => prev === 1 ? 12 : prev - 1)}>
+          <button
+            type="button"
+            className={styles.navButton}
+            onClick={() => changeMonth(-1)}
+          >
             ⬅
           </button>
 
-          <h2>
-            {new Date(year, month - 1).toLocaleString("en-IN", {
-              month: "long",
-              year: "numeric"
-            })}
-          </h2>
+          <div className={styles.monthTitleWrap}>
+            <h2 className={styles.monthTitle}>{monthLabel}</h2>
+            <span className={styles.monthHint}>{menu.length} menu days saved</span>
+          </div>
 
-          <button onClick={() => setMonth(prev => prev === 12 ? 1 : prev + 1)}>
+          <button
+            type="button"
+            className={styles.navButton}
+            onClick={() => changeMonth(1)}
+          >
             ➡
           </button>
         </div>
 
         {/* GRID */}
+        <div className={styles.gridShell}>
         <div className={styles.grid}>
           {["sun","mon","tue","wed","thu","fri","sat"].map(d => (
             <div key={d} className={styles.dayHeader}>{t(d)}</div>
@@ -117,24 +147,29 @@ export default function MenuCalendar() {
             const isToday =
               new Date().toDateString() === date.toDateString();
 
+            const mealCount = getMealCount(meals);
+
             return (
-              <div
+              <button
+                type="button"
                 key={i}
-                className={`${styles.card} ${isToday ? styles.today : ""}`}
+                className={`${styles.card} ${isToday ? styles.today : ""} ${mealCount > 0 ? styles.hasMeals : styles.noMeals}`}
                 onClick={() => {
                   setSelectedDay({ date, meals });
-                  setShowModal(true);
                 }}
               >
                 <div className={styles.date}>
                   {date.getDate()}
-                    </div>
-                  <span className={styles.mon}>
-
-                   {new Date(year, month - 1).toLocaleString("en-IN", {
-                     month: "short"           })}
-                     </span>
-              </div>
+                </div>
+                <span className={styles.mon}>
+                  {new Date(year, month - 1).toLocaleString("en-IN", {
+                    month: "short"
+                  })}
+                </span>
+                <span className={styles.mealCount}>
+                  {mealCount > 0 ? `${mealCount} meals` : "No menu"}
+                </span>
+              </button>
             );
           })}
         </div>
@@ -144,27 +179,40 @@ export default function MenuCalendar() {
       </div>
 
       {/* MODAL */}
-      {showModal && selectedDay && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-
-            <h3>
-              {selectedDay.date.toLocaleDateString("en-IN")}
-            </h3>
-
-            <div className={styles.modalContent}>
-              <p><span className={styles.subtitle}>{t("Breakfast")} </span> :  {selectedDay.meals.Breakfast?.join(", ") || "-"}</p>
-              <p><span className={styles.subtitle}>{t("Lunch")} </span> : {selectedDay.meals.Lunch?.join(", ") || "-"}</p>
-              <p><span className={styles.subtitle}>{t("Dinner")} </span> : {selectedDay.meals.Dinner?.join(", ") || "-"}</p>
+      {selectedDay && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedDay(null)}>
+          <div className={styles.modal} onClick={(event) => event.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div>
+                <h3>{selectedDay.date.toLocaleDateString("en-IN")}</h3>
+                <p>{monthLabel}</p>
+              </div>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={() => setSelectedDay(null)}
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <button onClick={() => setShowModal(false)}>
-              {t("close")}
-            </button>
-
+            <div className={styles.modalContent}>
+              <div className={styles.mealSection}>
+                <span className={styles.mealTitle}>{t("Breakfast")}</span>
+                <p className={styles.mealValue}>{selectedDay.meals.Breakfast?.join(", ") || "-"}</p>
+              </div>
+              <div className={styles.mealSection}>
+                <span className={styles.mealTitle}>{t("Lunch")}</span>
+                <p className={styles.mealValue}>{selectedDay.meals.Lunch?.join(", ") || "-"}</p>
+              </div>
+              <div className={styles.mealSection}>
+                <span className={styles.mealTitle}>{t("Dinner")}</span>
+                <p className={styles.mealValue}>{selectedDay.meals.Dinner?.join(", ") || "-"}</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
-    </div>
+      </div>
   );
 }

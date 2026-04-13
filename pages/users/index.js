@@ -565,8 +565,10 @@ useEffect(() => {
         {/* Top row */}
         <div className={styles.cardTop} >
           <div>
-            <strong style={{ cursor: "pointer" }}
-              onClick={() => goToBilling(user)}>
+            <strong
+              className={styles.clickableName}
+              onClick={() => goToBilling(user)}
+            >
               {user.name}
             </strong>
             <div className={styles.subText}>{user.email}</div>
@@ -618,9 +620,13 @@ useEffect(() => {
           <div className={`${styles.details} ${isOpen ? styles.detailsOpen : styles.detailsClosed}`}>
             <div className={styles.reviewGrid}>
 
+              <div><span>{t("ID")}</span> {user.mess_user_id}</div>
               <div><span>{t("roomNo")} </span>{user.room_no}</div>
               <div><span>{t("hostel")}</span> {user.hostel_name}</div>
               <div><span>{t("course")}</span> {user.course}</div>
+              <div><span>{t("Joining Date")}</span> {user.date_of_joining
+          ? new Date(user.date_of_joining).toLocaleDateString("en-IN")
+          : "-"}</div>
 
               {user.parents?.length > 0 && (
                 <div className={styles.parents}>
@@ -999,6 +1005,7 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
                         key={u.id}
                         user={u}
                         t={t}
+                        showBillingAction={true}
                         openAccordionId={openAccordionId}
                         setOpenAccordionId={setOpenAccordionId}
 
@@ -1120,6 +1127,7 @@ doc.text(String(mess.contact_info || ""), pageWidth - 14, 33, { align: "right" }
           key={u.id}
           user={u}
           t={t}
+          showBillingAction={true}
           openAccordionId={openAccordionId}
           setOpenAccordionId={setOpenAccordionId}
           actions={[

@@ -65,8 +65,10 @@ export default function PaymentHistory({ token }) {
     useEffect(() => {
         const fetchCollectionStats = async () => {
             try {
+                const now = new Date();
+                const currentMonthCacheKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
                 const data =
-                    (await offlineFetch("payment-history-summary", async () => {
+                    (await offlineFetch(`payment-history-summary-${currentMonthCacheKey}`, async () => {
                         const res = await fetch(`${API_BASE}/api/dashboard/collections/`, {
                             headers: authHeaders,
                         });
@@ -300,7 +302,7 @@ export default function PaymentHistory({ token }) {
                                                     }
                                                 }}
                                             >
-                                               
+
                                                 <span
                                                     style={{
                                                         display: "inline-block",
@@ -308,7 +310,7 @@ export default function PaymentHistory({ token }) {
                                                         transition: "transform 0.2s ease",
                                                     }}
                                                 >
-                                                    <ChevronDown size={16}/>
+                                                    <ChevronDown size={16} />
                                                 </span>
                                             </button>
 
@@ -323,18 +325,18 @@ export default function PaymentHistory({ token }) {
                                                     <div className={styles.historyTitle}>
                                                         {t("paymentHistory")}
                                                     </div>
-                                                    
 
-<div className={styles.historyHeader}>
-  <div>{t("date")}</div>
-  <div>{t("amount")}</div>
-  <div>{t("type")}</div>
-  <div>{t("method")}</div>
-  <div>{t("txnID")}</div>
-  <div>{t("period")}</div>
-  <div>{t("leave")}</div>
-  <div>{t("receipt")}</div>
-</div>
+
+                                                    <div className={styles.historyHeader}>
+                                                        <div>{t("date")}</div>
+                                                        <div>{t("amount")}</div>
+                                                        <div>{t("type")}</div>
+                                                        <div>{t("method")}</div>
+                                                        <div>{t("txnID")}</div>
+                                                        <div>{t("period")}</div>
+                                                        <div>{t("leave")}</div>
+                                                        <div>{t("receipt")}</div>
+                                                    </div>
                                                     {expandedPayments.map(h => (
                                                         <div key={h.id} className={styles.historyItem}>
                                                             <div className={styles.historyLabel}>{t("date")}</div>
@@ -355,9 +357,9 @@ export default function PaymentHistory({ token }) {
 
                                                             {/* {h.transaction_id && (
                                                                 <> */}
-                                                                    <div className={styles.historyLabel}>{t("transactionId")}</div>
-                                                                    <div className={styles.historyValue}>{h.transaction_id || "-" }</div>
-                                                                {/* </> */}
+                                                            <div className={styles.historyLabel}>{t("transactionId")}</div>
+                                                            <div className={styles.historyValue}>{h.transaction_id || "-"}</div>
+                                                            {/* </> */}
                                                             {/* )} */}
 
                                                             <div className={styles.historyLabel}>{t("billingPeriod")}</div>
@@ -553,33 +555,33 @@ export default function PaymentHistory({ token }) {
                 })}
             </div>
             {receiptModal && (
-  <div
-    className={styles.receiptModalOverlay}
-    onClick={() => setReceiptModal(null)}
-  >
-    <div
-      className={styles.receiptModal}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className={styles.receiptHeader}>
-        <h3>{t("receiptPreview")}</h3>
+                <div
+                    className={styles.receiptModalOverlay}
+                    onClick={() => setReceiptModal(null)}
+                >
+                    <div
+                        className={styles.receiptModal}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className={styles.receiptHeader}>
+                            <h3>{t("receiptPreview")}</h3>
 
-        <button
-          className={styles.downloadIcon}
-          onClick={() => handleReceiptDownload(receiptModal)}
-        >
-          Download
-        </button>
-      </div>
+                            <button
+                                className={styles.downloadIcon}
+                                onClick={() => handleReceiptDownload(receiptModal)}
+                            >
+                                Download
+                            </button>
+                        </div>
 
-      <iframe
-        src={receiptModal}
-        className={styles.receiptFrame}
-        title={t("receipt")}
-      />
-    </div>
-  </div>
-)}
+                        <iframe
+                            src={receiptModal}
+                            className={styles.receiptFrame}
+                            title={t("receipt")}
+                        />
+                    </div>
+                </div>
+            )}
         </>
     );
 }

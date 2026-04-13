@@ -118,6 +118,37 @@
   flex-wrap: wrap;
 }
 
+.userJump {
+  cursor: pointer;
+}
+
+.userIdBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.mobileNavActions {
+  margin-top: 0.75rem;
+}
+
+.cardNavBtn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* ===========================
    Buttons
 =========================== */

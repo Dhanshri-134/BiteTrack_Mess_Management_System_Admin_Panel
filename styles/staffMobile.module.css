@@ -80,6 +80,83 @@ height: auto;
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
 }
 
+.dateControlCard {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fffe 100%);
+  border: 1px solid #d9efea;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.dateControlHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.dateLabel {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: #0f766e;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.datePreview {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.dateMeta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.dateFieldWrap {
+  width: 100%;
+}
+
+.dateQuickActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.dateQuickButton,
+.dateQuickButtonActive {
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.dateQuickButton {
+  border: 1px solid #d6ece8;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.dateQuickButtonActive {
+  border: 1px solid #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
 .insightGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1270,6 +1347,22 @@ height: auto;
   .actionGrid {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
+
+  .dateControlHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dateQuickActions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dateQuickButton,
+  .dateQuickButtonActive {
+    justify-content: center;
+  }
+
   .formGroupWide,
   .summaryBoxWide {
     grid-column: span 1;
