@@ -212,15 +212,21 @@ const fetchStats = async () => {
         return res.json();
       }) ?? { count: 0 };
 
-    // ---------------- ATTENDANCE ----------------
-    const attendanceData =
-      (await offlineFetch(`attendance-${messId}`, async () => {
-        const res = await fetch(`${API_BASE}/api/attendance/fetch/`, {
+    // ---------------- ATTENDANCE TREND ----------------
+    const attendanceTrendData =
+      (await offlineFetch(`attendance-trend-${messId}-${today}`, async () => {
+        const res = await fetch(`${API_BASE}/api/dashboard/attendance-trend/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("attendance/fetch failed");
+        if (!res.ok) throw new Error("attendance-trend failed");
         return res.json();
-      })) || [];
+      })) || {
+        dailyTrend: [],
+        monthlyTrend: [],
+        yearlyTrend: [],
+        recentRecords: [],
+        todayPresent: 0,
+      };
 
     // ---------------- BILLS ----------------
     const billsAllData =
@@ -242,9 +248,7 @@ const fetchStats = async () => {
       })) || { expected_amount: 0 };
 
     // ---------------- TODAY ATTENDANCE ----------------
-    const todayPresent = attendanceData.filter(
-      (r) => r.att_date === today
-    ).length;
+    const todayPresent = Number(attendanceTrendData.todayPresent || 0);
 
     const todayAbsent = (usersData.count || 0) - todayPresent;
 
@@ -263,69 +267,6 @@ const todayCollected = Number(revenue?.today_collected || 0);
 const collectionRatio = monthlyExpected > 0
   ? Number(((monthlyCollected / monthlyExpected) * 100).toFixed(1))
   : 0;
-    // ---------------- DATE HELPER ----------------
-    const getDateFromObj = (obj) => {
-      if (!obj) return null;
-      if (obj.att_date) return new Date(obj.att_date);
-      if (obj.generated_at) return new Date(obj.generated_at);
-      if (obj.created_at) return new Date(obj.created_at);
-      return null;
-    };
-
-    // ---------------- DAILY TREND ----------------
-    const dailyTrend = [...Array(7)].map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
-      const key = d.toISOString().slice(0, 10);
-
-      const count = attendanceData.filter(
-        (r) => r.att_date === key
-      ).length;
-
-      return {
-        label: d.toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short",
-        }),
-        rawDate: key,
-        attendance: count,
-      };
-    });
-
-    // ---------------- MONTHLY TREND ----------------
-    const monthlyTrend = [...Array(6)].map((_, i) => {
-      const d = new Date();
-      d.setMonth(d.getMonth() - (5 - i));
-
-      const m = d.getMonth();
-      const y = d.getFullYear();
-
-      const count = attendanceData.filter((r) => {
-        const dt = getDateFromObj(r);
-        return dt && dt.getMonth() === m && dt.getFullYear() === y;
-      }).length;
-
-      return {
-        label: d.toLocaleDateString("en-IN", { month: "short" }),
-        attendance: count,
-      };
-    });
-
-    // ---------------- YEARLY TREND ----------------
-    const yearlyTrend = [...Array(3)].map((_, i) => {
-      const y = now.getFullYear() - (2 - i);
-
-      const count = attendanceData.filter((r) => {
-        const dt = getDateFromObj(r);
-        return dt && dt.getFullYear() === y;
-      }).length;
-
-      return {
-        label: `${y}`,
-        attendance: count,
-      };
-    });
-
 // ---------------- REVENUE TREND (PAYABLE) ----------------
 const revenueTrend = [...Array(6)].map((_, i) => {
   const d = new Date();
@@ -352,9 +293,9 @@ const revenueTrend = [...Array(6)].map((_, i) => {
 });
     // ---------------- SET STATE ----------------
     setAttendanceTrend({
-      dailyTrend,
-      monthlyTrend,
-      yearlyTrend,
+      dailyTrend: attendanceTrendData.dailyTrend || [],
+      monthlyTrend: attendanceTrendData.monthlyTrend || [],
+      yearlyTrend: attendanceTrendData.yearlyTrend || [],
     });
 
     setRevenueTrend(revenueTrend);
@@ -369,7 +310,7 @@ const revenueTrend = [...Array(6)].map((_, i) => {
       collectionRatio,
     });
 
-    setRawAttendance(attendanceData);
+    setRawAttendance(attendanceTrendData.recentRecords || []);
 
   } catch (err) {
     console.error("Dashboard error:", err);

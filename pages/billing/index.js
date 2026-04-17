@@ -450,7 +450,10 @@ Thank you.`;
       const cacheKey = isFiltered ? `bills-${month}-${year}` : `bills-all`;
 
       const data = await offlineFetch(cacheKey, async () => {
-        const res = await fetch(`${API_BASE}/api/bills/all/`, { headers: authHeaders() });
+        const url = isFiltered
+          ? `${API_BASE}/api/bills/all/?month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`
+          : `${API_BASE}/api/bills/all/`;
+        const res = await fetch(url, { headers: authHeaders() });
         if (!res.ok) throw new Error(await res.text());
         return res.json();
       });
@@ -488,9 +491,7 @@ Thank you.`;
   };
 
   const userIdFromQuery = router.isReady ? router.query.userId : null;
-  const scopedBills = month && year
-    ? bills.filter((bill) => Number(bill.month) === Number(month) && Number(bill.year) === Number(year))
-    : bills;
+  const scopedBills = bills;
   const historyByUser = bills.reduce((acc, bill) => {
     const key = String(bill.user_id);
     if (!acc[key]) acc[key] = [];

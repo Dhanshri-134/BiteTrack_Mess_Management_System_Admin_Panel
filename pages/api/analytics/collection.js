@@ -1,6 +1,19 @@
 import { pgPool } from "@/lib/db";
 import jwt from "jsonwebtoken";
 
+function getCurrentYearMonthInIndia() {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+  });
+
+  const parts = formatter.formatToParts(new Date());
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  return { year, month };
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
@@ -84,11 +97,21 @@ export default async function handler(req, res) {
     `, [messId]);
 
     // ✅ TOTAL
+    const currentIndia = getCurrentYearMonthInIndia();
+
     const total = await pgPool.query(`
-      SELECT SUM(amount) as total
+      SELECT COALESCE(SUM(amount), 0) as total
       FROM payment_history
-      WHERE mess_id = $1 AND status = 'paid';
-    `, [messId]);
+      WHERE mess_id = $1
+        AND status = 'paid'
+        AND year = $2
+        AND (
+          CASE
+            WHEN month ~ '^[0-9]+$' THEN CAST(month AS INTEGER)
+            ELSE EXTRACT(MONTH FROM TO_DATE(month, 'Month'))
+          END
+        ) = $3;
+    `, [messId, currentIndia.year, currentIndia.month]);
 
     res.status(200).json({
       chart: result.rows,

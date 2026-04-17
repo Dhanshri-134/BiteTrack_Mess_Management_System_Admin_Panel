@@ -60,6 +60,27 @@ export default async function handler(req, res) {
 
     const { month, year } = req.query;
 
+    if (month && year) {
+      const selectedMonth = normalizeMonthNumber(month);
+      const selectedYear = Number(year);
+
+      if (!selectedMonth || !selectedYear) {
+        return res.status(400).json({ error: "Invalid month/year filter" });
+      }
+
+      const rows = await getLiveMonthlyBillingRows(pgPool, {
+        messId,
+        month: selectedMonth,
+        year: selectedYear,
+      });
+
+      rows.sort((left, right) =>
+        String(left.name || "").localeCompare(String(right.name || ""))
+      );
+
+      return res.status(200).json(rows);
+    }
+
     const { rows } = await pgPool.query(
       `SELECT *
        FROM billing_view
