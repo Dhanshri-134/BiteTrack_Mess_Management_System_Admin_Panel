@@ -644,6 +644,47 @@
   font-weight: 600;
 }
 
+.mobileSortControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 4px;
+  margin-bottom: 12px;
+  background: transparent;
+  border-radius: 8px;
+}
+
+.mobileSortControls::-webkit-scrollbar {
+  display: none;
+}
+
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.sortBtn:hover {
+  background: #f1f5f9;
+}
+
+.activeSort {
+  background: #ecfdf5;
+  color: #0f766e;
+  border-color: #0f766e;
+}
+
 .waCancel {
   width: 100%;
   padding: 12px;

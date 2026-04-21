@@ -212,7 +212,11 @@ const filteredAbsentUsers = absentUsers.filter(
       }
       );
 
-      setAllUsers(Array.isArray(data) ? data : []);
+       const activeUsers = Array.isArray(data)
+      ? data.filter(user => user.status === "Active")
+      : [];
+
+    setAllUsers(activeUsers);
     } catch (err) {
       console.error(err);
     } finally {
@@ -823,6 +827,8 @@ const filteredAbsentUsers = absentUsers.filter(
                       <strong>{u.name}</strong>
                       <div className={styles.subText}>
                         {u.phone || "-"}
+                        <br></br>
+                        {u.email || "-"}
                       </div>
                     </div>
 

@@ -12,7 +12,7 @@ import { FaWhatsapp, FaMoneyBillWave, FaPhoneAlt } from "react-icons/fa";
 import { useRouter } from "next/router";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { ChartBarIcon, ChevronDown, ChevronUp, Download, Filter, FilterIcon, FilterX, FilterXIcon, Presentation, MoreVertical, DownloadIcon, RefreshCcw } from "lucide-react";
+import { ChartBarIcon, ChevronDown, ChevronUp, Download, Filter, FilterIcon, FilterX, FilterXIcon, Presentation, MoreVertical, DownloadIcon, RefreshCcw, ArrowUpDown } from "lucide-react";
 import DayDropdown from "../../components/DayDropdown";
 import DateField from "../../components/DateField";
 import { downloadFileFromUrl, saveJsPdfDocument } from "../../lib/fileDownload";
@@ -83,6 +83,16 @@ export default function BillsPage() {
 
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
   const [waDrawer, setWaDrawer] = useState(null);
 
@@ -954,7 +964,7 @@ if (!map[key].parent_mobile && b.parent_mobile) {
     }
   };
 
-  const filtered = groupedBills.filter((b) => {
+  const filteredBills = groupedBills.filter((b) => {
     if (userIdFromQuery && String(b.user_id) !== String(userIdFromQuery)) return false;
     if (statusFilter !== "all") {
       if (statusFilter === "paid" && b.has_pending) return false;
@@ -962,6 +972,19 @@ if (!map[key].parent_mobile && b.parent_mobile) {
     }
     if (!search) return true;
     return `${b.name || ""} ${b.email || ""} ${b.mobile || ""}`.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const filtered = [...filteredBills].sort((a, b) => {
+    if (sortConfig.key === "pending_amount" || sortConfig.key === "total_payable" || sortConfig.key === "advance_amount") {
+      const valA = Number(a[sortConfig.key] || 0);
+      const valB = Number(b[sortConfig.key] || 0);
+      return sortConfig.direction === "asc" ? valA - valB : valB - valA;
+    }
+    const valA = (a[sortConfig.key] || a.user_name || "").toString().toLowerCase();
+    const valB = (b[sortConfig.key] || b.user_name || "").toString().toLowerCase();
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
   });
 
   const downloadExcel = async () => {
@@ -1236,6 +1259,15 @@ if (!map[key].parent_mobile && b.parent_mobile) {
                     </div>
 
                     <div className={styles.mobileList}>
+                      <div className={styles.mobileSortControls}>
+                        <span style={{ fontSize: "14px", fontWeight: "600", color: "#006161", marginRight: "8px" }}>{t("sortBy") || "Sort by"}:</span>
+                        <button onClick={() => handleSort("name")} className={`${styles.sortBtn} ${sortConfig.key === "name" ? styles.activeSort : ""}`}>
+                          {t("name") || "Name"} {sortConfig.key === "name" ? (sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />) : <ArrowUpDown size={14} />}
+                        </button>
+                        <button onClick={() => handleSort("pending_amount")} className={`${styles.sortBtn} ${sortConfig.key === "pending_amount" ? styles.activeSort : ""}`}>
+                          {t("pending") || "Pending"} {sortConfig.key === "pending_amount" ? (sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />) : <ArrowUpDown size={14} />}
+                        </button>
+                      </div>
                       {filtered.map((b, idx) => (
                         <div key={b.user_id || idx} className={styles.mobileCard}>
                           <div className={styles.cardHeader}>

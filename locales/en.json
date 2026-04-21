@@ -866,5 +866,6 @@
   "SaveMinStock":"Save Min Stock",
   "attendanceHistory":"Attendance History",
   "frozenUsers": "Frozen Users",
-  "noFrozenUsers": "No frozen users found"
+  "noFrozenUsers": "No frozen users found",
+  "sortBy":"Sort By"
 }
